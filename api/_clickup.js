@@ -75,9 +75,10 @@ export async function getChallengeTasks() {
   const tasks = await Promise.all(
     rawTasks.map(async (task) => {
       let attachments = [];
+
       try {
-        const attachmentData = await clickupFetch(`/task/${task.id}/attachment`);
-        attachments = (attachmentData.attachments || []).map(normalizeAttachment);
+        const fullTask = await clickupFetch(`/task/${task.id}`);
+        attachments = (fullTask.attachments || []).map(normalizeAttachment);
       } catch {
         attachments = [];
       }
