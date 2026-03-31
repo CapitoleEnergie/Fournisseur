@@ -281,6 +281,27 @@ textarea::placeholder { color: #b0b0b0; }
   .classif-table td:first-child { padding-top: 10px; font-size: 15px; }
 }
 
+  .questionnaire-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 9px 14px;
+  border-radius: 10px;
+  background: var(--principal);
+  color: white;
+  text-decoration: none;
+  border: 1.5px solid var(--principal);
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.questionnaire-btn:hover {
+  background: #3a15c7;
+  border-color: #3a15c7;
+}
 
 </style>
 </head>
@@ -361,11 +382,19 @@ textarea::placeholder { color: #b0b0b0; }
   <div class="resume-header">
     <div><h1>Résumé Fournisseurs</h1><p class="subtitle" style="margin-bottom:0">Vue d'ensemble de tous les critères — données issues du fichier Salesforce.</p></div>
     <div class="resume-controls">
-      <input class="search-input" id="search-fournisseur" oninput="filterTable()" placeholder="🔍 Rechercher un fournisseur...">
-      <button class="filter-btn active" onclick="setFilter('tous', this)">Tous</button>
-      <button class="filter-btn" onclick="setFilter('gaz', this)">Gaz</button>
-      <button class="filter-btn" onclick="setFilter('elec', this)">Élec</button>
-    </div>
+  <a
+    href="https://app.clickup.com/90121599739/v/fm/2kxumyqv-292?pr=90126905231"
+    target="_blank"
+    rel="noopener noreferrer"
+    class="questionnaire-btn"
+  >
+    📝 Questionnaire fournisseur
+  </a>
+  <input class="search-input" id="search-fournisseur" oninput="filterTable()" placeholder="🔍 Rechercher un fournisseur...">
+  <button class="filter-btn active" onclick="setFilter('tous', this)">Tous</button>
+  <button class="filter-btn" onclick="setFilter('gaz', this)">Gaz</button>
+  <button class="filter-btn" onclick="setFilter('elec', this)">Élec</button>
+</div>
   </div>
   <div class="table-wrapper">
     <table class="resume-table" id="resume-table">
