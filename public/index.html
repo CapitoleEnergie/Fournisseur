@@ -382,14 +382,9 @@ textarea::placeholder { color: #b0b0b0; }
   <div class="resume-header">
     <div><h1>Résumé Fournisseurs</h1><p class="subtitle" style="margin-bottom:0">Vue d'ensemble de tous les critères — données issues du fichier Salesforce.</p></div>
     <div class="resume-controls">
-  <a
-    href="https://app.clickup.com/90121599739/v/fm/2kxumyqv-292?pr=90126905231"
-    target="_blank"
-    rel="noopener noreferrer"
-    class="questionnaire-btn"
-  >
-    📝 Questionnaire fournisseur
-  </a>
+  <button class="questionnaire-btn" type="button" onclick="openQuestionnaireModal()">
+  📝 Règles Octroi à modifier
+</button>
   <input class="search-input" id="search-fournisseur" oninput="filterTable()" placeholder="🔍 Rechercher un fournisseur...">
   <button class="filter-btn active" onclick="setFilter('tous', this)">Tous</button>
   <button class="filter-btn" onclick="setFilter('gaz', this)">Gaz</button>
