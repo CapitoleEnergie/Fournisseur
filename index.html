@@ -1699,7 +1699,7 @@ async function loadChallenges() {
       return;
     }
     
-    const enCoursTasks = tasks.filter(t => normalizeStatus(t.status?.status) === "en cours");
+    const enCoursTasks = tasks.filter(t => normalizeStatus(t.status?.status) === "in progress");
 
     if (enCoursTasks.length === 0) {
       container.innerHTML = `<div class="empty-state"><h3>🏆 Aucun challenge en cours</h3><p>Aucun challenge avec le statut “En cours” n'a été trouvé.</p></div>`;
