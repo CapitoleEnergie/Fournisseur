@@ -7,16 +7,32 @@ const SHEET_NAME = "1.Top fournisseurs C4";
 
 function safeNumber(value) {
   if (value === null || value === undefined || value === "") return null;
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
 
-  const cleaned = String(value)
+  let s = String(value)
     .replace(/\u00A0/g, " ")
-    .replace(/\s+/g, "")
     .replace(/€/g, "")
     .replace(/MWh/gi, "")
-    .replace(",", ".")
     .trim();
 
-  const n = Number(cleaned);
+  if (!s) return null;
+
+  s = s.replace(/\s+/g, "");
+
+  const hasComma = s.includes(",");
+  const hasDot = s.includes(".");
+
+  if (hasComma && hasDot) {
+    if (s.lastIndexOf(",") > s.lastIndexOf(".")) {
+      s = s.replace(/\./g, "").replace(",", ".");
+    } else {
+      s = s.replace(/,/g, "");
+    }
+  } else if (hasComma) {
+    s = s.replace(",", ".");
+  }
+
+  const n = Number(s);
   return Number.isFinite(n) ? n : null;
 }
 
@@ -156,37 +172,37 @@ function loadWorkbookData() {
   const normalizedRows = [];
 
   for (const row of rows) {
-    const rawSegment = row[segmentKey];
-    const rawSupplier = row[supplierKey];
+  const rawSegment = row[segmentKey];
+  const rawSupplier = row[supplierKey];
 
-    if (rawSegment && String(rawSegment).trim()) {
-      currentSegment = String(rawSegment).trim();
-    }
-
-    if (!rawSupplier || !String(rawSupplier).trim()) {
-      continue;
-    }
-
-    if (
-      String(currentSegment).toLowerCase().includes("subtotal") ||
-      String(rawSupplier).toLowerCase().includes("subtotal")
-    ) {
-      continue;
-    }
-
-    const price30j = (row[priceKey]);
-    const avgVolume = (row[volumeKey]);
-    const offerCount = (row[countKey]);
-
-    normalizedRows.push({
-      segment: currentSegment,
-      supplierRaw: String(rawSupplier).trim(),
-      supplier: normalizeSupplierName(rawSupplier),
-      price30j,
-      avgVolume,
-      offerCount
-    });
+  if (rawSegment && String(rawSegment).trim()) {
+    currentSegment = String(rawSegment).trim();
   }
+
+  if (!rawSupplier || !String(rawSupplier).trim()) {
+    continue;
+  }
+
+  if (
+    String(currentSegment).toLowerCase().includes("subtotal") ||
+    String(rawSupplier).toLowerCase().includes("subtotal")
+  ) {
+    continue;
+  }
+
+  const price30j = safeNumber(row[priceKey]);
+  const avgVolume = safeNumber(row[volumeKey]);
+  const offerCount = safeNumber(row[countKey]);
+
+  normalizedRows.push({
+    segment: currentSegment,
+    supplierRaw: String(rawSupplier).trim(),
+    supplier: normalizeSupplierName(rawSupplier),
+    price30j,
+    avgVolume,
+    offerCount
+  });
+}
 
   const bySegment = new Map();
 
@@ -203,23 +219,23 @@ function loadWorkbookData() {
     const marketAverage = buildMarketAverage(segmentRows);
 
     segments[segment] = segmentRows
-      .map((row) => {
-        const deltaPct =
-          marketAverage && row.price30j
-            ? ((row.price30j - marketAverage) / marketAverage) * 100
-            : null;
+  .map((row) => {
+    const deltaPct =
+      Number.isFinite(marketAverage) && Number.isFinite(row.price30j) && marketAverage !== 0
+        ? ((row.price30j - marketAverage) / marketAverage) * 100
+        : null;
 
-        return {
-          ...row,
-          marketAverage: round(marketAverage, 2),
-          deltaPct: round(deltaPct, 1)
-        };
-      })
-      .sort((a, b) => {
-        if (a.price30j === null) return 1;
-        if (b.price30j === null) return -1;
-        return a.price30j - b.price30j;
-      });
+    return {
+      ...row,
+      marketAverage: round(marketAverage, 2),
+      deltaPct: round(deltaPct, 1)
+    };
+  })
+  .sort((a, b) => {
+    if (a.price30j === null) return 1;
+    if (b.price30j === null) return -1;
+    return a.price30j - b.price30j;
+  });
   }
 
   return {
