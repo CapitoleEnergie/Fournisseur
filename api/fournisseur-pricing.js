@@ -7,7 +7,16 @@ const SHEET_NAME = "1.Top fournisseurs C4";
 
 function safeNumber(value) {
   if (value === null || value === undefined || value === "") return null;
-  const n = Number(String(value).replace(",", ".").trim());
+
+  const cleaned = String(value)
+    .replace(/\u00A0/g, " ")
+    .replace(/\s+/g, "")
+    .replace(/€/g, "")
+    .replace(/MWh/gi, "")
+    .replace(",", ".")
+    .trim();
+
+  const n = Number(cleaned);
   return Number.isFinite(n) ? n : null;
 }
 
@@ -165,9 +174,9 @@ function loadWorkbookData() {
       continue;
     }
 
-    const price30j = safeNumber(row[priceKey]);
-    const avgVolume = safeNumber(row[volumeKey]);
-    const offerCount = safeNumber(row[countKey]);
+    const price30j = (row[priceKey]);
+    const avgVolume = (row[volumeKey]);
+    const offerCount = (row[countKey]);
 
     normalizedRows.push({
       segment: currentSegment,
