@@ -1616,50 +1616,70 @@ async function loadNews() {
   const btn = document.getElementById("news-refresh-btn");
   const container = document.getElementById("news-container");
   if (btn) btn.classList.add("spinning");
-  
+
   container.innerHTML = `<div class="loading-state"><div class="loading-spinner"></div><div class="loading-text">Récupération des news depuis ClickUp…</div></div>`;
-  
+
   try {
     const data = await apiFetch('/api/news');
     const tasks = data.tasks || [];
-    
+
     if (tasks.length === 0) {
       container.innerHTML = `<div class="empty-state"><h3>📭 Aucune news</h3><p>La liste ClickUp est vide pour le moment.</p></div>`;
       if (btn) btn.classList.remove("spinning");
       return;
     }
-    
-    // Sort: open first, then by date_created desc
-    tasks.sort((a, b) => {
-      const aOpen = !["closed","done","completed"].includes((a.status?.status||"").toLowerCase());
-      const bOpen = !["closed","done","completed"].includes((b.status?.status||"").toLowerCase());
-      if (aOpen !== bOpen) return bOpen ? 1 : -1;
-      return parseInt(b.date_created||0) - parseInt(a.date_created||0);
-    });
-    
-    const priorityLabel = { 1:"🔴 Urgent", 2:"🟠 Haute", 3:"🟡 Normale", 4:"⬜ Basse" };
-    const priorityClass = { 1:"priority-urgent", 2:"priority-high", 3:"priority-normal", 4:"" };
-    
-    const cards = enCoursTasks.map(t => {
+
+    const enCoursTasks = tasks.filter(
+      (t) => normalizeStatus(t.status?.status) === "en cours"
+    );
+
+    if (enCoursTasks.length === 0) {
+      container.innerHTML = `<div class="empty-state"><h3>📭 Aucune news en cours</h3><p>Aucune news avec le statut “En cours” n'a été trouvée.</p></div>`;
+      if (btn) btn.classList.remove("spinning");
+      return;
+    }
+
+    enCoursTasks.sort(
+      (a, b) => parseInt(b.date_created || 0) - parseInt(a.date_created || 0)
+    );
+
+    const priorityLabel = { 1: "🔴 Urgent", 2: "🟠 Haute", 3: "🟡 Normale", 4: "⬜ Basse" };
+    const priorityClass = { 1: "priority-urgent", 2: "priority-high", 3: "priority-normal", 4: "" };
+
+    const cards = enCoursTasks.map((t) => {
       const statusStyle = getStatusStyle(t.status?.status || "");
-      const statusColor = t.status?.color ? `background:${t.status.color}20;color:${t.status.color};` : statusStyle;
+      const statusColor = t.status?.color
+        ? `background:${t.status.color}20;color:${t.status.color};`
+        : statusStyle;
+
       const prio = t.priority?.priority;
-      const prioHtml = prio ? `<span class="news-priority ${priorityClass[prio]||''}">${priorityLabel[prio]||""}</span>` : "";
-      const tags = (t.tags||[]).map(tg => `<span class="news-tag">${tg.name}</span>`).join("");
+      const prioHtml = prio
+        ? `<span class="news-priority ${priorityClass[prio] || ''}">${priorityLabel[prio] || ""}</span>`
+        : "";
+
+      const tags = (t.tags || [])
+        .map((tg) => `<span class="news-tag">${tg.name}</span>`)
+        .join("");
+
       const desc = (t.description || t.markdown_description || "").trim();
-      const descHtml = desc ? `<div class="news-card-desc">${escapeHtml(desc)}</div>` : `<div class="news-card-desc" style="color:#bbb;font-style:italic;">Aucune description renseignée.</div>`;
-      const assignees = (t.assignees||[]).map(a => `<span style="font-size:11px;background:var(--bleu-clair);color:var(--principal);padding:1px 7px;border-radius:5px;font-weight:600;">${a.username||a.email||""}</span>`).join(" ");
-      
+      const descHtml = desc
+        ? `<div class="news-card-desc">${escapeHtml(desc)}</div>`
+        : `<div class="news-card-desc" style="color:#bbb;font-style:italic;">Aucune description renseignée.</div>`;
+
+      const assignees = (t.assignees || [])
+        .map((a) => `<span style="font-size:11px;background:var(--bleu-clair);color:var(--principal);padding:1px 7px;border-radius:5px;font-weight:600;">${a.username || a.email || ""}</span>`)
+        .join(" ");
+
       return `<div class="news-card" style="animation:fadeUp 0.3s ease both;">
         <div class="news-card-header">
           <div class="news-card-icon">
             <svg width="16" height="16" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
           </div>
-          <div class="news-card-title">${escapeHtml(t.name||"Sans titre")}</div>
+          <div class="news-card-title">${escapeHtml(t.name || "Sans titre")}</div>
         </div>
         <div class="news-card-body">${descHtml}</div>
         <div class="news-card-footer">
-          <span class="news-status" style="${statusColor}">${escapeHtml(t.status?.status||"—")}</span>
+          <span class="news-status" style="${statusColor}">${escapeHtml(t.status?.status || "—")}</span>
           ${prioHtml}
           ${tags}
           ${assignees}
@@ -1667,17 +1687,17 @@ async function loadNews() {
         </div>
       </div>`;
     }).join("");
-    
+
     container.innerHTML = `
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
         <span style="font-size:13px;color:#666;">${enCoursTasks.length} news en cours</span>
-        <span style="font-size:12px;color:#aaa;">Dernière sync : ${new Date().toLocaleTimeString("fr-FR", {hour:"2-digit",minute:"2-digit"})}</span>
+        <span style="font-size:12px;color:#aaa;">Dernière sync : ${new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}</span>
       </div>
       <div class="news-grid">${cards}</div>`;
-  } catch(e) {
+  } catch (e) {
     container.innerHTML = `<div class="error-state"><p>❌ <strong>Erreur de chargement</strong><br><code style="font-size:11px;">${escapeHtml(e.message)}</code><br><br>Vérifiez votre connexion réseau.</p></div>`;
   }
-  
+
   if (btn) btn.classList.remove("spinning");
 }
 
