@@ -1,6 +1,6 @@
-import fs from "fs";
-import path from "path";
-import xlsx from "xlsx";
+const fs = require("fs");
+const path = require("path");
+const xlsx = require("xlsx");
 
 const EXCEL_FILE = path.join(process.cwd(), "data", "fournisseurs_export new .xlsx");
 const RULES_SHEET = "Fournisseurs Export";
@@ -691,7 +691,7 @@ function loadSelectionEngine() {
   };
 }
 
-export default function handler(req, res) {
+module.exports = function handler(req, res) {
   if (req.method !== "GET") {
     return res.status(405).json({ message: "Méthode non autorisée" });
   }
