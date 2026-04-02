@@ -2028,7 +2028,7 @@ async function loadChallenges() {
       return;
     }
     
-    const enCoursTasks = tasks.filter(t => normalizeStatus(t.status?.status) === "en cours");
+    const enCoursTasks = tasks.filter(t => normalizeStatus(t.status?.status) === "in progress");
 
     if (enCoursTasks.length === 0) {
       container.innerHTML = `<div class="empty-state"><h3>🏆 Aucun challenge en cours</h3><p>Aucun challenge avec le statut “En cours” n'a été trouvé.</p></div>`;
@@ -2043,7 +2043,9 @@ async function loadChallenges() {
       const statusStyle = getStatusStyle(t.status?.status || "");
       const statusColor = t.status?.color ? `background:${t.status.color}20;color:${t.status.color};` : statusStyle;
       const desc = (t.description || t.markdown_description || "").trim();
-      const descHtml = desc ? `<div class="challenge-card-desc">${escapeHtml(desc)}</div>` : "";
+      const descHtml = desc
+  ? `<div class="challenge-card-desc">${escapeHtml(desc)}</div>`
+  : `<div class="challenge-card-desc" style="color:#bbb;font-style:italic;">Aucune description renseignée.</div>`;
       
       const attachments = (t._attachments || []);
       const attachHtml = attachments.length === 0
