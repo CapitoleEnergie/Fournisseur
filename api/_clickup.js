@@ -55,7 +55,25 @@ function normalizeAttachment(att) {
 export async function getNewsTasks() {
   const listId = getEnv("CLICKUP_LIST_NEWS");
   const data = await clickupFetch(`/list/${listId}/task?include_closed=true&subtasks=true&page=0`);
-  const tasks = (data.tasks || []).map(normalizeTask);
+  const rawTasks = data.tasks || [];
+
+  const tasks = await Promise.all(
+    rawTasks.map(async (task) => {
+      let attachments = [];
+
+      try {
+        const fullTask = await clickupFetch(`/task/${task.id}`);
+        attachments = (fullTask.attachments || []).map(normalizeAttachment);
+      } catch {
+        attachments = [];
+      }
+
+      return {
+        ...normalizeTask(task),
+        _attachments: attachments
+      };
+    })
+  );
 
   tasks.sort((a, b) => {
     const aOpen = !["closed", "done", "completed"].includes((a.status?.status || "").toLowerCase());
