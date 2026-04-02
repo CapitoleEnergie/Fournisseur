@@ -1632,7 +1632,7 @@ async function loadNews() {
     const priorityLabel = { 1:"🔴 Urgent", 2:"🟠 Haute", 3:"🟡 Normale", 4:"⬜ Basse" };
     const priorityClass = { 1:"priority-urgent", 2:"priority-high", 3:"priority-normal", 4:"" };
     
-    const cards = enCoursTasks.map(t => {
+    const cards = tasks.map(t => {
       const statusStyle = getStatusStyle(t.status?.status || "");
       const statusColor = t.status?.color ? `background:${t.status.color}20;color:${t.status.color};` : statusStyle;
       const prio = t.priority?.priority;
@@ -1662,7 +1662,7 @@ async function loadNews() {
     
     container.innerHTML = `
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
-        <span style="font-size:13px;color:#666;">${enCoursTasks.length} news en cours</span>
+        <span style="font-size:13px;color:#666;">${tasks.length} news</span>
         <span style="font-size:12px;color:#aaa;">Dernière sync : ${new Date().toLocaleTimeString("fr-FR", {hour:"2-digit",minute:"2-digit"})}</span>
       </div>
       <div class="news-grid">${cards}</div>`;
