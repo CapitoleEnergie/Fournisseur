@@ -1,0 +1,2079 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sélection Fournisseur — Capitole Énergie</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;700&family=Poppins:ital,wght@0,400;0,600;0,700;1,600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bleu: #0C32FF; --rose: #E543DC; --jaune: #FFC14F;
+  --noir: #232323; --blanc: #FFFFFF; --principal: #5020EA;
+  --bleu-clair: #EDEDFF; --blanc-bloc: #F3F3F3; --gris: #E3E3E3;
+  --grad: linear-gradient(135deg, #0C32FF, #E543DC, #FFC14F);
+  --grad-marque: linear-gradient(160deg, #EDEDFF 0%, #FFFFFF 100%);
+  /* Traffic light */
+  --vert: #1A9E6E; --vert-bg: #E6F9F3; --vert-border: #A7E6CC;
+  --orange: #D97706; --orange-bg: #FFF7E6; --orange-border: #FCD68A;
+  --rouge: #C53030; --rouge-bg: #FEF0F0; --rouge-border: #F7BABA;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Poppins', sans-serif; background: var(--grad-marque); min-height: 100vh; color: var(--noir); }
+
+/* HEADER */
+header { background: white; border-bottom: 1px solid var(--gris); padding: 0 40px; display: flex; align-items: stretch; gap: 0; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 16px rgba(80,32,234,0.07); }
+.logo-area { display: flex; align-items: center; gap: 12px; padding: 14px 0; margin-right: 32px; }
+.logo-icon { width: 38px; height: 38px; flex-shrink: 0; }
+.logo-text { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 16px; color: var(--noir); line-height: 1.1; }
+.logo-text span { display: block; font-size: 10px; font-weight: 400; color: #888; letter-spacing: 0.05em; text-transform: uppercase; }
+.tabs-nav { display: flex; align-items: stretch; gap: 0; flex: 1; }
+.tab-btn { display: flex; align-items: center; gap: 8px; padding: 0 22px; font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 600; color: #888; background: none; border: none; border-bottom: 3px solid transparent; cursor: pointer; transition: color 0.2s, border-color 0.2s; white-space: nowrap; }
+.tab-btn:hover { color: var(--principal); }
+.tab-btn.active { color: var(--principal); border-bottom-color: var(--principal); }
+.tab-btn svg { flex-shrink: 0; }
+.grad-bar { height: 4px; background: var(--grad); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* MAIN */
+main { max-width: 980px; margin: 0 auto; padding: 48px 24px 80px; }
+h1 { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 38px; color: var(--noir); line-height: 1.1; margin-bottom: 8px; }
+.subtitle { font-size: 14px; color: #666; margin-bottom: 36px; }
+
+/* FORM */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 28px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+label { font-size: 11px; font-weight: 600; color: var(--principal); text-transform: uppercase; letter-spacing: 0.06em; }
+input, select { font-family: 'Poppins', sans-serif; font-size: 14px; padding: 11px 14px; border: 1.5px solid var(--gris); border-radius: 10px; background: white; color: var(--noir); transition: border-color 0.2s, box-shadow 0.2s; outline: none; appearance: none; }
+input:focus, select:focus { border-color: var(--principal); box-shadow: 0 0 0 3px rgba(80,32,234,0.1); }
+select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='%235020EA'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; cursor: pointer; }
+textarea { font-family: 'Poppins', sans-serif; font-size: 13.5px; padding: 12px 14px; border: 1.5px solid var(--gris); border-radius: 10px; background: white; color: var(--noir); transition: border-color 0.2s, box-shadow 0.2s; outline: none; resize: vertical; min-height: 90px; line-height: 1.55; width: 100%; }
+textarea:focus { border-color: var(--principal); box-shadow: 0 0 0 3px rgba(80,32,234,0.1); }
+textarea::placeholder { color: #b0b0b0; }
+.comment-char-count { font-size: 11px; color: #aaa; font-weight: 400; margin-left: auto; text-transform: none; letter-spacing: 0; }
+
+/* BUTTONS */
+.btn-primary { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 14px; color: white; background: var(--principal); border: none; border-radius: 10px; padding: 13px 32px; cursor: pointer; transition: background 0.2s, transform 0.1s, box-shadow 0.2s; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 20px rgba(80,32,234,0.25); }
+.btn-primary:hover { background: #3a15c7; box-shadow: 0 6px 28px rgba(80,32,234,0.35); transform: translateY(-1px); }
+.btn-secondary { font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 13px; color: var(--principal); background: transparent; border: 2px solid var(--principal); border-radius: 10px; padding: 11px 24px; cursor: pointer; transition: background 0.2s; margin-left: 10px; }
+.btn-secondary:hover { background: var(--bleu-clair); }
+.divider { height: 1px; background: var(--gris); margin: 32px 0; }
+
+/* RESULTS HEADER */
+#results { display: none; }
+.results-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.results-title { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 24px; color: var(--noir); }
+.client-summary { background: white; border: 1px solid var(--gris); border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; font-size: 13px; color: #555; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.tag { background: var(--blanc-bloc); border-radius: 6px; padding: 3px 10px; font-size: 12px; font-weight: 600; color: var(--noir); }
+.result-comment-box { background: white; border: 1.5px solid var(--bleu-clair); border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; }
+.result-comment-box .comment-label { font-size: 11px; font-weight: 700; color: var(--principal); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.result-comment-box .comment-text { font-size: 13px; color: var(--noir); line-height: 1.65; white-space: pre-wrap; }
+
+/* LEGEND */
+.legend-bar { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; color: #444; }
+.legend-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+.legend-dot.vert { background: var(--vert); }
+.legend-dot.orange { background: var(--orange); }
+.legend-dot.rouge { background: var(--rouge); }
+
+/* STATS BADGES */
+.stats-row { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+.stat-badge { display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 700; }
+.stat-badge.vert-badge { background: var(--vert-bg); color: var(--vert); border: 1px solid var(--vert-border); }
+.stat-badge.orange-badge { background: var(--orange-bg); color: var(--orange); border: 1px solid var(--orange-border); }
+.stat-badge.rouge-badge { background: var(--rouge-bg); color: var(--rouge); border: 1px solid var(--rouge-border); }
+.stat-dot { width: 9px; height: 9px; border-radius: 50%; }
+.stat-dot.vert { background: var(--vert); }
+.stat-dot.orange { background: var(--orange); }
+.stat-dot.rouge { background: var(--rouge); }
+
+/* CLASSIFICATION TABLE */
+.classif-section { margin-bottom: 28px; }
+.classif-section-title { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: 10px 10px 0 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 0.01em; border-bottom: none; }
+.classif-section-title.vert-title { background: var(--vert-bg); color: var(--vert); border: 1.5px solid var(--vert-border); border-bottom: none; }
+.classif-section-title.orange-title { background: var(--orange-bg); color: var(--orange); border: 1.5px solid var(--orange-border); border-bottom: none; }
+.classif-section-title.rouge-title { background: var(--rouge-bg); color: var(--rouge); border: 1.5px solid var(--rouge-border); border-bottom: none; }
+.color-badge { font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 12px; margin-left: 6px; }
+.vert-badge-small { background: var(--vert); color: white; }
+.orange-badge-small { background: var(--orange); color: white; }
+.rouge-badge-small { background: var(--rouge); color: white; }
+
+/* TABLE */
+.classif-table-wrap { border: 1.5px solid var(--gris); border-radius: 0 0 10px 10px; overflow: hidden; }
+.classif-section-title.vert-title + .classif-table-wrap { border-color: var(--vert-border); }
+.classif-section-title.orange-title + .classif-table-wrap { border-color: var(--orange-border); }
+.classif-section-title.rouge-title + .classif-table-wrap { border-color: var(--rouge-border); }
+
+.classif-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.classif-table thead th { background: var(--noir); color: white; font-size: 10.5px; font-weight: 600; padding: 9px 14px; text-align: left; white-space: nowrap; }
+.classif-table thead th:first-child { width: 140px; min-width: 130px; }
+.classif-table thead th:nth-child(2) { width: 100px; }
+.classif-table thead th:nth-child(3) { width: 130px; }
+.classif-table thead th:last-child { min-width: 260px; }
+
+.classif-table tbody tr { border-bottom: 1px solid #f0f0f0; transition: background 0.1s; }
+.classif-table tbody tr:last-child { border-bottom: none; }
+.classif-table tbody tr:hover { background: #fafafe; }
+.classif-table td { padding: 10px 14px; vertical-align: middle; line-height: 1.45; }
+.classif-table td:first-child { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 13.5px; color: var(--noir); }
+.classif-table td.score-cell { font-weight: 700; font-size: 13px; }
+.score-pill { display: inline-flex; align-items: center; justify-content: center; padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+.score-pill.vert { background: var(--vert-bg); color: var(--vert); border: 1px solid var(--vert-border); }
+.score-pill.orange { background: var(--orange-bg); color: var(--orange); border: 1px solid var(--orange-border); }
+.score-pill.rouge { background: var(--rouge-bg); color: var(--rouge); border: 1px solid var(--rouge-border); }
+
+.criteria-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.chip { font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: 5px; white-space: nowrap; }
+.chip.ok { background: var(--vert-bg); color: var(--vert); }
+.chip.warn { background: var(--orange-bg); color: var(--orange); }
+.chip.ko { background: var(--rouge-bg); color: var(--rouge); }
+.chip.neutral { background: var(--blanc-bloc); color: #666; }
+
+.justif-cell { font-size: 12px; color: #444; line-height: 1.55; }
+.justif-cell .justif-line { display: flex; gap: 6px; margin-bottom: 3px; align-items: flex-start; }
+.justif-cell .justif-line:last-child { margin-bottom: 0; }
+.justif-dot { font-size: 12px; flex-shrink: 0; line-height: 1.4; }
+.no-result-box { background: var(--bleu-clair); border-radius: 10px; padding: 36px; text-align: center; color: var(--principal); }
+.no-result-box h3 { font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; margin-bottom: 8px; }
+
+/* UPFRONT badge */
+.upfront-yes { color: #2E9879; background: #E8F8ED; padding: 2px 7px; border-radius: 5px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.upfront-cond { color: var(--orange); background: var(--orange-bg); padding: 2px 7px; border-radius: 5px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.upfront-no { color: var(--rouge); background: var(--rouge-bg); padding: 2px 7px; border-radius: 5px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+.classif-section { animation: fadeUp 0.35s ease both; }
+.classif-section:nth-child(1) { animation-delay: 0.05s; }
+.classif-section:nth-child(2) { animation-delay: 0.15s; }
+.classif-section:nth-child(3) { animation-delay: 0.25s; }
+
+/* ===================== RÉSUMÉ TAB ===================== */
+#tab-resume main { max-width: 1280px; padding-top: 36px; }
+.resume-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+.resume-header h1 { font-size: 32px; }
+.resume-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.search-input { font-family: 'Poppins', sans-serif; font-size: 13px; padding: 9px 14px; border: 1.5px solid var(--gris); border-radius: 10px; background: white; color: var(--noir); outline: none; width: 220px; }
+.search-input:focus { border-color: var(--principal); box-shadow: 0 0 0 3px rgba(80,32,234,0.08); }
+.filter-btn { font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 600; padding: 8px 14px; border-radius: 8px; border: 1.5px solid var(--gris); background: white; color: #666; cursor: pointer; transition: all 0.15s; }
+.filter-btn.active, .filter-btn:hover { background: var(--bleu-clair); color: var(--principal); border-color: var(--principal); }
+.table-wrapper { overflow-x: auto; border-radius: 12px; border: 1px solid var(--gris); background: white; }
+.resume-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 1000px; }
+.resume-table thead th { background: var(--noir); color: white; font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 11px; padding: 11px 10px; text-align: left; white-space: nowrap; position: sticky; top: 0; z-index: 5; }
+.resume-table thead th.criteria-col { background: var(--principal); font-size: 11px; min-width: 130px; }
+.resume-table tbody tr { border-bottom: 1px solid #f0f0f0; transition: background 0.1s; }
+.resume-table tbody tr:hover { background: #fafafe; }
+.resume-table tbody tr:last-child { border-bottom: none; }
+.resume-table td { padding: 9px 10px; vertical-align: top; line-height: 1.4; }
+.resume-table td.row-label { font-weight: 700; font-size: 11px; color: var(--principal); text-transform: uppercase; letter-spacing: 0.04em; background: var(--bleu-clair); white-space: nowrap; position: sticky; left: 0; z-index: 3; border-right: 2px solid var(--principal); min-width: 140px; }
+.resume-table td.val-oui { color: #2E9879; font-weight: 700; }
+.resume-table td.val-non { color: #C43D00; }
+.resume-table td.val-cond { color: #DF722F; font-weight: 600; }
+.resume-table td.val-na { color: #bbb; }
+.section-row td { background: var(--noir); color: white; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; padding: 7px 10px; }
+.detail-panel { display: none; position: fixed; top: 0; right: 0; width: 400px; height: 100vh; background: white; box-shadow: -4px 0 32px rgba(0,0,0,0.12); z-index: 200; overflow-y: auto; flex-direction: column; }
+.detail-panel.open { display: flex; }
+.detail-header { padding: 20px 20px 16px; border-bottom: 1px solid var(--gris); display: flex; align-items: center; justify-content: space-between; background: var(--bleu-clair); position: sticky; top: 0; z-index: 1; }
+.detail-header h2 { font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; color: var(--noir); }
+.close-btn { background: none; border: none; cursor: pointer; color: #888; font-size: 20px; padding: 4px; line-height: 1; border-radius: 6px; }
+.close-btn:hover { background: var(--gris); color: var(--noir); }
+.detail-body { padding: 20px; flex: 1; }
+.detail-row { display: flex; gap: 12px; padding: 9px 0; border-bottom: 1px solid #f5f5f5; align-items: flex-start; }
+.detail-row:last-child { border-bottom: none; }
+.detail-label { font-size: 11px; font-weight: 700; color: var(--principal); text-transform: uppercase; letter-spacing: 0.05em; min-width: 110px; padding-top: 1px; }
+.detail-value { font-size: 12.5px; color: var(--noir); line-height: 1.5; flex: 1; }
+
+/* ===== NOUVEAUX ONGLETS DROITE ===== */
+.tab-btn-news { border-bottom-color: transparent !important; }
+.tab-btn-news.active { color: var(--bleu) !important; border-bottom-color: var(--bleu) !important; }
+.tab-btn-news:hover { color: var(--bleu) !important; }
+.tab-btn-challenge { border-bottom-color: transparent !important; }
+.tab-btn-challenge.active { color: var(--rose) !important; border-bottom-color: var(--rose) !important; }
+.tab-btn-challenge:hover { color: var(--rose) !important; }
+
+/* ===== TOKEN SETUP ===== */
+.token-overlay { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; padding: 40px 24px; text-align: center; }
+.token-card { background: white; border-radius: 20px; padding: 40px; max-width: 480px; width: 100%; box-shadow: 0 8px 40px rgba(80,32,234,0.12); border: 1px solid var(--gris); }
+.token-card h2 { font-family: 'Bricolage Grotesque', sans-serif; font-size: 24px; color: var(--noir); margin-bottom: 10px; }
+.token-card p { font-size: 13px; color: #666; margin-bottom: 22px; line-height: 1.6; }
+.token-input-row { display: flex; gap: 10px; }
+.token-input-row input { flex: 1; font-family: 'Poppins', sans-serif; font-size: 13px; padding: 11px 14px; border: 1.5px solid var(--gris); border-radius: 10px; outline: none; }
+.token-input-row input:focus { border-color: var(--principal); box-shadow: 0 0 0 3px rgba(80,32,234,0.1); }
+.token-hint { font-size: 11px; color: #aaa; margin-top: 12px; }
+.token-hint a { color: var(--principal); text-decoration: none; }
+.token-hint a:hover { text-decoration: underline; }
+
+/* ===== NEWS GRID ===== */
+#tab-news main, #tab-challenges main { max-width: 1100px; padding-top: 36px; }
+.clickup-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+.clickup-header h1 { font-size: 32px; }
+.clickup-meta { font-size: 12px; color: #aaa; display: flex; align-items: center; gap: 10px; }
+.clickup-badge { display: inline-flex; align-items: center; gap: 5px; background: var(--bleu-clair); color: var(--principal); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
+.clickup-refresh-btn { font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 600; padding: 8px 16px; border-radius: 8px; border: 1.5px solid var(--principal); background: transparent; color: var(--principal); cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+.clickup-refresh-btn:hover { background: var(--bleu-clair); }
+.clickup-refresh-btn.spinning svg { animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* ===== NEWS LIST ===== */
+.news-toolbar { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:20px; flex-wrap:wrap; }
+.news-toolbar-left, .news-toolbar-right { display:flex; align-items:flex-end; gap:12px; flex-wrap:wrap; }
+.news-filter-block { display:flex; flex-direction:column; gap:6px; min-width:320px; }
+.news-filter-block select { min-height:120px; padding-right:14px; background-image:none; }
+.news-status-switch { display:inline-flex; align-items:center; gap:6px; background:white; border:1px solid var(--gris); border-radius:12px; padding:6px; }
+.news-status-btn { font-family:'Poppins', sans-serif; font-size:12px; font-weight:600; padding:8px 14px; border:none; border-radius:8px; background:transparent; color:#666; cursor:pointer; transition:all 0.15s; }
+.news-status-btn:hover { background:var(--bleu-clair); color:var(--principal); }
+.news-status-btn.active { background:var(--principal); color:white; }
+.news-list { display:flex; flex-direction:column; gap:14px; }
+.news-item { background:white; border:1px solid var(--gris); border-radius:18px; padding:18px 20px; transition:box-shadow 0.2s, transform 0.2s; }
+.news-item:hover { box-shadow:0 8px 28px rgba(80,32,234,0.10); transform:translateY(-1px); }
+.news-item-top { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; margin-bottom:10px; flex-wrap:wrap; }
+.news-item-title-wrap { display:flex; align-items:flex-start; gap:12px; min-width:0; flex:1; }
+.news-item-icon { width:40px; height:40px; border-radius:12px; background:var(--grad); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.news-item-icon svg { fill:white; }
+.news-item-title-meta { min-width:0; flex:1; }
+.news-item-title { font-family:'Bricolage Grotesque', sans-serif; font-size:18px; line-height:1.25; color:var(--noir); margin-bottom:5px; }
+.news-item-date { font-size:11.5px; color:#888; }
+.news-item-badges { display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+.news-item-body { font-size:13px; color:#444; line-height:1.7; white-space:pre-wrap; word-break:break-word; margin-bottom:14px; }
+.news-item-body.empty { color:#b5b5b5; font-style:italic; }
+.news-item-bottom { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; border-top:1px solid #f3f3f3; padding-top:12px; }
+.news-item-meta-left, .news-item-meta-right { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.news-status { font-size:10.5px; font-weight:700; padding:4px 9px; border-radius:999px; }
+.news-date { font-size:11px; color:#aaa; }
+.news-priority { font-size:10px; font-weight:700; padding:3px 8px; border-radius:6px; }
+.priority-urgent { background: #FEF0F0; color: #C53030; }
+.priority-high { background: #FFF7E6; color: #D97706; }
+.priority-normal { background: var(--vert-bg); color: var(--vert); }
+.news-tag { font-size:10px; background: var(--bleu-clair); color: var(--principal); padding: 3px 8px; border-radius: 999px; font-weight: 600; }
+.news-assignee { font-size:11px; background:#F5F3FF; color:var(--principal); padding:3px 8px; border-radius:999px; font-weight:600; }
+.news-summary-bar { display:flex; align-items:center; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
+.news-summary-count { font-size:13px; color:#666; font-weight:600; }
+.news-summary-sync { font-size:12px; color:#aaa; }
+
+/* ===== EMPTY / LOADING STATES ===== */
+.loading-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 24px; gap: 16px; }
+.loading-spinner { width: 40px; height: 40px; border: 3px solid var(--bleu-clair); border-top-color: var(--principal); border-radius: 50%; animation: spin 0.8s linear infinite; }
+.loading-text { font-size: 14px; color: #888; }
+.empty-state { background: var(--bleu-clair); border-radius: 12px; padding: 48px 24px; text-align: center; }
+.empty-state h3 { font-family: 'Bricolage Grotesque', sans-serif; font-size: 20px; color: var(--principal); margin-bottom: 8px; }
+.empty-state p { font-size: 13px; color: #666; }
+.error-state { background: var(--rouge-bg); border-radius: 12px; padding: 24px; border: 1px solid var(--rouge-border); }
+.error-state p { font-size: 13px; color: var(--rouge); line-height: 1.6; }
+
+/* ===== CHALLENGES ===== */
+.challenges-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 22px; }
+.challenge-card { background: white; border-radius: 16px; border: 1px solid var(--gris); overflow: hidden; transition: box-shadow 0.2s, transform 0.2s; }
+.challenge-card:hover { box-shadow: 0 8px 32px rgba(229,67,220,0.15); transform: translateY(-2px); }
+.challenge-card-header { background: linear-gradient(135deg, var(--principal), var(--rose)); padding: 16px 18px; display: flex; align-items: center; gap: 10px; }
+.challenge-card-header h3 { font-family: 'Bricolage Grotesque', sans-serif; font-size: 15px; color: white; flex: 1; line-height: 1.3; }
+.challenge-card-body { padding: 14px 18px; }
+.challenge-attachments { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+.challenge-attachment { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--blanc-bloc); border-radius: 8px; border: 1px solid var(--gris); text-decoration: none; transition: background 0.15s, border-color 0.15s; }
+.challenge-attachment:hover { background: var(--bleu-clair); border-color: var(--principal); }
+.challenge-attachment-icon { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 16px; }
+.attachment-img-preview { width: 32px; height: 32px; object-fit: cover; border-radius: 6px; }
+.challenge-attachment-info { flex: 1; overflow: hidden; }
+.challenge-attachment-name { font-size: 12px; font-weight: 700; color: var(--noir); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.challenge-attachment-meta { font-size: 10.5px; color: #aaa; }
+.challenge-card-footer { padding: 10px 18px; border-top: 1px solid #f5f5f5; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.challenge-status { font-size: 10.5px; font-weight: 700; padding: 3px 9px; border-radius: 12px; background: linear-gradient(135deg, var(--principal), var(--rose)); color: white; }
+.challenge-no-attach { font-size: 12px; color: #bbb; font-style: italic; padding: 8px 0; }
+.challenge-card-desc { font-size: 12px; color: #555; line-height: 1.6; margin-bottom: 8px; }
+.challenge-count { font-size: 11px; color: #888; font-weight: 600; }
+
+/* ===== TOKEN BANNER ===== */
+.token-banner { display: flex; align-items: center; gap: 10px; background: var(--orange-bg); border: 1px solid var(--orange-border); border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; font-size: 12.5px; color: var(--orange); }
+.token-banner svg { flex-shrink: 0; }
+.token-banner a { color: var(--orange); font-weight: 700; cursor: pointer; text-decoration: underline; }
+.token-banner-saved { background: var(--vert-bg); border-color: var(--vert-border); color: var(--vert); }
+
+@media (max-width: 720px) {
+  h1 { font-size: 26px; }
+  .form-grid { grid-template-columns: 1fr; }
+  main { padding: 24px 14px 60px; }
+  header { padding: 0 16px; }
+  .detail-panel { width: 100%; }
+  .classif-table thead { display: none; }
+  .classif-table td { display: block; padding: 6px 12px; }
+  .classif-table td:first-child { padding-top: 10px; font-size: 15px; }
+  .news-filter-block { min-width: 100%; }
+  .news-status-switch { width: 100%; justify-content: space-between; }
+  .news-status-btn { flex: 1; }
+  .news-item { padding: 16px; }
+  .news-item-title { font-size: 16px; }
+}
+
+/* ===== PRICING API ===== */
+.pricing-loading-banner {
+  background: #F8F7FF;
+  border: 1px solid var(--bleu-clair);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 12px;
+  color: #666;
+}
+.pricing-loading-banner.error {
+  background: var(--rouge-bg);
+  border-color: var(--rouge-border);
+  color: var(--rouge);
+}
+
+
+  .questionnaire-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 9px 14px;
+  border-radius: 10px;
+  background: var(--principal);
+  color: white;
+  text-decoration: none;
+  border: 1.5px solid var(--principal);
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.questionnaire-btn:hover {
+  background: #3a15c7;
+  border-color: #3a15c7;
+}
+
+
+.questionnaire-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(35, 35, 35, 0.45);
+  z-index: 300;
+  padding: 24px;
+  align-items: center;
+  justify-content: center;
+}
+
+.questionnaire-modal.open {
+  display: flex;
+}
+
+.questionnaire-modal-content {
+  width: 100%;
+  max-width: 860px;
+  max-height: calc(100vh - 48px);
+  background: white;
+  border-radius: 18px;
+  box-shadow: 0 12px 50px rgba(0,0,0,0.18);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.questionnaire-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  background: var(--bleu-clair);
+  border-bottom: 1px solid var(--gris);
+}
+
+.questionnaire-modal-header h2 {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 24px;
+  margin: 0;
+}
+
+.questionnaire-modal-body {
+  padding: 22px;
+  overflow-y: auto;
+  max-height: calc(100vh - 140px);
+}
+
+.questionnaire-helper {
+  background: #F8F7FF;
+  border: 1px solid var(--bleu-clair);
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 12.5px;
+  color: #555;
+  line-height: 1.6;
+  margin-bottom: 18px;
+}
+
+.questionnaire-feedback {
+  margin-top: 14px;
+  font-size: 13px;
+}
+
+.questionnaire-feedback.success {
+  color: var(--vert);
+  font-weight: 700;
+}
+
+.questionnaire-feedback.error {
+  color: var(--rouge);
+  font-weight: 600;
+}
+
+.questionnaire-feedback.pending {
+  color: #666;
+}
+
+@media (max-width: 720px) {
+  .questionnaire-modal {
+    padding: 12px;
+  }
+
+  .questionnaire-modal-content {
+    max-height: calc(100vh - 24px);
+  }
+
+  .questionnaire-modal-header h2 {
+    font-size: 20px;
+  }
+}
+
+
+</style>
+</head>
+<body>
+
+<div class="grad-bar"></div>
+<header>
+  <div class="logo-area">
+    <div class="logo-text">Capitole Énergie<span>by epsa</span></div>
+  </div>
+  <nav class="tabs-nav">
+    <button class="tab-btn active" id="btn-selection" onclick="switchTab('selection')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+      Sélection Fournisseur
+    </button>
+    <button class="tab-btn" id="btn-resume" onclick="switchTab('resume')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+      Résumé Fournisseurs
+    </button>
+    <div style="flex:1"></div>
+    <div style="display:flex;align-items:center;border-left:1px solid var(--gris);margin-left:8px;padding-left:8px;">
+    <button class="tab-btn tab-btn-news" id="btn-news" onclick="switchTab('news')" title="News Fournisseurs">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+  <span>News Fournisseurs</span>
+</button>
+    <button class="tab-btn tab-btn-challenge" id="btn-challenges" onclick="switchTab('challenges')" title="Challenges en cours">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+  <span>Challenges</span>
+</button>
+    </div>
+  </nav>
+</header>
+
+<!-- ============ TAB SÉLECTION ============ -->
+<div id="tab-selection" class="tab-content active">
+<main>
+  <h1>Sélection Fournisseur</h1>
+  <p class="subtitle">Renseignez le profil du client pour obtenir la classification complète de tous les fournisseurs éligibles.</p>
+  <div class="form-grid">
+    <div class="form-group"><label>Type d'énergie</label><select id="energie" onchange="onEnergieChange()"><option value="" disabled selected>— Sélectionner —</option><option value="gaz">Gaz</option><option value="elec">Électricité</option></select></div>
+    <div class="form-group"><label>Segment</label><select id="segment"><option value="" disabled selected>— Sélectionner —</option></select></div>
+    <div class="form-group"><label>Note de crédit (/10 Ellipro)</label><input type="number" id="note" min="0" max="10" step="0.5" value="6" placeholder="ex: 6"></div>
+    <div class="form-group"><label>Volume (MWh/an)</label><input type="number" id="volume" min="0" value="248.8" placeholder="ex: 248.8"></div>
+    <div class="form-group"><label>DDF souhaitée (Date début fourniture)</label><input type="text" id="ddf" oninput="autoFormatDate(this)" value="01/01/2028" placeholder="JJ/MM/AAAA" pattern="\d{2}/\d{2}/\d{4}"></div>
+    <div class="form-group"><label>Date de fin de fourniture souhaitée</label><input type="text" id="dff" oninput="autoFormatDate(this)" value="31/12/2030" placeholder="JJ/MM/AAAA" pattern="\d{2}/\d{2}/\d{4}"></div>
+    <div class="form-group"><label>Profil <span id="profil-gaz-only" style="font-size:10px;color:#aaa;font-weight:400;text-transform:none;letter-spacing:0;">(Gaz uniquement)</span></label><select id="profil" disabled style="color:#bbb;background:#f7f7f7;cursor:not-allowed;"><option value="" selected>— Sélectionner —</option></select></div>
+    <div class="form-group"><label>État PDL / PCE</label><select id="etat_pdl"><option value="" disabled selected>— Sélectionner —</option><option value="premiere_mes">Première mise en service</option><option value="mes">Mise en service</option><option value="en_service">En service</option><option value="ferme">Fermé</option></select></div>
+    <div class="form-group"><label>Syndic ?</label><select id="syndic"><option value="" disabled selected>— Sélectionner —</option><option value="oui">Oui</option><option value="non">Non</option></select></div>
+    <div class="form-group"><label>Fournisseur actuel</label><select id="fournisseur_actuel"><option value="" disabled selected>— Sélectionner —</option><option value="ALTERNA">ALTERNA</option><option value="DYNEFF">DYNEFF</option><option value="EKWATEUR">EKWATEUR</option><option value="ENDESA">ENDESA</option><option value="ENERGEM">ENERGEM</option><option value="ENERGIE D'ICI">ENERGIE D'ICI</option><option value="ENGIE">ENGIE</option><option value="ENI">ENI</option><option value="ENOVOS">ENOVOS</option><option value="GAZ DE BORDEAUX">GAZ DE BORDEAUX</option><option value="GEDIA">GEDIA</option><option value="GEG">GEG</option><option value="HELLIO">HELLIO</option><option value="ILEK">ILEK</option><option value="LA BELLENERGIE">LA BELLENERGIE</option><option value="MET">MET</option><option value="MINT Energie">MINT Energie</option><option value="NATGAS">NATGAS</option><option value="OHM">OHM</option><option value="PICOTY">PICOTY</option><option value="PRIMEO">PRIMEO</option><option value="SAVE">SAVE</option><option value="SEFE">SEFE</option><option value="SYNELVA">SYNELVA</option><option value="TOTALENERGIES">TOTALENERGIES</option><option value="VATTENFALL">VATTENFALL</option><option value="AUTRE">— AUTRE (hors partenaires)</option></select></div>
+    <div class="form-group"><label>Nombre de compteurs</label><input type="number" id="nb_compteurs" min="1" placeholder="ex: 1"></div>
+  </div>
+  <div style="display:flex; align-items:center; flex-wrap:wrap; gap:8px;">
+    <button class="btn-primary" onclick="analyser()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M9 16.17L5.53 12.7a.996.996 0 10-1.41 1.41l4.18 4.18c.39.39 1.02.39 1.41 0L20.29 7.71a.996.996 0 10-1.41-1.41L9 16.17z"/></svg>
+      Classifier les fournisseurs
+    </button>
+    <button class="btn-secondary" onclick="reinitialiser()">Réinitialiser</button>
+  </div>
+  <div class="divider"></div>
+  <div id="results"></div>
+</main>
+</div>
+
+<!-- ============ TAB RÉSUMÉ ============ -->
+<div id="tab-resume" class="tab-content">
+<main>
+  <div class="resume-header">
+    <div><h1>Résumé Fournisseurs</h1><p class="subtitle" style="margin-bottom:0">Vue d'ensemble de tous les critères — données issues du fichier Salesforce.</p></div>
+    <div class="resume-controls">
+  <button class="questionnaire-btn" type="button" onclick="openQuestionnaireModal()">
+  📝 Règles Octroi à modifier
+</button>
+  <input class="search-input" id="search-fournisseur" oninput="filterTable()" placeholder="🔍 Rechercher un fournisseur...">
+  <button class="filter-btn active" onclick="setFilter('tous', this)">Tous</button>
+  <button class="filter-btn" onclick="setFilter('gaz', this)">Gaz</button>
+  <button class="filter-btn" onclick="setFilter('elec', this)">Élec</button>
+</div>
+  </div>
+  <div class="table-wrapper">
+    <table class="resume-table" id="resume-table">
+      <thead id="resume-thead"></thead>
+      <tbody id="resume-tbody"></tbody>
+    </table>
+  </div>
+</main>
+</div>
+
+<!-- ============ TAB NEWS FOURNISSEURS ============ -->
+<div id="tab-news" class="tab-content">
+  <main>
+    <div class="clickup-header">
+      <div>
+        <h1>📰 News Fournisseurs</h1>
+        <p class="subtitle" style="margin-bottom:0">Actualités partenaires</p>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <span class="clickup-badge">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+          ClickUp Live
+        </span>
+        <button class="clickup-refresh-btn" id="news-refresh-btn" onclick="loadNews()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+          Actualiser
+        </button>
+      </div>
+    </div>
+
+    <div class="news-toolbar">
+      <div class="news-toolbar-left">
+        <div class="news-filter-block">
+          <label for="news-supplier-filter">Fournisseurs</label>
+          <select id="news-supplier-filter" multiple></select>
+        </div>
+      </div>
+
+      <div class="news-toolbar-right">
+        <div class="news-status-switch">
+          <button type="button" class="news-status-btn active" id="news-filter-open" onclick="setNewsStatusFilter('open')">En cours</button>
+          <button type="button" class="news-status-btn" id="news-filter-closed" onclick="setNewsStatusFilter('closed')">Fermées</button>
+          <button type="button" class="news-status-btn" id="news-filter-all" onclick="setNewsStatusFilter('all')">Toutes</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="news-token-banner" style="display:none"></div>
+    <div id="news-container">
+      <div class="loading-state">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Chargement des news…</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ============ TAB CHALLENGES ============ -->
+<div id="tab-challenges" class="tab-content">
+<main>
+  <div class="clickup-header">
+    <div>
+      <h1>🏆 Challenges en cours</h1>
+      <p class="subtitle" style="margin-bottom:0">Challenges partenaires actifs — pièces jointes récupérées via le backend Vercel.</p>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      <span class="clickup-badge" style="background:#FEF0FF;color:var(--rose);border:1px solid #F7B8F5;">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1l1.5 3L17 5.5 14 8.5l.7 3.8L12 10.5 9.3 12.3l.7-3.8L7 5.5 10.5 4z"/></svg>
+        Challenges Live
+      </span>
+      <button class="clickup-refresh-btn" id="challenges-refresh-btn" onclick="loadChallenges()" style="border-color:var(--rose);color:var(--rose);" onmouseover="this.style.background='#FEF0FF'" onmouseout="this.style.background='transparent'">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+        Actualiser
+      </button>
+    </div>
+  </div>
+  <div id="challenges-token-banner" style="display:none"></div>
+  <div id="challenges-container">
+    <div class="loading-state">
+      <div class="loading-spinner" style="border-top-color:var(--rose);"></div>
+      <div class="loading-text">Chargement des challenges…</div>
+    </div>
+  </div>
+</main>
+</div>
+
+
+<div class="detail-panel" id="detail-panel">
+  <div class="detail-header">
+    <h2 id="detail-title">Fournisseur</h2>
+    <button class="close-btn" onclick="closeDetail()">✕</button>
+  </div>
+  <div class="detail-body" id="detail-body"></div>
+</div>
+
+
+<div id="questionnaire-modal" class="questionnaire-modal" onclick="handleQuestionnaireOverlayClick(event)">
+  <div class="questionnaire-modal-content">
+    <div class="questionnaire-modal-header">
+      <h2>Demande de modification — règles d’octroi</h2>
+      <button type="button" class="close-btn" onclick="closeQuestionnaireModal()">✕</button>
+    </div>
+
+    <div class="questionnaire-modal-body">
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Prénom</label>
+          <input type="text" id="q_prenom" placeholder="Votre prénom">
+        </div>
+
+        <div class="form-group">
+          <label>Fournisseur à modifier</label>
+          <select id="q_fournisseur">
+            <option value="" selected>— Sélectionner —</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Type d’énergie</label>
+          <select id="q_energie" onchange="updateQuestionnaireSegments()">
+            <option value="" selected>— Sélectionner —</option>
+            <option value="gaz">Gaz</option>
+            <option value="elec">Électricité</option>
+            <option value="mixte">Mixte</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Segment <span style="font-size:10px;color:#aaa;font-weight:400;text-transform:none;letter-spacing:0;">(choix multiples)</span></label>
+          <select id="q_segment" multiple size="6" style="min-height:140px;background-image:none;padding-right:14px;">
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Rubrique à modifier</label>
+          <select id="q_rubrique">
+            <option value="" selected>— Sélectionner —</option>
+            <option value="UPFRONT">UPFRONT</option>
+            <option value="SCORING MINIMUM">Scoring minimum</option>
+            <option value="HORIZON">Horizon</option>
+            <option value="DDF MAX">DDF max</option>
+            <option value="VOLUME MIN">Volume min / max</option>
+            <option value="SEGMENT">Segment</option>
+            <option value="COMMENTAIRES">Commentaires</option>
+            <option value="AUTRE">Autre</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Type de demande</label>
+          <select id="q_type_demande">
+            <option value="" selected>— Sélectionner —</option>
+            <option value="ajout">Ajout</option>
+            <option value="modification">Modification</option>
+            <option value="suppression">Suppression</option>
+            <option value="verification">Vérification</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Priorité</label>
+          <select id="q_priorite">
+            <option value="normale" selected>Normale</option>
+            <option value="haute">Haute</option>
+            <option value="urgente">Urgente</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Demandeur</label>
+          <input type="text" id="q_demandeur" placeholder="Nom / équipe">
+        </div>
+
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label>Modification demandée</label>
+          <textarea id="q_modification" placeholder="Décrivez précisément la règle à créer ou corriger…"></textarea>
+        </div>
+
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label>Contexte / justification</label>
+          <textarea id="q_justification" placeholder="Expliquez le besoin métier, la source de l’information ou le contexte utile…"></textarea>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:18px; flex-wrap:wrap;">
+        <button type="button" class="btn-secondary" onclick="closeQuestionnaireModal()">Annuler</button>
+        <button type="button" class="btn-primary" onclick="submitQuestionnaire()">Envoyer la demande</button>
+      </div>
+
+      <div id="questionnaire-feedback" class="questionnaire-feedback"></div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+// ============ RESUME DATA ============
+let RESUME_DATA = {
+  "HORIZON GAZ": { "ALTERNA":"2029","EKWATEUR":"2029","ENDESA":"2030","ENERGEM":"2029","ENERGIE D'ICI":"—","ENI":"2029","ENOVOS":"2030","GAZ DE BORDEAUX":"2029","GEDIA":"2029","NATGAS":"2030","PICOTY":"2031","PRIMEO":"—","VATTENFALL":"2029","OHM":"2029","SYNELVA":"2029","SAVE":"2031","GEG":"2029","SEFE":"2030","DYNEFF":"2030","MET":"2030","MINT Energie":"—","GAZ Européen":"2029","ILEK":"Sans engagement de durée","ENGIE":"2031","HELLIO":"—","TOTALENERGIES":"2029","ELMY":"—","LA BELLENERGIE":"—" },
+  "HORIZON ELEC": { "ALTERNA":"2030","EKWATEUR":"2029","ENDESA":"2030","ENERGEM":"2029","ENERGIE D'ICI":"2029","ENI":"2029","ENOVOS":"2030","GAZ DE BORDEAUX":"—","GEDIA":"2029","NATGAS":"—","PICOTY":"—","PRIMEO":"2030","VATTENFALL":"2030","OHM":"2029","SYNELVA":"2029","SAVE":"2031","GEG":"2029","SEFE":"—","DYNEFF":"2030","MET":"2030","MINT Energie":"2029","GAZ Européen":"2029","ILEK":"Sans engagement de durée","ENGIE":"2031","HELLIO":"2029","TOTALENERGIES":"2029","ELMY":"2029","LA BELLENERGIE":"2030" },
+  "DDF MAX": { "ALTERNA":"2028-01-01 00:00:00","EKWATEUR":"2027-12-31 00:00:00","ENDESA":"2029-01-01 00:00:00","ENERGEM":"2029-01-01 00:00:00","ENERGIE D'ICI":"M+12","ENI":"2027-01-01 00:00:00","ENOVOS":"2028-01-01 00:00:00","GAZ DE BORDEAUX":"M+18","GEDIA":"2028-01-01 00:00:00","NATGAS":"2028-01-01 00:00:00","PICOTY":"2030-01-01 00:00:00","PRIMEO":"2028-01-01 00:00:00","VATTENFALL":"2030-01-01 00:00:00","OHM":"2028-01-01 00:00:00","SYNELVA":"2027-01-01 00:00:00","SAVE":"N+2","GEG":"2028-01-01 00:00:00","SEFE":"N+2","DYNEFF":"2028-01-01 00:00:00","MET":"N+4","MINT Energie":"N+1 (grille) | 01/01/2028 (mail)","GAZ Européen":"pas de limite","ILEK":"M+6","ENGIE":"2029-01-01 00:00:00","HELLIO":"2028-01-01 00:00:00","TOTALENERGIES":"M+12","ELMY":"2028-01-01 00:00:00","LA BELLENERGIE":"2029-01-01 00:00:00" },
+  "SCORING MINIMUM": { "ALTERNA":"5/10 | Ellipro","EKWATEUR":"5/10","ENDESA":"5/10 | Ellipro","ENERGEM":"4/10 | Ellipro","ENERGIE D'ICI":"30/100 | CreditSafe","ENI":"1/10 | Ellipro","ENOVOS":"50/100 | CreditSafe","GAZ DE BORDEAUX":"5/10 Ellipro | 50/100 Creditsafe","GEDIA":"6/10 | Ellipro","NATGAS":"2/10 | Ellipro","PICOTY":"3/10 | Ellipro","PRIMEO":"5/10 | Ellipro","VATTENFALL":"5/10 | Ellipro","OHM":"6/10 | Ellipro (pas de captation pour les organismes publics)","SYNELVA":"50/100 | CreditSafe","SAVE":"5/10 | Ellipro","GEG":"6/10 | Ellipro","SEFE":"2/10 | (D&B - pas d'accès)","DYNEFF":"3/10 | Ellipro","MET":"5/10, 1/10 prix indexé avec DG","MINT Energie":"5/10 (grille) | 4/10 (mail) | Ellipro","GAZ Européen":"1/10 | Ellipro | ne regarde pas la note","ILEK":"4/10","ENGIE":"1/10 (plateforme) | 6/10 (mail)","HELLIO":"5/10","TOTALENERGIES":"3/10","ELMY":"3/10","LA BELLENERGIE":"3/10" },
+  "MARGE": { "ALTERNA":"20 €/MWh (mail)","EKWATEUR":"30 €/MWh","ENDESA":"< 200 MWh : 24 €/MWh | < 300 MWh : 16 €/MWh | < 5 GWh : 8 €/MWh","ENERGEM":"20 €/MWh (T4/T3/T2) | 34 €/MWh (1M/6M)","ENERGIE D'ICI":"Max à déterminer","ENI":"20 €/MWh","ENOVOS":"30 €/MWh","GAZ DE BORDEAUX":"10 €/MWh","GEDIA":"Aucun","NATGAS":"cas par cas","PICOTY":"20 €/MWh si < 1 GWh","PRIMEO":"30 €/MWh","VATTENFALL":"20 €/MWh < 1 GWh","OHM":"60 €/MWh (mid) | 25 €/MWh (GC)","SYNELVA":"20 €/MWh","SAVE":"Minimum 1 000 €/an","GEG":"25 €/MWh","SEFE":"18 €/MWh","DYNEFF":"20 €/MWh (gaz)","MET":"Gaz : 20 €/MWh","MINT Energie":"25 €/MWh","GAZ Européen":"6 €/MWh","ILEK":"Forfait : 140 €/PRM","ENGIE":"Gaz T2 : 15 €/MWh | T3 : 10 €/MWh","HELLIO":"20 €/MWh < 1 GWh","TOTALENERGIES":"Forfaitaire","ELMY":"min 8 / max 25 €/MWh","LA BELLENERGIE":"< 100 MWh/an : 25 €/MWh | > 100 MWh/an : 20 €/MWh" },
+  "UPFRONT": { "ALTERNA":"OUI","EKWATEUR":"OUI si < 50k","ENDESA":"OUI","ENERGEM":"OUI si < 100k","ENERGIE D'ICI":"OUI si < 2k","ENI":"OUI si DDF < 3 mois","ENOVOS":"OUI si < 40k","GAZ DE BORDEAUX":"OUI","GEDIA":"OUI < 10k (challenge)","NATGAS":"OUI si < 20k","PICOTY":"OUI si DDF < M+12","PRIMEO":"OUI si < 30k et DDF < M+24","VATTENFALL":"OUI sur 2025/2026","OHM":"NON","SYNELVA":"NON","SAVE":"OUI si DDF < M+24","GEG":"OUI","SEFE":"OUI","DYNEFF":"NON","MET":"NON","MINT Energie":"OUI si < 10k","GAZ Européen":"OUI","ILEK":"OUI si DDF = Mois de signature","ENGIE":"OUI","HELLIO":"OUI si < 20k","TOTALENERGIES":"OUI","ELMY":"NON","LA BELLENERGIE":"OUI si < 2,5 GWh/an & commission < 10k" },
+  "DÉCOMMISSION CONSO": { "ALTERNA":"NON","EKWATEUR":"NON","ENDESA":"NON","ENERGEM":"OUI","ENERGIE D'ICI":"NON","ENI":"NON","ENOVOS":"OUI (> 20%)","GAZ DE BORDEAUX":"NON","GEDIA":"NON","NATGAS":"OUI (pas de précisions)","PICOTY":"OUI (pas de précisions)","PRIMEO":"OUI (> 10%)","VATTENFALL":"OUI (> 20%)","OHM":"OUI (> 20%)","SYNELVA":"OUI (> 20%)","SAVE":"OUI (> 20%)","GEG":"OUI (> 20%)","SEFE":"NON","DYNEFF":"OUI (réel)","MET":"OUI (> 10%)","MINT Energie":"OUI (> 25%)","GAZ Européen":"NON","ILEK":"NON","ENGIE":"NON","HELLIO":"OUI (> 20%)","TOTALENERGIES":"NON","ELMY":"NON (sauf MES)","LA BELLENERGIE":"OUI (> 15%)" },
+  "VOLUME MIN": { "ALTERNA":"100 MWh","EKWATEUR":"500 MWh (hors grilles)","ENDESA":"Aucun","ENERGEM":"100 MWh","ENERGIE D'ICI":"Aucun","ENI":"500 MWh (élec) | 1500 MWh (gaz)","ENOVOS":"Min 50 MWh (élec) | Max 1000 MWh (gaz)","GAZ DE BORDEAUX":"30 MWh","GEDIA":"Aucun","NATGAS":"100 MWh","PICOTY":"Aucun","PRIMEO":"Aucun","VATTENFALL":"500 MWh","OHM":"30 MWh C4/C5 | 250 MWh C2","SYNELVA":"500 MWh","SAVE":"500 MWh","GEG":"30 MWh","SEFE":"Aucun","DYNEFF":"Aucun","MET":"Min 1 MWh | Max 4 GWh","MINT Energie":"Min 30 MWh","GAZ Européen":"Pas de minimum","ILEK":"Pas de minimum","ENGIE":"Pas de minimum","HELLIO":"50 MWh","TOTALENERGIES":"Pas de minimum","ELMY":"30 MWh","LA BELLENERGIE":"50 MWh" },
+  "re-MES": { "ALTERNA":"OUI (questionnaire)","EKWATEUR":"OUI","ENDESA":"OUI","ENERGEM":"OUI","ENERGIE D'ICI":"OUI","ENI":"OUI","ENOVOS":"NON","GAZ DE BORDEAUX":"OUI","GEDIA":"OUI","NATGAS":"OUI","PICOTY":"OUI","PRIMEO":"OUI (max 12 mois)","VATTENFALL":"OUI (élec)","OHM":"OUI","SYNELVA":"NON (sauf si client existant)","SAVE":"NON","GEG":"NON","SEFE":"OUI","DYNEFF":"OUI (gaz et C5)","MET":"OUI","MINT Energie":"OUI","GAZ Européen":"OUI","ILEK":"OUI","ENGIE":"NON","HELLIO":"OUI (cas par cas)","TOTALENERGIES":"OUI","ELMY":"OUI","LA BELLENERGIE":"OUI (cas par cas)" },
+  "1ère MES": { "ALTERNA":"OUI (questionnaire)","EKWATEUR":"OUI","ENDESA":"OUI (gaz)","ENERGEM":"OUI","ENERGIE D'ICI":"OUI","ENI":"OUI","ENOVOS":"NON","GAZ DE BORDEAUX":"OUI","GEDIA":"OUI","NATGAS":"OUI","PICOTY":"OUI","PRIMEO":"OUI (max 12 mois)","VATTENFALL":"NON","OHM":"OUI (C5 uniquement)","SYNELVA":"NON","SAVE":"NON","GEG":"NON","SEFE":"OUI","DYNEFF":"OUI (gaz)","MET":"OUI","MINT Energie":"OUI","GAZ Européen":"OUI","ILEK":"OUI","ENGIE":"NON","HELLIO":"OUI (cas par cas)","TOTALENERGIES":"OUI","ELMY":"OUI","LA BELLENERGIE":"OUI (cas par cas)" },
+  "SYNDIC": { "ALTERNA":"CAS PAR CAS","EKWATEUR":"OUI (élec uniquement)","ENDESA":"OUI","ENERGEM":"NON","ENERGIE D'ICI":"OUI","ENI":"OUI","ENOVOS":"OUI (seulement gaz si SIRET)","GAZ DE BORDEAUX":"OUI","GEDIA":"OUI","NATGAS":"NON","PICOTY":"OUI","PRIMEO":"NON","VATTENFALL":"NON","OHM":"OUI","SYNELVA":"OUI","SAVE":"OUI","GEG":"OUI (C2 & C4 > 300 MWh)","SEFE":"NON","DYNEFF":"OUI","MET":"OUI","MINT Energie":"OUI","GAZ Européen":"OUI","ILEK":"OUI","ENGIE":"NON","HELLIO":"OUI (sur-mesure)","TOTALENERGIES":"OUI","ELMY":"OUI","LA BELLENERGIE":"OUI" },
+  "VALIDITÉ": { "ALTERNA":"17H","EKWATEUR":"17H","ENDESA":"17H","ENERGEM":"17H","ENERGIE D'ICI":"17H","ENI":"16H","ENOVOS":"16H","GAZ DE BORDEAUX":"16H30","GEDIA":"17H","NATGAS":"16H","PICOTY":"16H","PRIMEO":"16H30","VATTENFALL":"16h30","OHM":"17H","SYNELVA":"17H","SAVE":"16H","GEG":"Grille : vendredi 16H","SEFE":"15H","DYNEFF":"16H30","MET":"17H","MINT Energie":"16H30","GAZ Européen":"17H","ILEK":"Jusqu'à nouvel ordre","ENGIE":"17H","HELLIO":"16H","TOTALENERGIES":"Jusqu'à nouvel ordre","ELMY":"17H","LA BELLENERGIE":"17H" },
+  "SOURCING": { "ALTERNA":"MAIL","EKWATEUR":"MAIL / GRILLE","ENDESA":"PLATEFORME","ENERGEM":"MAIL","ENERGIE D'ICI":"MAIL / GRILLE (C5)","ENI":"MAIL","ENOVOS":"MAIL / PLATEFORME / API","GAZ DE BORDEAUX":"MAIL / GRILLE","GEDIA":"MAIL","NATGAS":"MAIL","PICOTY":"MAIL","PRIMEO":"MAIL / PLATEFORME / API","VATTENFALL":"MAIL","OHM":"MAIL / PLATEFORME","SYNELVA":"MAIL","SAVE":"MAIL / GRILLE","GEG":"GRILLE / MAIL","SEFE":"PLATEFORME","DYNEFF":"MAIL / GRILLE","MET":"PLATEFORME / MAIL","MINT Energie":"GRILLE / MAIL","GAZ Européen":"MAIL","ILEK":"PLATEFORME","ENGIE":"PLATEFORME / MAIL","HELLIO":"MAIL / GRILLE","TOTALENERGIES":"GRILLE","ELMY":"MAIL","LA BELLENERGIE":"MAIL" },
+  "MARCHÉS PUBLICS": { "ALTERNA":"OUI","EKWATEUR":"OUI","ENDESA":"NON","ENERGEM":"OUI","ENERGIE D'ICI":"OUI","ENI":"NON","ENOVOS":"OUI","GAZ DE BORDEAUX":"OUI","GEDIA":"OUI","NATGAS":"NON","PICOTY":"NON","PRIMEO":"OUI","VATTENFALL":"NON","OHM":"OUI (> 1GWh)","SYNELVA":"OUI (peu, dans le 28)","SAVE":"OUI","GEG":"NON","SEFE":"OUI","DYNEFF":"OUI","MET":"OUI","MINT Energie":"NON","GAZ Européen":"NON","ILEK":"NON","ENGIE":"NON","HELLIO":"NON","TOTALENERGIES":"OUI","ELMY":"OUI","LA BELLENERGIE":"—" },
+  "ELD": { "ALTERNA":"OUI (cf. ELD)","EKWATEUR":"OUI (cf. ELD)","ENDESA":"OUI (cf. ELD)","ENERGEM":"OUI (cf. ELD)","ENERGIE D'ICI":"NON","ENI":"NON","ENOVOS":"OUI (cf. ELD)","GAZ DE BORDEAUX":"OUI (cf. ELD)","GEDIA":"NON","NATGAS":"OUI (cf. ELD)","PICOTY":"OUI (cf. ELD)","PRIMEO":"OUI (cf. ELD)","VATTENFALL":"OUI (cf. ELD)","OHM":"OUI (cf. ELD)","SYNELVA":"OUI (cf. ELD)","SAVE":"OUI (cf. ELD)","GEG":"NON","SEFE":"OUI (cf. ELD)","DYNEFF":"NON","MET":"NON","MINT Energie":"NON","GAZ Européen":"NON (gaz que REGAZ)","ILEK":"NON","ENGIE":"NON","HELLIO":"OUI (cf. ELD)","TOTALENERGIES":"NON","ELMY":"NON","LA BELLENERGIE":"OUI (cf. ELD)" },
+  "ÉCHÉANCE CONTRAT": { "ALTERNA":"indéterminé","EKWATEUR":"19/01/2027 (tacite)","ENDESA":"31/12/2026","ENERGEM":"12/09/2026 (tacite)","ENERGIE D'ICI":"PAS DE CONTRAT","ENI":"31/12/2025","ENOVOS":"30/06/2026","GAZ DE BORDEAUX":"31/03/2026","GEDIA":"31/08/2026 (tacite)","NATGAS":"20/02/2028 (tacite)","PICOTY":"14/03/2027 (tacite)","PRIMEO":"31/12/2027","VATTENFALL":"10/02/2027 (tacite)","OHM":"21/02/2027 (tacite)","SYNELVA":"24/05/2026","SAVE":"15/03/2026 (tacite)","GEG":"01/04/2026 (tacite)","SEFE":"18/04/2026 (tacite)","DYNEFF":"30/05/2026 (tacite)","MET":"08/01/2027 (tacite)","MINT Energie":"31/12/2026 (tacite)","GAZ Européen":"PAS DE CONTRAT","ILEK":"16/12/2026 (tacite)","ENGIE":"31/07/2026","HELLIO":"26/11/2026","TOTALENERGIES":"07/09/2026","ELMY":"09/09/2026 (tacite)","LA BELLENERGIE":"31/12/2026 (tacite)" },
+  "COMMENTAIRES": { "ALTERNA":"C5 grilles","EKWATEUR":"Si 5/10 alors DG = 1 mois de conso | Elec 100% GO européenne | Gaz 5% Biogaz","ENDESA":"Cotation via CDC, historique 18 mois min | Pas de flexibilité","ENERGEM":"Dossier > 10 GWh : comité","ENERGIE D'ICI":"CAPA + GO + CEE compris dans le prix","ENI":"DDF max < 1 an | Bilan financier obligatoire","ENOVOS":"Offre FIXE possible jusqu'à 10 GWh","GAZ DE BORDEAUX":"24 mois minimum | Grille gaz si CAR < 3 GWh/an","GEDIA":"—","NATGAS":"Pas d'engagement de conso si < 2 GWh","PICOTY":"étudie les dossiers au cas par cas","PRIMEO":"Pas de fonderies, pas de SDC/copros","VATTENFALL":"Pas d'ELD, pas de TEREGA","OHM":"Pas de SDC","SYNELVA":"Envoyer les M023","SAVE":"Prix fixe que pour profils P013 à P016","GEG":"CAPITOLE : 0,80€/MWh + 70% marge sup","SEFE":"Client déjà chez SEFE pas possible | DDF max à M+12","DYNEFF":"Souvent un DG demandé","MET":"DFF max : N+4","MINT Energie":"Pas d'ets médicaux / marchés publics","GAZ Européen":"Uniquement SDC/copro","ILEK":"Offres sans engagement, 140 €/PRM","ENGIE":"—","HELLIO":"Si DDF > 14 du mois, prendre le 1er du mois suivant","TOTALENERGIES":"Si DDF > 14 du mois, prendre le 1er du mois suivant","ELMY":"—","LA BELLENERGIE":"—" },
+  "GAZ_T4": { "ALTERNA":"—","EKWATEUR":"NON","ENDESA":"NON","ENERGEM":"OUI","ENERGIE D'ICI":"NON","ENI":"OUI","ENOVOS":"OUI","GAZ DE BORDEAUX":"—","GEDIA":"—","NATGAS":"OUI","PICOTY":"—","PRIMEO":"NON","VATTENFALL":"OUI","OHM":"OUI","SYNELVA":"NON","SAVE":"OUI","GEG":"NON","SEFE":"OUI","DYNEFF":"NON","MET":"—","MINT Energie":"NON","GAZ Européen":"OUI","ILEK":"NON","ENGIE":"—","HELLIO":"NON","TOTALENERGIES":"NON","ELMY":"NON","LA BELLENERGIE":"NON" },
+  "GAZ_T3": { "ALTERNA":"OUI","EKWATEUR":"OUI","ENDESA":"OUI","ENERGEM":"OUI","ENERGIE D'ICI":"NON","ENI":"OUI","ENOVOS":"OUI","GAZ DE BORDEAUX":"OUI","GEDIA":"OUI","NATGAS":"OUI","PICOTY":"OUI","PRIMEO":"NON","VATTENFALL":"OUI","OHM":"OUI","SYNELVA":"OUI","SAVE":"OUI","GEG":"OUI","SEFE":"OUI","DYNEFF":"OUI","MET":"OUI","MINT Energie":"NON","GAZ Européen":"OUI","ILEK":"NON","ENGIE":"OUI","HELLIO":"NON","TOTALENERGIES":"NON","ELMY":"NON","LA BELLENERGIE":"NON" },
+  "GAZ_T2": { "ALTERNA":"OUI","EKWATEUR":"OUI","ENDESA":"OUI","ENERGEM":"OUI","ENERGIE D'ICI":"NON","ENI":"OUI","ENOVOS":"OUI","GAZ DE BORDEAUX":"OUI","GEDIA":"OUI","NATGAS":"OUI","PICOTY":"OUI","PRIMEO":"NON","VATTENFALL":"—","OHM":"OUI","SYNELVA":"OUI","SAVE":"OUI","GEG":"—","SEFE":"OUI","DYNEFF":"OUI","MET":"OUI","MINT Energie":"NON","GAZ Européen":"OUI","ILEK":"OUI","ENGIE":"OUI","HELLIO":"NON","TOTALENERGIES":"OUI","ELMY":"NON","LA BELLENERGIE":"NON" },
+  "GAZ_T1": { "ALTERNA":"OUI","EKWATEUR":"OUI","ENDESA":"OUI","ENERGEM":"OUI","ENERGIE D'ICI":"NON","ENI":"NON","ENOVOS":"NON","GAZ DE BORDEAUX":"OUI","GEDIA":"OUI","NATGAS":"NON","PICOTY":"OUI","PRIMEO":"NON","VATTENFALL":"NON","OHM":"NON","SYNELVA":"NON","SAVE":"NON","GEG":"NON","SEFE":"OUI","DYNEFF":"OUI","MET":"OUI","MINT Energie":"NON","GAZ Européen":"OUI","ILEK":"OUI","ENGIE":"—","HELLIO":"NON","TOTALENERGIES":"OUI","ELMY":"NON","LA BELLENERGIE":"NON" },
+  "ELEC_C1": { "ALTERNA":"OUI","EKWATEUR":"NON","ENDESA":"NON","ENERGEM":"OUI","ENERGIE D'ICI":"NON","ENI":"NON","ENOVOS":"NON","GAZ DE BORDEAUX":"NON","GEDIA":"NON","NATGAS":"NON","PICOTY":"NON","PRIMEO":"OUI","VATTENFALL":"OUI","OHM":"OUI","SYNELVA":"OUI","SAVE":"OUI","GEG":"NON","SEFE":"NON","DYNEFF":"NON","MET":"NON","MINT Energie":"NON","GAZ Européen":"NON","ILEK":"NON","ENGIE":"—","HELLIO":"OUI","TOTALENERGIES":"NON","ELMY":"OUI","LA BELLENERGIE":"OUI" },
+  "ELEC_C2": { "ALTERNA":"OUI","EKWATEUR":"NON","ENDESA":"OUI","ENERGEM":"OUI","ENERGIE D'ICI":"OUI","ENI":"OUI","ENOVOS":"OUI","GAZ DE BORDEAUX":"NON","GEDIA":"OUI","NATGAS":"NON","PICOTY":"NON","PRIMEO":"OUI","VATTENFALL":"OUI","OHM":"OUI","SYNELVA":"OUI","SAVE":"OUI","GEG":"OUI","SEFE":"NON","DYNEFF":"OUI","MET":"OUI","MINT Energie":"OUI","GAZ Européen":"OUI","ILEK":"NON","ENGIE":"OUI","HELLIO":"OUI","TOTALENERGIES":"NON","ELMY":"OUI","LA BELLENERGIE":"OUI" },
+  "ELEC_C3": { "ALTERNA":"OUI","EKWATEUR":"NON","ENDESA":"—","ENERGEM":"OUI","ENERGIE D'ICI":"OUI","ENI":"OUI","ENOVOS":"OUI","GAZ DE BORDEAUX":"NON","GEDIA":"OUI","NATGAS":"NON","PICOTY":"NON","PRIMEO":"OUI","VATTENFALL":"OUI","OHM":"OUI","SYNELVA":"OUI","SAVE":"OUI","GEG":"NON","SEFE":"NON","DYNEFF":"OUI","MET":"OUI","MINT Energie":"OUI","GAZ Européen":"OUI","ILEK":"NON","ENGIE":"—","HELLIO":"OUI","TOTALENERGIES":"NON","ELMY":"OUI","LA BELLENERGIE":"OUI" },
+  "ELEC_C4": { "ALTERNA":"OUI","EKWATEUR":"OUI","ENDESA":"OUI","ENERGEM":"OUI","ENERGIE D'ICI":"OUI","ENI":"OUI","ENOVOS":"OUI","GAZ DE BORDEAUX":"NON","GEDIA":"OUI","NATGAS":"NON","PICOTY":"NON","PRIMEO":"OUI","VATTENFALL":"OUI","OHM":"OUI","SYNELVA":"OUI","SAVE":"OUI","GEG":"OUI","SEFE":"NON","DYNEFF":"OUI","MET":"OUI","MINT Energie":"OUI","GAZ Européen":"OUI","ILEK":"NON","ENGIE":"OUI","HELLIO":"OUI","TOTALENERGIES":"OUI","ELMY":"OUI","LA BELLENERGIE":"OUI" },
+  "ELEC_C5": { "ALTERNA":"—","EKWATEUR":"OUI","ENDESA":"—","ENERGEM":"—","ENERGIE D'ICI":"OUI","ENI":"—","ENOVOS":"NON","GAZ DE BORDEAUX":"NON","GEDIA":"—","NATGAS":"NON","PICOTY":"NON","PRIMEO":"—","VATTENFALL":"—","OHM":"OUI","SYNELVA":"—","SAVE":"—","GEG":"OUI","SEFE":"NON","DYNEFF":"OUI","MET":"OUI","MINT Energie":"OUI","GAZ Européen":"NON","ILEK":"OUI","ENGIE":"OUI","HELLIO":"—","TOTALENERGIES":"OUI","ELMY":"OUI","LA BELLENERGIE":"OUI" }
+};
+
+let FOURNISSEURS_LIST = Object.keys(RESUME_DATA["HORIZON GAZ"]);
+let GAZ_FOURNISSEURS = FOURNISSEURS_LIST.filter(f => RESUME_DATA["GAZ_T3"][f] === "OUI" || RESUME_DATA["GAZ_T2"][f] === "OUI" || RESUME_DATA["GAZ_T4"][f] === "OUI");
+let ELEC_FOURNISSEURS = FOURNISSEURS_LIST.filter(f => RESUME_DATA["ELEC_C4"][f] === "OUI" || RESUME_DATA["ELEC_C5"][f] === "OUI" || RESUME_DATA["ELEC_C2"][f] === "OUI");
+
+function recomputeFournisseurLists() {
+  FOURNISSEURS_LIST = Object.keys(RESUME_DATA["HORIZON GAZ"] || RESUME_DATA["HORIZON ELEC"] || {});
+  GAZ_FOURNISSEURS = FOURNISSEURS_LIST.filter(f =>
+    (RESUME_DATA["GAZ_T1"] && RESUME_DATA["GAZ_T1"][f] === "OUI") ||
+    (RESUME_DATA["GAZ_T2"] && RESUME_DATA["GAZ_T2"][f] === "OUI") ||
+    (RESUME_DATA["GAZ_T3"] && RESUME_DATA["GAZ_T3"][f] === "OUI") ||
+    (RESUME_DATA["GAZ_T4"] && RESUME_DATA["GAZ_T4"][f] === "OUI")
+  );
+  ELEC_FOURNISSEURS = FOURNISSEURS_LIST.filter(f =>
+    (RESUME_DATA["ELEC_C1"] && RESUME_DATA["ELEC_C1"][f] === "OUI") ||
+    (RESUME_DATA["ELEC_C2"] && RESUME_DATA["ELEC_C2"][f] === "OUI") ||
+    (RESUME_DATA["ELEC_C3"] && RESUME_DATA["ELEC_C3"][f] === "OUI") ||
+    (RESUME_DATA["ELEC_C4"] && RESUME_DATA["ELEC_C4"][f] === "OUI") ||
+    (RESUME_DATA["ELEC_C5"] && RESUME_DATA["ELEC_C5"][f] === "OUI")
+  );
+}
+
+async function loadFournisseurRules() {
+  try {
+    const data = await apiFetch('/api/fournisseur-rules');
+    const normalizedRules = data && data.normalizedRules ? data.normalizedRules : null;
+    if (!normalizedRules || typeof normalizedRules !== 'object') return;
+
+    RESUME_DATA = { ...RESUME_DATA, ...normalizedRules };
+    recomputeFournisseurLists();
+    populateNewsSupplierFilter();
+
+    if (document.getElementById('tab-resume')?.classList.contains('active')) {
+      buildResumeTable();
+    }
+  } catch (e) {
+    console.warn('Impossible de charger les règles fournisseurs via API, utilisation des règles embarquées :', e.message || e);
+  }
+}
+
+
+// ============ DONNÉES PRIX — API EXCEL ============
+let PRIX_DATA = {};
+let PRIX_META = {
+  date: null,
+  periode: null,
+  source: "Excel mensuel",
+  fileName: null,
+  sheetName: null
+};
+const PRIX_SEGMENTS_LOADED = new Set();
+const PRIX_SUPPLIER_ALIASES = {
+  "ENDESA ENERGIA SUCCURSAL FRANCE": "ENDESA",
+  "SEFE ENERGY SAS": "SEFE",
+  "TOTALENERGIES ELECTRICITE ET GAZ FRANCE": "TOTALENERGIES",
+  "ALTERNA ENERGIE": "ALTERNA",
+  "PRIMEO ENERGIE FRANCE": "PRIMEO",
+  "ENOVOS LUXEMBOURG S A": "ENOVOS",
+  "GEDIA ENERGIES SERVICES": "GEDIA",
+  "LA BELLENERGIE": "LA BELLENERGIE",
+  "MINT": "MINT Energie",
+  "MINT ENERGIE": "MINT Energie",
+  "OHM ENERGIE": "OHM",
+  "SAVE": "SAVE",
+  "SOCIETE D APPROVISIONNEMENT ET DE VENTE D ENERGIES": "SAVE"
+};
+
+function normalizePricingSupplierName(name) {
+  const cleaned = String(name || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9]+/g, " ")
+    .trim()
+    .toUpperCase();
+  return PRIX_SUPPLIER_ALIASES[cleaned] || String(name || "").trim();
+}
+
+async function ensurePricingSegmentLoaded(segment) {
+  const seg = String(segment || "").trim().toUpperCase();
+  if (!seg || PRIX_SEGMENTS_LOADED.has(seg)) return;
+
+  const response = await fetch(`/api/fournisseur-pricing?segment=${encodeURIComponent(seg)}`, {
+    headers: { Accept: "application/json" }
+  });
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(data.message || `Impossible de charger les données prix pour le segment ${seg}.`);
+  }
+
+  const rows = Array.isArray(data.rows) ? data.rows : [];
+  PRIX_DATA[seg] = {};
+
+  rows.forEach((row) => {
+    const supplier = normalizePricingSupplierName(row.supplier || row.supplierRaw || "");
+    if (!supplier) return;
+    PRIX_DATA[seg][supplier] = {
+      prix: Number(row.price30j),
+      vol: Number(row.avgVolume),
+      nb: Number(row.offerCount),
+      moy_marche: row.marketAverage !== null && row.marketAverage !== undefined ? Number(row.marketAverage) : null,
+      ecart_pct: row.deltaPct !== null && row.deltaPct !== undefined ? Number(row.deltaPct) : null
+    };
+  });
+
+  if (data.meta) {
+    PRIX_META = {
+      date: data.meta.updatedAtLabel || PRIX_META.date,
+      periode: data.meta.startDate && data.meta.endDate ? `${data.meta.startDate} → ${data.meta.endDate}` : PRIX_META.periode,
+      source: data.meta.fileName ? `Excel mensuel — ${data.meta.fileName}` : PRIX_META.source,
+      fileName: data.meta.fileName || null,
+      sheetName: data.meta.sheetName || null
+    };
+  }
+
+  PRIX_SEGMENTS_LOADED.add(seg);
+}
+
+/**
+ * Retourne les données prix d'un fournisseur pour un segment donné, ou null.
+ */
+function getPrixData(fournisseur, segment) {
+  const segmentData = PRIX_DATA[String(segment || "").toUpperCase()] || {};
+  const exact = segmentData[fournisseur];
+  if (exact) return exact;
+
+  const supplierNorm = normalizePricingSupplierName(fournisseur);
+  for (const [key, value] of Object.entries(segmentData)) {
+    if (normalizePricingSupplierName(key) === supplierNorm) return value;
+  }
+
+  return null;
+}
+
+/**
+ * Calcule la moyenne de marché pour un segment à partir des données API.
+ * Priorité à la valeur fournie par l'API, sinon moyenne pondérée par nombre d'offres.
+ */
+function getMoyenneMarche(segment) {
+  const data = PRIX_DATA[String(segment || "").toUpperCase()];
+  if (!data) return null;
+  const vals = Object.values(data).filter(d => d && Number.isFinite(d.prix));
+  if (vals.length === 0) return null;
+
+  const withMarketAverage = vals.find(d => Number.isFinite(d.moy_marche));
+  if (withMarketAverage) return withMarketAverage.moy_marche;
+
+  const weighted = vals.filter(d => Number.isFinite(d.nb) && d.nb > 0);
+  const totalNb = weighted.reduce((s, d) => s + d.nb, 0);
+  if (!totalNb) return null;
+  return weighted.reduce((s, d) => s + d.prix * d.nb, 0) / totalNb;
+}
+
+/**
+ * Évalue le prix d'un fournisseur vs la moyenne marché.
+ * Retourne { ecart_pct, label, statut: "ok"|"warn"|"ko"|"neutral" }
+ */
+function evaluerPrix(fournisseur, segment) {
+  const d = getPrixData(fournisseur, segment);
+  if (!d) return null;
+  const moy = getMoyenneMarche(segment);
+  const ecart = Number.isFinite(d.ecart_pct) ? d.ecart_pct : (moy ? ((d.prix - moy) / moy) * 100 : null);
+  if (!moy || ecart === null) return { prix: d.prix, vol: d.vol, nb: d.nb, ecart_pct: null, label: `${d.prix.toFixed(2)} €/MWh`, statut: "neutral" };
+  let statut, label;
+  if (ecart <= -5) { statut = "ok"; }
+  else if (ecart <= 5) { statut = "ok"; }
+  else if (ecart <= 15) { statut = "warn"; }
+  else { statut = "warn"; }
+  label = `${d.prix.toFixed(2)} €/MWh`;
+  return { prix: d.prix, vol: d.vol, nb: d.nb, ecart_pct: ecart, moy_marche: moy, label, statut };
+}
+
+const SECTION_LABELS = [
+  { key: "section_horizons", label: "Horizons & DDF", isSection: true },
+  { key: "HORIZON GAZ", label: "Horizon Gaz" },
+  { key: "HORIZON ELEC", label: "Horizon Élec" },
+  { key: "DDF MAX", label: "DDF Max" },
+  { key: "section_criteres", label: "Critères Financiers", isSection: true },
+  { key: "UPFRONT", label: "Paiement UPFRONT ★" },
+  { key: "SCORING MINIMUM", label: "Scoring Minimum" },
+  { key: "MARGE", label: "Marge Max" },
+  { key: "DÉCOMMISSION CONSO", label: "Décommission Conso" },
+  { key: "VOLUME MIN", label: "Volume Min/Max" },
+  { key: "section_segments_gaz", label: "Segments Gaz", isSection: true },
+  { key: "GAZ_T4", label: "T4" }, { key: "GAZ_T3", label: "T3" }, { key: "GAZ_T2", label: "T2" }, { key: "GAZ_T1", label: "T1" },
+  { key: "section_segments_elec", label: "Segments Électricité", isSection: true },
+  { key: "ELEC_C2", label: "C2" }, { key: "ELEC_C3", label: "C3" }, { key: "ELEC_C4", label: "C4" }, { key: "ELEC_C5", label: "C5" },
+  { key: "section_ops", label: "Opérationnel", isSection: true },
+  { key: "re-MES", label: "re-MES" }, { key: "1ère MES", label: "1ère MES" }, { key: "SYNDIC", label: "Syndic / SDC" },
+  { key: "MARCHÉS PUBLICS", label: "Marchés Publics" }, { key: "ELD", label: "ELD" }, { key: "SOURCING", label: "Sourcing" }, { key: "VALIDITÉ", label: "Validité Offres" },
+  { key: "section_admin", label: "Administratif", isSection: true },
+  { key: "ÉCHÉANCE CONTRAT", label: "Échéance Contrat AA" }, { key: "COMMENTAIRES", label: "Commentaires" },
+];
+
+let currentFilter = "tous";
+
+function switchTab(tab) {
+  document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById("tab-" + tab).classList.add("active");
+  document.getElementById("btn-" + tab).classList.add("active");
+  if (tab === "resume") buildResumeTable();
+  if (tab === "news") loadNews();
+  if (tab === "challenges") loadChallenges();
+}
+
+function getFilteredFournisseurs() {
+  let list = FOURNISSEURS_LIST;
+  const search = document.getElementById("search-fournisseur") ? document.getElementById("search-fournisseur").value.toLowerCase() : "";
+  if (currentFilter === "gaz") list = GAZ_FOURNISSEURS;
+  else if (currentFilter === "elec") list = ELEC_FOURNISSEURS;
+  if (search) list = list.filter(f => f.toLowerCase().includes(search));
+  return list;
+}
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  buildResumeTable();
+}
+
+function filterTable() { buildResumeTable(); }
+
+function cellClass(val) {
+  if (!val || val === "—") return "val-na";
+  const v = val.toUpperCase();
+  if (v === "OUI" || v === "OUI (CF. ELD)" || v === "OUI (QUESTIONNAIRE)") return "val-oui";
+  if (v === "NON") return "val-non";
+  if (v.startsWith("OUI")) return "val-cond";
+  if (v.startsWith("NON (")) return "val-non";
+  return "";
+}
+
+function formatDate(val) {
+  if (!val || val === "—") return "—";
+  const m = val.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return m[3]+"/"+m[2]+"/"+m[1];
+  return val;
+}
+
+function buildResumeTable() {
+  const fournisseurs = getFilteredFournisseurs();
+  const thead = document.getElementById("resume-thead");
+  const tbody = document.getElementById("resume-tbody");
+  let hRow = "<tr><th class='criteria-col'>Critère</th>";
+  fournisseurs.forEach(f => { hRow += `<th style="cursor:pointer;white-space:nowrap;" onclick="openDetail('${f.replace(/'/g,"\\'")}')"> ${f} <span style="font-size:9px;opacity:0.7;">↗</span></th>`; });
+  hRow += "</tr>";
+  thead.innerHTML = hRow;
+  let rows = "";
+  SECTION_LABELS.forEach(item => {
+    if (item.isSection) { rows += `<tr class="section-row"><td colspan="${fournisseurs.length + 1}">${item.label}</td></tr>`; return; }
+    rows += `<tr><td class="row-label">${item.label}</td>`;
+    fournisseurs.forEach(f => {
+      let val = RESUME_DATA[item.key] ? (RESUME_DATA[item.key][f] || "—") : "—";
+      val = formatDate(val);
+      const cls = cellClass(val);
+      const short = val.length > 40 ? val.substring(0, 38) + "…" : val;
+      rows += `<td class="${cls}" title="${val.replace(/"/g,"&quot;")}">${short}</td>`;
+    });
+    rows += "</tr>";
+  });
+  tbody.innerHTML = rows;
+}
+
+function openDetail(fournisseur) {
+  const panel = document.getElementById("detail-panel");
+  document.getElementById("detail-title").textContent = fournisseur;
+  let html = "";
+  SECTION_LABELS.forEach(item => {
+    if (item.isSection) { html += `<div style="margin:16px 0 6px;font-family:'Bricolage Grotesque',sans-serif;font-size:14px;font-weight:700;color:var(--principal);border-bottom:2px solid var(--bleu-clair);padding-bottom:4px;">${item.label}</div>`; return; }
+    const val = RESUME_DATA[item.key] ? (RESUME_DATA[item.key][fournisseur] || "—") : "—";
+    const display = formatDate(val);
+    const cls = cellClass(val);
+    const colStyle = cls === "val-oui" ? "color:#2E9879;font-weight:700;" : cls === "val-non" ? "color:#C43D00;" : cls === "val-cond" ? "color:#DF722F;font-weight:600;" : "";
+    html += `<div class="detail-row"><div class="detail-label">${item.label}</div><div class="detail-value" style="${colStyle}">${display}</div></div>`;
+  });
+  document.getElementById("detail-body").innerHTML = html;
+  panel.classList.add("open");
+}
+
+function closeDetail() { document.getElementById("detail-panel").classList.remove("open"); }
+
+// ============ HELPER FUNCTIONS ============
+const GAZ_SEGMENTS = ["TP","T1","T2","T3","T4"];
+const GAZ_PROFILS = ["P11","P12","P13","P14","P15","P16","P17","P18","P19"];
+const ELEC_SEGMENTS = ["C5","C4","C3","C2","C1"];
+
+function onEnergieChange() {
+  const val = document.getElementById("energie").value;
+  const segEl = document.getElementById("segment");
+  const profilEl = document.getElementById("profil");
+  segEl.innerHTML = '<option value="" disabled selected>— Sélectionner —</option>';
+  if (val === "gaz") {
+    GAZ_SEGMENTS.forEach(s => { const o = document.createElement("option"); o.value = s; o.textContent = s; segEl.appendChild(o); });
+    profilEl.innerHTML = '<option value="" disabled selected>— Sélectionner —</option>';
+    GAZ_PROFILS.forEach(p => { const o = document.createElement("option"); o.value = p; o.textContent = p; profilEl.appendChild(o); });
+    profilEl.disabled = false; profilEl.style.color = ""; profilEl.style.background = ""; profilEl.style.cursor = "";
+  } else if (val === "elec") {
+    ELEC_SEGMENTS.forEach(s => { const o = document.createElement("option"); o.value = s; o.textContent = s; segEl.appendChild(o); });
+    profilEl.innerHTML = '<option value="">— Non applicable (Élec) —</option>';
+    profilEl.disabled = true; profilEl.style.color = "#bbb"; profilEl.style.background = "#f7f7f7"; profilEl.style.cursor = "not-allowed";
+  }
+}
+
+function autoFormatDate(input) {
+  let v = input.value.replace(/[^0-9]/g, "");
+  if (v.length >= 3 && v.length <= 4) v = v.slice(0,2) + "/" + v.slice(2);
+  else if (v.length >= 5) v = v.slice(0,2) + "/" + v.slice(2,4) + "/" + v.slice(4,8);
+  input.value = v;
+}
+
+function parseDate(str) {
+  if (!str) return null;
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(str)) {
+    const [d, m, y] = str.split("/");
+    return new Date(parseInt(y), parseInt(m)-1, parseInt(d));
+  }
+  if (/^\d{4}-\d{2}-\d{2}/.test(str)) return new Date(str);
+  return null;
+}
+
+// ============ CLASSIFICATION ENGINE ============
+/**
+ * Évalue chaque fournisseur sur tous les critères disponibles.
+ * Retourne un objet { couleur: "vert"|"orange"|"rouge", score: 0-100, criteres: [...], justification: [...] }
+ *
+ * Règle couleur :
+ *   ROUGE  = au moins 1 critère rédhibitoire (KO strict)
+ *   ORANGE = 1 ou 2 critères en doute (pas KO mais incertitude ou condition à vérifier)
+ *   VERT   = tous les critères satisfaits
+ */
+function classifierFournisseur(f, params) {
+  const { energie, segment, note, volume, ddf, dff, etat } = params;
+  const segsKey = energie === "gaz" ? `GAZ_${segment}` : `ELEC_${segment}`;
+  const segVal = RESUME_DATA[segsKey] ? RESUME_DATA[segsKey][f] : null;
+  const horizon = energie === "gaz" ? parseInt(RESUME_DATA["HORIZON GAZ"][f]) : parseInt(RESUME_DATA["HORIZON ELEC"][f]);
+  const ddf_max_raw = RESUME_DATA["DDF MAX"][f] || "";
+  const upfront_raw = RESUME_DATA["UPFRONT"][f] || "";
+  const scoring_raw = RESUME_DATA["SCORING MINIMUM"][f] || "";
+  const volume_raw = RESUME_DATA["VOLUME MIN"][f] || "";
+  const remes_raw = RESUME_DATA["re-MES"][f] || "";
+  const mes1_raw = RESUME_DATA["1ère MES"][f] || "";
+  const decomm_raw = RESUME_DATA["DÉCOMMISSION CONSO"][f] || "";
+
+  const criteres = []; // { label, statut: "ok"|"warn"|"ko"|"neutral", detail }
+  let redhibitoires = 0;
+  let doutes = 0;
+
+  // ---- 1. SEGMENT COUVERT ----
+  if (!segVal || segVal === "—" || segVal === "NON") {
+    criteres.push({ label: `Segment ${segment}`, statut: "ko", detail: `Segment ${segment} non couvert par ce fournisseur.` });
+    redhibitoires++;
+  } else if (segVal === "OUI") {
+    criteres.push({ label: `Segment ${segment}`, statut: "ok", detail: `Segment ${segment} couvert.` });
+  } else {
+    criteres.push({ label: `Segment ${segment}`, statut: "warn", detail: `Segment ${segment} couvert avec condition : ${segVal}.` });
+    doutes++;
+  }
+
+  // ---- 2. HORIZON ----
+  if (!horizon || isNaN(horizon)) {
+    criteres.push({ label: "Horizon", statut: "ko", detail: "Horizon non renseigné pour ce fournisseur sur cette énergie." });
+    redhibitoires++;
+  } else if (horizon < dff.getFullYear()) {
+    criteres.push({ label: "Horizon", statut: "ko", detail: `Horizon ${horizon} < fin fourniture ${dff.getFullYear()} — couverture insuffisante.` });
+    redhibitoires++;
+  } else if (horizon === dff.getFullYear()) {
+    criteres.push({ label: "Horizon", statut: "ok", detail: `Horizon ${horizon} couvre exactement la période demandée.` });
+  } else {
+    criteres.push({ label: "Horizon", statut: "ok", detail: `Horizon ${horizon} — couverture totale de la période.` });
+  }
+
+  // ---- 3. DDF MAX ----
+  if (ddf_max_raw && !ddf_max_raw.includes("+") && ddf_max_raw !== "pas de limite") {
+    const ddf_max = new Date(ddf_max_raw.slice(0, 10));
+    if (ddf_max < ddf) {
+      const mois = Math.round((ddf - ddf_max) / (1000*60*60*24*30));
+      if (mois > 6) {
+        criteres.push({ label: "DDF max", statut: "ko", detail: `DDF max ${formatDate(ddf_max_raw)} dépassée de ${mois} mois — incompatible avec DDF souhaitée.` });
+        redhibitoires++;
+      } else {
+        criteres.push({ label: "DDF max", statut: "warn", detail: `DDF max ${formatDate(ddf_max_raw)} dépassée de ${mois} mois — à confirmer avec le fournisseur.` });
+        doutes++;
+      }
+    } else {
+      criteres.push({ label: "DDF max", statut: "ok", detail: `DDF max ${formatDate(ddf_max_raw)} compatible avec la DDF souhaitée.` });
+    }
+  } else if (ddf_max_raw.includes("+")) {
+    criteres.push({ label: "DDF max", statut: "warn", detail: `DDF max relative (${ddf_max_raw}) — à vérifier au moment de la cotation.` });
+    doutes++;
+  } else if (ddf_max_raw === "pas de limite") {
+    criteres.push({ label: "DDF max", statut: "ok", detail: "Pas de limite de DDF — flexibilité maximale." });
+  }
+
+  // ---- 4. NOTE DE CRÉDIT ----
+  // Règle unique : si le fournisseur actuel saisi correspond à CE fournisseur (un de nos partenaires),
+  // la note Ellipro est levée uniquement pour lui. Pour tous les autres → règle normale.
+  const fournisseurActuelNorm = (params.fournisseur_actuel || "").toLowerCase().trim();
+  const fNorm = f.toLowerCase().trim();
+  // "AUTRE" = hors partenaires, ne lève la note pour personne
+  const isFournisseurActuel = fournisseurActuelNorm.length > 0 &&
+    fournisseurActuelNorm !== "autre" && (
+    fNorm === fournisseurActuelNorm ||
+    fNorm.includes(fournisseurActuelNorm) ||
+    fournisseurActuelNorm.includes(fNorm)
+  );
+
+  if (isFournisseurActuel) {
+    criteres.push({ label: "Note crédit", statut: "ok", detail: `Fournisseur actuel du client — note Ellipro non applicable pour ce renouvellement.` });
+  } else {
+    const noteMinMatch = scoring_raw.match(/(\d+)\/10/);
+    const noteMin = noteMinMatch ? parseInt(noteMinMatch[1]) : null;
+    if (noteMin !== null) {
+      if (note < noteMin) {
+        criteres.push({ label: "Note crédit", statut: "ko", detail: `Note client ${note}/10 < minimum requis ${noteMin}/10 — non éligible.` });
+        redhibitoires++;
+      } else if (note === noteMin) {
+        criteres.push({ label: "Note crédit", statut: "warn", detail: `Note client ${note}/10 = minimum requis — limite, à surveiller.` });
+        doutes++;
+      } else {
+        criteres.push({ label: "Note crédit", statut: "ok", detail: `Note client ${note}/10 ≥ minimum ${noteMin}/10 — OK.` });
+      }
+    } else {
+      criteres.push({ label: "Note crédit", statut: "neutral", detail: `Scoring minimum non standardisé : ${scoring_raw}.` });
+    }
+  }
+
+  // ---- 5. VOLUME MINIMUM ----
+  // Extraire volume min en MWh
+  const volMinMatch = volume_raw.match(/(\d+)\s*MWh/i);
+  const volMin = volMinMatch ? parseInt(volMinMatch[1]) : 0;
+  if (volMin > 0 && volume < volMin) {
+    criteres.push({ label: "Volume min", statut: "ko", detail: `Volume ${volume} MWh < minimum requis ${volMin} MWh — non éligible.` });
+    redhibitoires++;
+  } else if (volMin > 0) {
+    criteres.push({ label: "Volume min", statut: "ok", detail: `Volume ${volume} MWh ≥ minimum ${volMin} MWh.` });
+  } else {
+    criteres.push({ label: "Volume min", statut: "ok", detail: "Pas de volume minimum — accessible pour tous profils." });
+  }
+
+  // ---- 6. UPFRONT ----
+  const upUpper = upfront_raw.toUpperCase();
+  if (upUpper === "NON") {
+    criteres.push({ label: "UPFRONT", statut: "warn", detail: "Pas de paiement UPFRONT proposé par ce fournisseur." });
+    doutes++;
+  } else if (upUpper === "OUI") {
+    criteres.push({ label: "UPFRONT", statut: "ok", detail: "UPFRONT OUI sans condition — critère prioritaire validé." });
+  } else if (upUpper.startsWith("OUI")) {
+    // Condition UPFRONT
+    let condDetail = `UPFRONT conditionnel : ${upfront_raw}.`;
+    // Vérification de quelques conditions clés
+    let condOk = true;
+    let condWarn = false;
+    // Commission < seuil : on ne peut pas calculer ici, on met warn par défaut
+    if (upUpper.includes("< 50K") || upUpper.includes("< 100K") || upUpper.includes("< 40K") || upUpper.includes("< 30K") || upUpper.includes("< 20K") || upUpper.includes("< 10K") || upUpper.includes("< 2K") || upUpper.includes("< 2,5")) {
+      condWarn = true;
+    }
+    // DDF < M+12 ou M+24
+    if (upUpper.includes("DDF < M+12")) {
+      // DDF dans les 12 mois ?
+      const today = new Date();
+      const moisAvantDDF = (ddf - today) / (1000*60*60*24*30);
+      if (moisAvantDDF > 12) { condOk = false; condDetail += " ⚠️ DDF > M+12 — UPFRONT probablement non applicable."; }
+    }
+    if (upUpper.includes("DDF < M+24") || upUpper.includes("DDF < M+24")) {
+      const today = new Date();
+      const moisAvantDDF = (ddf - today) / (1000*60*60*24*30);
+      if (moisAvantDDF > 24) { condOk = false; condDetail += " ⚠️ DDF > M+24 — UPFRONT non applicable."; }
+    }
+    if (upUpper.includes("2025/2026")) {
+      const todayY = new Date().getFullYear();
+      if (todayY > 2026) { condOk = false; condDetail += " ⚠️ UPFRONT limité 2025/2026 — dépassé."; }
+      else { condWarn = true; condDetail += " À confirmer pour l'année en cours."; }
+    }
+    if (upUpper.includes("DDF = MOIS DE SIGNATURE")) { condWarn = true; condDetail = "UPFRONT uniquement si DDF = mois de signature."; }
+
+    if (!condOk) {
+      criteres.push({ label: "UPFRONT", statut: "warn", detail: condDetail });
+      doutes++;
+    } else if (condWarn) {
+      criteres.push({ label: "UPFRONT", statut: "warn", detail: condDetail });
+      doutes++;
+    } else {
+      criteres.push({ label: "UPFRONT", statut: "ok", detail: condDetail });
+    }
+  }
+
+  // ---- 7. MES / RE-MES ----
+  if (etat === "premiere_mes") {
+    const mes1 = mes1_raw.toUpperCase();
+    if (mes1 === "NON") {
+      criteres.push({ label: "1ère MES", statut: "ko", detail: "1ère mise en service non supportée par ce fournisseur." });
+      redhibitoires++;
+    } else if (mes1 === "OUI") {
+      criteres.push({ label: "1ère MES", statut: "ok", detail: "1ère MES supportée." });
+    } else if (mes1.startsWith("OUI")) {
+      criteres.push({ label: "1ère MES", statut: "warn", detail: `1ère MES avec condition : ${mes1_raw}.` });
+      doutes++;
+    } else {
+      criteres.push({ label: "1ère MES", statut: "neutral", detail: `Situation 1ère MES : ${mes1_raw}.` });
+    }
+  } else if (etat === "mes") {
+    const remes = remes_raw.toUpperCase();
+    if (remes === "NON") {
+      criteres.push({ label: "re-MES", statut: "ko", detail: "Re-MES non supportée par ce fournisseur." });
+      redhibitoires++;
+    } else if (remes === "OUI") {
+      criteres.push({ label: "re-MES", statut: "ok", detail: "Re-MES supportée." });
+    } else if (remes.startsWith("OUI") || remes.startsWith("NON (SAUF")) {
+      criteres.push({ label: "re-MES", statut: "warn", detail: `Re-MES conditionnelle : ${remes_raw}.` });
+      doutes++;
+    }
+  }
+
+  // ---- 8. DÉCOMMISSION CONSO ----
+  const decomm = decomm_raw.toUpperCase();
+  if (decomm === "NON" || decomm.startsWith("NON (SAUF")) {
+    criteres.push({ label: "Décommission", statut: "ok", detail: "Pas de décommission de conso — sécurité contractuelle optimale." });
+  } else if (decomm.startsWith("OUI")) {
+    criteres.push({ label: "Décommission", statut: "warn", detail: `Décommission possible : ${decomm_raw} — risque si consommation baisse fortement.` });
+    doutes++;
+  }
+
+  // ---- 9. PRIX ----
+  const prixEval = evaluerPrix(f, segment);
+  let prixScore = 0; // bonus/malus prix pour le score final
+  if (prixEval) {
+    if (prixEval.ecart_pct !== null) {
+      if (prixEval.ecart_pct <= -5) {
+        criteres.push({ label: "Prix", statut: "ok", detail: `${prixEval.prix.toFixed(2)} €/MWh — ${Math.abs(prixEval.ecart_pct).toFixed(1)}% sous la moyenne marché (${prixEval.moy_marche.toFixed(2)} €/MWh). Compétitif.` });
+        prixScore = 10;
+      } else if (prixEval.ecart_pct <= 5) {
+        criteres.push({ label: "Prix", statut: "ok", detail: `${prixEval.prix.toFixed(2)} €/MWh — dans la moyenne marché (${prixEval.moy_marche.toFixed(2)} €/MWh, écart ${prixEval.ecart_pct > 0 ? "+" : ""}${prixEval.ecart_pct.toFixed(1)}%).` });
+        prixScore = 5;
+      } else if (prixEval.ecart_pct <= 15) {
+        criteres.push({ label: "Prix", statut: "warn", detail: `${prixEval.prix.toFixed(2)} €/MWh — +${prixEval.ecart_pct.toFixed(1)}% vs moyenne marché (${prixEval.moy_marche.toFixed(2)} €/MWh). Légèrement au-dessus.` });
+        prixScore = -3;
+        doutes++;
+      } else {
+        criteres.push({ label: "Prix", statut: "warn", detail: `${prixEval.prix.toFixed(2)} €/MWh — +${prixEval.ecart_pct.toFixed(1)}% vs moyenne marché (${prixEval.moy_marche.toFixed(2)} €/MWh). Significativement plus cher.` });
+        prixScore = -8;
+        doutes++;
+      }
+    } else {
+      criteres.push({ label: "Prix", statut: "neutral", detail: `${prixEval.prix.toFixed(2)} €/MWh — pas assez de données marché pour comparer sur ce segment.` });
+    }
+  } else {
+    criteres.push({ label: "Prix", statut: "neutral", detail: "Pas de données prix disponibles pour ce fournisseur sur ce segment (30 derniers jours)." });
+  }
+
+  // ---- CALCUL SCORE (0-100) ----
+  // Base : pondération sur critères clés
+  let score = 0;
+  const weights = { "Segment": 22, "Horizon": 18, "DDF max": 13, "Note crédit": 13, "Volume min": 9, "UPFRONT": 9, "1ère MES": 4, "re-MES": 4, "Décommission": 4, "Prix": 0, "neutral": 0 };
+  criteres.forEach(c => {
+    if (c.label === "Prix") return; // Prix géré séparément via prixScore
+    let key = c.label.split(" ")[0];
+    if (c.label === "Segment T1" || c.label === "Segment T2" || c.label === "Segment T3" || c.label === "Segment T4" || c.label.startsWith("Segment C")) key = "Segment";
+    const w = weights[key] || 4;
+    if (c.statut === "ok") score += w;
+    else if (c.statut === "warn") score += w * 0.4;
+    else if (c.statut === "ko") score += 0;
+    else score += w * 0.6;
+  });
+  // Appliquer bonus/malus prix (max ±10 pts)
+  score = Math.round(Math.min(Math.max(score + prixScore, 0), 100));
+
+  // ---- COULEUR FINALE ----
+  let couleur;
+  if (redhibitoires > 0) couleur = "rouge";
+  else if (doutes > 0) couleur = "orange";
+  else couleur = "vert";
+
+  // ---- JUSTIFICATION (2-3 lignes max) ----
+  const justLines = [];
+  const koCriteres = criteres.filter(c => c.statut === "ko");
+  if (koCriteres.length > 0) justLines.push({ icon: "🔴", text: koCriteres.map(c => c.detail).slice(0, 2).join(" | ") });
+  const warnCriteres = criteres.filter(c => c.statut === "warn" && c.label !== "Prix");
+  if (warnCriteres.length > 0) justLines.push({ icon: "🟡", text: warnCriteres.map(c => c.detail).slice(0, 2).join(" | ") });
+  if (couleur === "vert") {
+    const okCriteres = criteres.filter(c => c.statut === "ok");
+    const highlights = okCriteres.filter(c => ["UPFRONT","Horizon","DDF max"].some(k => c.label.includes(k))).slice(0, 2);
+    if (highlights.length > 0) justLines.push({ icon: "✅", text: highlights.map(c => c.detail).join(" | ") });
+    else justLines.push({ icon: "✅", text: "Tous les critères évalués sont conformes au profil client." });
+  }
+
+  return { couleur, score, criteres, justLines, prixEval };
+}
+
+// ============ ANALYSER ============
+
+async function analyser() {
+  const energie = document.getElementById("energie").value;
+  const segment = document.getElementById("segment").value;
+  const note = parseFloat(document.getElementById("note").value);
+  const volume = parseFloat(document.getElementById("volume").value);
+  const ddf = parseDate(document.getElementById("ddf").value);
+  const dff = parseDate(document.getElementById("dff").value);
+  const syndic = document.getElementById("syndic").value;
+  const fournisseur_actuel = document.getElementById("fournisseur_actuel").value;
+
+  if (!energie || !segment || !syndic) {
+    alert("Veuillez sélectionner le type d'énergie, le segment et le critère Syndic.");
+    return;
+  }
+
+  if (isNaN(note) || isNaN(volume) || !ddf || isNaN(ddf.getTime()) || !dff || isNaN(dff.getTime())) {
+    alert("Veuillez remplir tous les champs obligatoires correctement (note, volume, dates).");
+    return;
+  }
+
+  const params = { energie, segment, note, volume, ddf, dff, syndic, fournisseur_actuel };
+
+  let pricingLoadError = "";
+  try {
+    await ensurePricingSegmentLoaded(segment);
+  } catch (e) {
+    console.error("pricing load error:", e);
+    pricingLoadError = e.message || "Impossible de charger les données prix.";
+  }
+
+  let selectionData = null;
+  try {
+    const query = new URLSearchParams({
+      energie,
+      segment,
+      syndic,
+      note: String(note),
+      volume: String(volume),
+      ddf: document.getElementById("ddf").value,
+      dff: document.getElementById("dff").value,
+      fournisseur_actuel
+    });
+    selectionData = await apiFetch(`/api/fournisseur-selection?${query.toString()}`);
+  } catch (e) {
+    console.error("selection load error:", e);
+    alert(`Erreur lors du chargement de la sélection fournisseur : ${e.message || e}`);
+    return;
+  }
+
+  renderClassification(selectionData, params, pricingLoadError);
+}
+
+
+function renderClassification(selectionData, params, pricingLoadError = "") {
+  const div = document.getElementById("results");
+  div.style.display = "block";
+
+  const { energie, segment, note, volume, ddf, dff, syndic, fournisseur_actuel } = params;
+  const ddfStr = ddf.toLocaleDateString("fr-FR");
+  const dffStr = dff.toLocaleDateString("fr-FR");
+
+  const topSuppliers = Array.isArray(selectionData?.topSuppliers) ? selectionData.topSuppliers : [];
+  const partnerSupplier = selectionData?.partnerSupplier || null;
+  const eligibleCount = Number(selectionData?.eligibleCount || 0);
+
+  function getPanelBadge(panel = "") {
+    const panelText = String(panel || "").trim();
+    if (!panelText) return `<span class="tag">Panel non renseigné</span>`;
+    const key = panelText.toLowerCase();
+    let style = "background:#F3F3F3;color:#555;";
+    if (key === "gold premium") style = "background:#FFF4D6;color:#9A6B00;";
+    else if (key === "gold") style = "background:#FFF0B8;color:#8A6500;";
+    else if (key === "silver") style = "background:#EEF2F7;color:#5F6B7A;";
+    else if (key === "bronze") style = "background:#F7E7DB;color:#8A5A3C;";
+    return `<span class="tag" style="${style}">${escapeHtml(panelText)}</span>`;
+  }
+
+  function getEligibilityBadge(eligible) {
+    return eligible
+      ? `<span class="tag" style="background:#E8F8ED;color:#2E9879;">Éligible</span>`
+      : `<span class="tag" style="background:#FFF4F1;color:#C43D00;">Non éligible</span>`;
+  }
+
+  function renderEvaluationLines(evaluations) {
+    return (evaluations || []).map((ev) => {
+      const icon = ev.status === "ok" ? "✅" : ev.status === "warn" ? "🟡" : ev.status === "ko" ? "🔴" : "ℹ️";
+      return `<div class="justif-line"><span class="justif-dot">${icon}</span><span><strong>${escapeHtml(ev.criterion || "")}</strong> — ${escapeHtml(ev.reason || "")}</span></div>`;
+    }).join("");
+  }
+
+  function renderSelectionRows(list) {
+    if (!list.length) {
+      return `<tr><td colspan="5" style="text-align:center;color:#aaa;padding:18px;font-size:13px;">Aucun fournisseur éligible pour ce profil.</td></tr>`;
+    }
+
+    return list.map((r, index) => {
+      const prixEval = evaluerPrix(r.supplier, segment);
+      let prixHtml = '<span style="color:#bbb;font-size:11px;">—</span>';
+      if (prixEval) {
+        let ecartHtml = "";
+        if (prixEval.ecart_pct !== null && prixEval.ecart_pct !== undefined) {
+          const sign = prixEval.ecart_pct >= 0 ? "+" : "";
+          const ecartColor = prixEval.ecart_pct <= 5 ? "var(--vert)" : prixEval.ecart_pct <= 15 ? "var(--orange)" : "#C53030";
+          ecartHtml = `<div style="font-size:10px;font-weight:700;color:${ecartColor};">${sign}${prixEval.ecart_pct.toFixed(1)}% vs moy.</div>`;
+        }
+        const volHtml = prixEval.vol !== null ? `<div style="font-size:10px;color:#888;">Vol. moy: ${prixEval.vol.toFixed(0)} MWh</div>` : "";
+        const nbHtml = prixEval.nb !== null ? `<div style="font-size:10px;color:#aaa;">${prixEval.nb} appel${prixEval.nb > 1 ? "s" : ""} d'offres</div>` : "";
+        prixHtml = `<div style="font-size:12.5px;font-weight:700;color:var(--noir);">${prixEval.prix.toFixed(2)} €/MWh</div>${ecartHtml}${volHtml}${nbHtml}`;
+      }
+
+      return `<tr>
+        <td><strong>${index + 1}. ${escapeHtml(r.supplier)}</strong></td>
+        <td>${getPanelBadge(r.panel)}</td>
+        <td>${getEligibilityBadge(r.eligible)}</td>
+        <td>${prixHtml}</td>
+        <td class="justif-cell">${renderEvaluationLines(r.evaluations)}</td>
+      </tr>`;
+    }).join("");
+  }
+
+  const moyMarche = getMoyenneMarche(segment);
+  const prixBannerHtml = `<div style="background:white;border:1px solid var(--gris);border-radius:8px;padding:10px 16px;margin-bottom:16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:12px;">
+    <span style="font-weight:700;color:var(--principal);">📊 Données prix</span>
+    <span style="color:#555;">Période : <strong>${PRIX_META.periode || "—"}</strong></span>
+    <span style="color:#555;">Source : ${PRIX_META.source || "Excel mensuel"}</span>
+    <span style="background:var(--bleu-clair);color:var(--principal);font-weight:700;padding:2px 10px;border-radius:6px;">
+      Moyenne marché ${segment} : ${moyMarche !== null && moyMarche !== undefined ? `${moyMarche.toFixed(2)} €/MWh` : "—"}
+    </span>
+    <span style="margin-left:auto;color:#aaa;font-size:11px;">Mis à jour le ${PRIX_META.date || "—"}</span>
+  </div>`;
+
+  const pricingErrorHtml = pricingLoadError
+    ? `<div class="pricing-loading-banner error">⚠️ ${escapeHtml(pricingLoadError)} L'analyse continue avec les règles d'octroi, mais sans données prix complètes.</div>`
+    : "";
+
+  const partnerHtml = partnerSupplier
+    ? `<div class="classif-section" style="margin-top:20px;">
+        <div class="classif-section-title orange-title">
+          ⭐ FOURNISSEUR PARTENAIRE
+          <span style="margin-left:auto;font-size:11px;font-weight:400;opacity:0.75;">Contrôle spécifique du fournisseur actuel</span>
+        </div>
+        <div class="classif-table-wrap">
+          <table class="classif-table">
+            <thead><tr><th>Fournisseur</th><th>Panel</th><th>Éligibilité</th><th style="min-width:140px">Prix (30j)</th><th>Analyse</th></tr></thead>
+            <tbody>${renderSelectionRows([partnerSupplier])}</tbody>
+          </table>
+        </div>
+      </div>`
+    : "";
+
+  div.innerHTML = `
+    <div class="results-header">
+      <span class="results-title">Proposition fournisseurs</span>
+    </div>
+
+    <div class="client-summary">
+      <span>⚡ <strong>${energie.toUpperCase()}</strong> · <strong>${segment}</strong></span>
+      <span class="tag">Note : ${note}/10</span>
+      <span class="tag">Volume : ${volume} MWh/an</span>
+      <span class="tag">DDF : ${ddfStr}</span>
+      <span class="tag">Fin fourniture : ${dffStr}</span>
+      <span class="tag">Syndic : ${syndic === "oui" ? "Oui" : "Non"}</span>
+      ${fournisseur_actuel ? `<span class="tag">Actuel : ${escapeHtml(fournisseur_actuel)}</span>` : ""}
+      <span class="tag" style="background:var(--bleu-clair);color:var(--principal);">${eligibleCount} fournisseur(s) éligible(s)</span>
+    </div>
+
+    ${pricingErrorHtml}
+    ${prixBannerHtml}
+
+    <div class="classif-section">
+      <div class="classif-section-title vert-title">
+        ✅ Top 5 fournisseurs proposés
+        <span class="color-badge vert-badge-small">${topSuppliers.length} sélectionné(s)</span>
+        <span style="margin-left:auto;font-size:11px;font-weight:400;opacity:0.75;">Priorité Gold Premium, puis Gold, puis Silver</span>
+      </div>
+      <div class="classif-table-wrap">
+        <table class="classif-table">
+          <thead><tr><th>Fournisseur</th><th>Panel</th><th>Éligibilité</th><th style="min-width:140px">Prix (30j)</th><th>Analyse</th></tr></thead>
+          <tbody>${renderSelectionRows(topSuppliers)}</tbody>
+        </table>
+      </div>
+    </div>
+
+    ${partnerHtml}
+  `;
+
+  div.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function reinitialiser() {
+  ["energie","segment","note","volume","ddf","dff","etat_pdl","syndic","nb_compteurs","fournisseur_actuel"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+  const profilEl = document.getElementById("profil");
+  profilEl.innerHTML = '<option value="" disabled selected>— Sélectionner —</option>';
+  profilEl.disabled = true; profilEl.style.color = "#bbb"; profilEl.style.background = "#f7f7f7"; profilEl.style.cursor = "not-allowed";
+  const resultsDiv = document.getElementById("results");
+  resultsDiv.style.display = "none"; resultsDiv.innerHTML = "";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// ============ SALESFORCE MAPPER ============
+const FIELD_MAPPING = { energie: { field: "Energy_Type__c" }, segment: { field: "Segment__c" }, note: { field: "Credit_Score__c" }, volumeElec: { field: "VolumeTotalAnnuel__c" }, volumeGaz: { field: "VolumeReel__c" }, ddf: { field: "Desired_Start_Date__c" }, dff: { field: "Desired_End_Date__c" }, profil: { field: "Profil__c" }, etat_pdl: { field: "PDL_PCE_Status__c" }, fournisseur_actuel: { field: "Current_Supplier__c" }, deja_client: { field: "Customer_Status__c" }, type_offre: { field: "Offer_Type__c" }, energie_verte: { field: "Green_Energy__c" }, nb_compteurs: { field: "Meter_Count__c" }, fin_contrat: { field: "Current_Contract_End_Date__c" }, commentaires_sales: { field: "Sales_Comments__c" } };
+const ENERGY_MAP = { gaz:"gaz", gas:"gaz", "gaz naturel":"gaz", electricite:"elec", électricité:"elec", electricité:"elec", elec:"elec", electricity:"elec" };
+const SEGMENT_MAP = { t1:"T1", t2:"T2", t3:"T3", t4:"T4", tp:"TP", c1:"C1", c2:"C2", c3:"C3", c4:"C4", c5:"C5", "c4 bt":"C4", "c5 btinf36":"C5" };
+const ETAT_PDL_MAP = { "première mise en service":"premiere_mes", "premiere mise en service":"premiere_mes", "1ere mise en service":"premiere_mes", "1ère mise en service":"premiere_mes", "mise en service":"mes", "en service":"en_service", ferme:"ferme", fermé:"ferme" };
+const DEJA_CLIENT_MAP = { client:"oui", existant:"oui", "client existant":"oui", prospect:"non", nouveau:"non", "nouveau client":"non", oui:"oui", non:"non" };
+const TYPE_OFFRE_MAP = { fixe:"fixe", "bloc + spot":"bloc_spot", "bloc+spot":"bloc_spot", bloc_spot:"bloc_spot", clic:"clic", indexe:"indexe", indexé:"indexe" };
+const BOOLEAN_MAP = { true:"oui", false:"non", "true":"oui", "false":"non", "1":"oui", "0":"non", oui:"oui", non:"non" };
+
+function normalizeStr(v) { if (v === null || v === undefined) return ""; return String(v).trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); }
+function mapVal(raw, dict, field) { if (!raw && raw !== 0) return ""; const n = normalizeStr(raw); if (!dict[n]) throw new Error(`Valeur non reconnue pour "${field}" : "${raw}"`); return dict[n]; }
+function toNum(raw, field) { if (raw === null || raw === undefined || raw === "") return null; if (typeof raw === "number") return raw; const p = parseFloat(String(raw).replace(",",".")); if (isNaN(p)) throw new Error(`Impossible de convertir "${field}" : "${raw}"`); return p; }
+function normDate(raw, field) { if (!raw) return ""; if (raw instanceof Date) { const d = String(raw.getDate()).padStart(2,"0"), m = String(raw.getMonth()+1).padStart(2,"0"), y = raw.getFullYear(); return `${d}/${m}/${y}`; } const s = String(raw).trim(); if (/^\d{4}-\d{2}-\d{2}/.test(s)) { const [y,mo,d] = s.slice(0,10).split("-"); return `${d}/${mo}/${y}`; } if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) return s; throw new Error(`Format de date non reconnu pour "${field}" : "${raw}"`); }
+
+function normalizeSalesforceData(sfData) {
+  if (!sfData || typeof sfData !== "object") throw new Error("Les données Salesforce sont absentes ou invalides.");
+  const energie = mapVal(sfData[FIELD_MAPPING.energie.field], ENERGY_MAP, "energie");
+  const appData = {
+    energie, segment: mapVal(sfData[FIELD_MAPPING.segment.field], SEGMENT_MAP, "segment"),
+    note: toNum(sfData[FIELD_MAPPING.note.field], "note"),
+    volume: energie === "elec" ? toNum(sfData[FIELD_MAPPING.volumeElec.field], "volumeElec") : toNum(sfData[FIELD_MAPPING.volumeGaz.field], "volumeGaz"),
+    ddf: normDate(sfData[FIELD_MAPPING.ddf.field], "ddf"), dff: normDate(sfData[FIELD_MAPPING.dff.field], "dff"),
+    profil: energie === "gaz" ? (sfData[FIELD_MAPPING.profil.field] || "") : "",
+    etat_pdl: (() => { const r = sfData[FIELD_MAPPING.etat_pdl.field]; return r ? mapVal(r, ETAT_PDL_MAP, "etat_pdl") : ""; })(),
+    syndic: (() => { const r = sfData["Syndic__c"]; return r ? mapVal(r, BOOLEAN_MAP, "syndic") : ""; })(),
+    fournisseur_actuel: sfData[FIELD_MAPPING.fournisseur_actuel.field] || "",
+    nb_compteurs: (() => { const n = toNum(sfData[FIELD_MAPPING.nb_compteurs.field], "nb_compteurs"); return n !== null ? Math.round(n) : null; })()
+  };
+  const required = ["energie","segment","note","volume","ddf","dff"];
+  const missing = required.filter(k => appData[k] === null || appData[k] === undefined || appData[k] === "");
+  return { appData, validation: { isValid: missing.length === 0, missingFields: missing } };
+}
+
+function populateForm(appData) {
+  const setS = (id, v) => { const el = document.getElementById(id); if (!el) return; el.value = v !== null && v !== undefined ? v : ""; el.dispatchEvent(new Event("change", {bubbles:true})); el.dispatchEvent(new Event("input", {bubbles:true})); };
+  setS("energie", appData.energie);
+  if (typeof onEnergieChange === "function") onEnergieChange();
+  setS("segment", appData.segment);
+  if (appData.energie === "gaz") setS("profil", appData.profil || "");
+  setS("note", appData.note ?? ""); setS("volume", appData.volume ?? "");
+  setS("ddf", appData.ddf || ""); setS("dff", appData.dff || "");
+  setS("etat_pdl", appData.etat_pdl || ""); setS("syndic", appData.syndic || ""); setS("fournisseur_actuel", appData.fournisseur_actuel || "");
+  setS("nb_compteurs", appData.nb_compteurs ?? "");
+}
+
+function initFromSalesforce(sfData) {
+  const { appData, validation } = normalizeSalesforceData(sfData);
+  populateForm(appData);
+  if (!validation.isValid) console.warn("Champs critiques manquants :", validation.missingFields);
+  return { appData, validation };
+}
+
+
+// ============ BACKEND / API VERCEL ============
+const API_BASE = "";
+
+async function apiFetch(path) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    headers: { "Accept": "application/json" }
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.error || `HTTP ${res.status}`);
+  }
+  return data;
+}
+
+// --- Helpers ---
+function normalizeStatus(status) {
+  return String(status || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function formatCUDate(ts) {
+  if (!ts) return "";
+  const d = new Date(parseInt(ts));
+  return d.toLocaleDateString("fr-FR", { day:"2-digit", month:"short", year:"numeric" });
+}
+
+function getStatusStyle(status) {
+  const s = (status || "").toLowerCase();
+  if (s.includes("fermé") || s.includes("done") || s.includes("completed") || s.includes("terminé")) return "background:#E6F9F3;color:#1A9E6E;";
+  if (s.includes("cours") || s.includes("progress") || s.includes("active")) return "background:var(--bleu-clair);color:var(--principal);";
+  if (s.includes("bloqué") || s.includes("block")) return "background:var(--rouge-bg);color:var(--rouge);";
+  return "background:var(--blanc-bloc);color:#666;";
+}
+
+function getFileIcon(name) {
+  const ext = (name || "").split(".").pop().toLowerCase();
+  const icons = { pdf:"📄", jpg:"🖼️", jpeg:"🖼️", png:"🖼️", gif:"🖼️", webp:"🖼️", xlsx:"📊", xls:"📊", csv:"📊", docx:"📝", doc:"📝", pptx:"📊", ppt:"📊", zip:"📦", rar:"📦", mp4:"🎬", mp3:"🎵" };
+  return icons[ext] || "📎";
+}
+
+function getFileIconBg(name) {
+  const ext = (name || "").split(".").pop().toLowerCase();
+  if (["jpg","jpeg","png","gif","webp"].includes(ext)) return "background:#E8F0FF;";
+  if (["pdf"].includes(ext)) return "background:#FFECE8;";
+  if (["xlsx","xls","csv"].includes(ext)) return "background:#E8F9F0;";
+  if (["docx","doc"].includes(ext)) return "background:#E8F0FF;";
+  return "background:var(--blanc-bloc);";
+}
+
+function formatFileSize(bytes) {
+  if (!bytes) return "";
+  if (bytes < 1024) return bytes + " o";
+  if (bytes < 1024*1024) return (bytes/1024).toFixed(0) + " Ko";
+  return (bytes/1024/1024).toFixed(1) + " Mo";
+}
+
+// ============ NEWS FOURNISSEURS ============
+let NEWS_STATUS_FILTER = "open";
+let NEWS_SUPPLIER_FILTERS = [];
+
+function getAvailableNewsSuppliers() {
+  return [...new Set((FOURNISSEURS_LIST || []).filter(Boolean))].sort((a, b) => a.localeCompare(b, "fr"));
+}
+
+function populateNewsSupplierFilter() {
+  const select = document.getElementById("news-supplier-filter");
+  if (!select) return;
+
+  const suppliers = getAvailableNewsSuppliers();
+  const selected = new Set(NEWS_SUPPLIER_FILTERS);
+
+  select.innerHTML = suppliers.map(name => `
+    <option value="${escapeAttr(name)}" ${selected.has(name) ? "selected" : ""}>${escapeHtml(name)}</option>
+  `).join("");
+
+  select.onchange = () => {
+    NEWS_SUPPLIER_FILTERS = Array.from(select.selectedOptions).map(o => o.value);
+    loadNews();
+  };
+}
+
+function setNewsStatusFilter(value) {
+  NEWS_STATUS_FILTER = value;
+  document.getElementById("news-filter-open")?.classList.toggle("active", value === "open");
+  document.getElementById("news-filter-closed")?.classList.toggle("active", value === "closed");
+  document.getElementById("news-filter-all")?.classList.toggle("active", value === "all");
+  loadNews();
+}
+
+function isNewsClosed(task) {
+  const status = normalizeStatus(task?.status?.status || "");
+  return ["closed", "done", "completed", "ferme", "fermee", "termine", "terminee"].includes(status);
+}
+
+function detectNewsSuppliers(task) {
+  const haystack = [
+    task?.name || "",
+    task?.description || "",
+    task?.markdown_description || "",
+    ...(task?.tags || []).map(t => t?.name || "")
+  ].join(" ").toUpperCase();
+
+  const matches = getAvailableNewsSuppliers().filter(supplier => haystack.includes(String(supplier).toUpperCase()));
+  return [...new Set(matches)];
+}
+
+async function loadNews() {
+  const btn = document.getElementById("news-refresh-btn");
+  const container = document.getElementById("news-container");
+  if (btn) btn.classList.add("spinning");
+
+  container.innerHTML = `<div class="loading-state"><div class="loading-spinner"></div><div class="loading-text">Récupération des news depuis ClickUp…</div></div>`;
+
+  try {
+    const data = await apiFetch('/api/news');
+    const tasks = (data.tasks || []).map(task => ({
+      ...task,
+      _matchedSuppliers: detectNewsSuppliers(task)
+    }));
+
+    if (tasks.length === 0) {
+      container.innerHTML = `<div class="empty-state"><h3>📭 Aucune news</h3><p>La liste ClickUp est vide pour le moment.</p></div>`;
+      if (btn) btn.classList.remove("spinning");
+      return;
+    }
+
+    const filteredTasks = tasks
+      .filter(task => {
+        if (NEWS_STATUS_FILTER === "open") return !isNewsClosed(task);
+        if (NEWS_STATUS_FILTER === "closed") return isNewsClosed(task);
+        return true;
+      })
+      .filter(task => {
+        if (!NEWS_SUPPLIER_FILTERS.length) return true;
+        return task._matchedSuppliers.some(name => NEWS_SUPPLIER_FILTERS.includes(name));
+      })
+      .sort((a, b) => parseInt(b.date_created || 0) - parseInt(a.date_created || 0));
+
+    if (filteredTasks.length === 0) {
+      container.innerHTML = `<div class="empty-state"><h3>🗂️ Aucune news trouvée</h3><p>Aucune news ne correspond aux filtres sélectionnés.</p></div>`;
+      if (btn) btn.classList.remove("spinning");
+      return;
+    }
+
+    const priorityLabel = { 1:"🔴 Urgent", 2:"🟠 Haute", 3:"🟡 Normale", 4:"⬜ Basse" };
+    const priorityClass = { 1:"priority-urgent", 2:"priority-high", 3:"priority-normal", 4:"" };
+
+    const items = filteredTasks.map(t => {
+      const statusStyle = getStatusStyle(t.status?.status || "");
+      const statusColor = t.status?.color ? `background:${t.status.color}20;color:${t.status.color};` : statusStyle;
+      const prio = t.priority?.priority;
+      const prioHtml = prio ? `<span class="news-priority ${priorityClass[prio] || ''}">${priorityLabel[prio] || ""}</span>` : "";
+      const supplierTags = (t._matchedSuppliers || []).map(name => `<span class="news-tag">${escapeHtml(name)}</span>`).join("");
+      const otherTags = (t.tags || [])
+        .map(tag => tag?.name || "")
+        .filter(name => name && !(t._matchedSuppliers || []).includes(name))
+        .map(name => `<span class="news-tag">${escapeHtml(name)}</span>`)
+        .join("");
+      const desc = (t.description || t.markdown_description || "").trim();
+      const descHtml = desc
+        ? `<div class="news-item-body">${escapeHtml(desc)}</div>`
+        : `<div class="news-item-body empty">Aucune description renseignée.</div>`;
+      const assignees = (t.assignees || [])
+        .map(a => `<span class="news-assignee">${escapeHtml(a.username || a.email || "")}</span>`)
+        .join("");
+      const createdAt = formatCUDate(t.date_created);
+
+      return `<div class="news-item" style="animation:fadeUp 0.3s ease both;">
+        <div class="news-item-top">
+          <div class="news-item-title-wrap">
+            <div class="news-item-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+            </div>
+            <div class="news-item-title-meta">
+              <div class="news-item-title">${escapeHtml(t.name || "Sans titre")}</div>
+              <div class="news-item-date">Créée le ${createdAt}</div>
+            </div>
+          </div>
+          <div class="news-item-badges">
+            <span class="news-status" style="${statusColor}">${escapeHtml(t.status?.status || "—")}</span>
+            ${prioHtml}
+          </div>
+        </div>
+        ${descHtml}
+        <div class="news-item-bottom">
+          <div class="news-item-meta-left">
+            ${supplierTags}
+            ${otherTags}
+          </div>
+          <div class="news-item-meta-right">
+            ${assignees}
+          </div>
+        </div>
+      </div>`;
+    }).join("");
+
+    const statusLabel = NEWS_STATUS_FILTER === "open"
+      ? "news en cours"
+      : NEWS_STATUS_FILTER === "closed"
+        ? "news fermées"
+        : "news";
+
+    container.innerHTML = `
+      <div class="news-summary-bar">
+        <span class="news-summary-count">${filteredTasks.length} ${statusLabel}</span>
+        <span class="news-summary-sync">Dernière sync : ${new Date().toLocaleTimeString("fr-FR", { hour:"2-digit", minute:"2-digit" })}</span>
+      </div>
+      <div class="news-list">${items}</div>`;
+  } catch (e) {
+    container.innerHTML = `<div class="error-state"><p>❌ <strong>Erreur de chargement</strong><br><code style="font-size:11px;">${escapeHtml(e.message)}</code><br><br>Vérifiez votre connexion réseau.</p></div>`;
+  }
+
+  if (btn) btn.classList.remove("spinning");
+}
+
+// ============ CHALLENGES ============
+async function loadChallenges() {
+  const btn = document.getElementById("challenges-refresh-btn");
+  const container = document.getElementById("challenges-container");
+  if (btn) btn.classList.add("spinning");
+  
+  container.innerHTML = `<div class="loading-state"><div class="loading-spinner" style="border-top-color:var(--rose);"></div><div class="loading-text">Récupération des challenges depuis ClickUp…</div></div>`;
+  
+  try {
+    const data = await apiFetch('/api/challenges');
+    const tasks = data.tasks || [];
+    
+    if (tasks.length === 0) {
+      container.innerHTML = `<div class="empty-state"><h3>🏆 Aucun challenge</h3><p>Aucun challenge en cours dans cette liste ClickUp.</p></div>`;
+      if (btn) btn.classList.remove("spinning");
+      return;
+    }
+    
+    const enCoursTasks = tasks.filter(t => normalizeStatus(t.status?.status) === "en cours");
+
+    if (enCoursTasks.length === 0) {
+      container.innerHTML = `<div class="empty-state"><h3>🏆 Aucun challenge en cours</h3><p>Aucun challenge avec le statut “En cours” n'a été trouvé.</p></div>`;
+      if (btn) btn.classList.remove("spinning");
+      return;
+    }
+
+    enCoursTasks.sort((a, b) => parseInt(b.date_created||0) - parseInt(a.date_created||0));
+    const enrichedTasks = enCoursTasks;
+    
+    const cards = enrichedTasks.map(t => {
+      const statusStyle = getStatusStyle(t.status?.status || "");
+      const statusColor = t.status?.color ? `background:${t.status.color}20;color:${t.status.color};` : statusStyle;
+      const desc = (t.description || t.markdown_description || "").trim();
+      const descHtml = desc ? `<div class="challenge-card-desc">${escapeHtml(desc)}</div>` : "";
+      
+      const attachments = (t._attachments || []);
+      const attachHtml = attachments.length === 0
+        ? `<div class="challenge-no-attach">Aucune pièce jointe</div>`
+        : `<div class="challenge-attachments">${attachments.map(att => {
+            const isImg = /\.(jpg|jpeg|png|gif|webp)$/i.test(att.title||"");
+            const iconHtml = isImg && att.url
+              ? `<img class="attachment-img-preview" src="${escapeAttr(att.url)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="challenge-attachment-icon" style="display:none;${getFileIconBg(att.title)}">${getFileIcon(att.title)}</span>`
+              : `<span class="challenge-attachment-icon" style="${getFileIconBg(att.title)}">${getFileIcon(att.title)}</span>`;
+            const size = att.size ? formatFileSize(att.size) : "";
+            const ext = (att.title||"").split(".").pop().toUpperCase();
+            return `<a class="challenge-attachment" href="${escapeAttr(att.url||"#")}" target="_blank" rel="noopener">
+              ${iconHtml}
+              <div class="challenge-attachment-info">
+                <div class="challenge-attachment-name">${escapeHtml(att.title||"Fichier")}</div>
+                <div class="challenge-attachment-meta">${ext}${size ? " · "+size : ""}</div>
+              </div>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="#aaa"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+            </a>`;
+          }).join("")}</div>`;
+      
+      const dueDate = t.due_date ? `<span style="font-size:11px;color:#888;">Échéance : ${formatCUDate(t.due_date)}</span>` : "";
+      const attachCount = attachments.length > 0 ? `<span class="challenge-count">📎 ${attachments.length} pièce${attachments.length>1?"s":""} jointe${attachments.length>1?"s":""}</span>` : "";
+      
+      return `<div class="challenge-card" style="animation:fadeUp 0.3s ease both;">
+        <div class="challenge-card-header">
+          <div style="width:34px;height:34px;background:rgba(255,255,255,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🏆</div>
+          <h3>${escapeHtml(t.name||"Sans titre")}</h3>
+          <span class="challenge-status" style="${statusColor}border:none;">${escapeHtml(t.status?.status||"—")}</span>
+        </div>
+        <div class="challenge-card-body">
+          ${descHtml}
+          <div style="font-size:11px;font-weight:700;color:var(--principal);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;margin-top:${desc?'12px':'0'};">Pièces jointes</div>
+          ${attachHtml}
+        </div>
+        <div class="challenge-card-footer">
+          ${dueDate}
+          ${attachCount}
+        </div>
+      </div>`;
+    }).join("");
+    
+    container.innerHTML = `
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+        <span style="font-size:13px;color:#666;">${enCoursTasks.length} challenge${enCoursTasks.length>1?"s":""} en cours</span>
+        <span style="font-size:12px;color:#aaa;">Dernière sync : ${new Date().toLocaleTimeString("fr-FR", {hour:"2-digit",minute:"2-digit"})}</span>
+      </div>
+      <div class="challenges-grid">${cards}</div>`;
+  } catch(e) {
+    container.innerHTML = `<div class="error-state"><p>❌ <strong>Erreur de chargement</strong><br><code style="font-size:11px;">${escapeHtml(e.message)}</code><br><br>Vérifiez votre connexion réseau.</p></div>`;
+  }
+  
+  if (btn) btn.classList.remove("spinning");
+}
+
+
+function getQuestionnaireSegmentsByEnergy(energie) {
+  if (energie === "gaz") return [...GAZ_SEGMENTS];
+  if (energie === "elec") return [...ELEC_SEGMENTS];
+  if (energie === "mixte") return [...new Set([...GAZ_SEGMENTS, ...ELEC_SEGMENTS])];
+  return [];
+}
+
+function updateQuestionnaireSegments() {
+  const energieEl = document.getElementById("q_energie");
+  const segmentEl = document.getElementById("q_segment");
+  if (!energieEl || !segmentEl) return;
+
+  const previousValues = Array.from(segmentEl.selectedOptions || []).map((opt) => opt.value);
+  const segments = getQuestionnaireSegmentsByEnergy(energieEl.value);
+
+  segmentEl.innerHTML = "";
+
+  if (segments.length === 0) {
+    const option = document.createElement("option");
+    option.value = "";
+    option.textContent = "— Sélectionner d'abord un type d’énergie —";
+    option.disabled = true;
+    option.selected = true;
+    segmentEl.appendChild(option);
+    return;
+  }
+
+  segments.forEach((segment) => {
+    const option = document.createElement("option");
+    option.value = segment;
+    option.textContent = segment;
+    option.selected = previousValues.includes(segment);
+    segmentEl.appendChild(option);
+  });
+}
+
+
+
+function initQuestionnaireFournisseurs() {
+  const select = document.getElementById("q_fournisseur");
+  if (!select || select.dataset.initialized === "true") return;
+
+  const fournisseurs = [...FOURNISSEURS_LIST].sort((a, b) => a.localeCompare(b, "fr"));
+  fournisseurs.forEach((fournisseur) => {
+    const option = document.createElement("option");
+    option.value = fournisseur;
+    option.textContent = fournisseur;
+    select.appendChild(option);
+  });
+
+  const autreOption = document.createElement("option");
+  autreOption.value = "AUTRE";
+  autreOption.textContent = "AUTRE";
+  select.appendChild(autreOption);
+
+  select.dataset.initialized = "true";
+}
+
+
+function openQuestionnaireModal() {
+  initQuestionnaireFournisseurs();
+  updateQuestionnaireSegments();
+  document.getElementById("questionnaire-modal").classList.add("open");
+}
+
+function closeQuestionnaireModal() {
+  document.getElementById("questionnaire-modal").classList.remove("open");
+  const feedback = document.getElementById("questionnaire-feedback");
+  if (feedback) {
+    feedback.className = "questionnaire-feedback";
+    feedback.textContent = "";
+  }
+}
+
+function handleQuestionnaireOverlayClick(event) {
+  if (event.target && event.target.id === "questionnaire-modal") {
+    closeQuestionnaireModal();
+  }
+}
+
+async function submitQuestionnaire() {
+  const payload = {
+    prenom: document.getElementById("q_prenom").value.trim(),
+    fournisseur: document.getElementById("q_fournisseur").value.trim(),
+    energie: document.getElementById("q_energie").value,
+    segments: Array.from(document.getElementById("q_segment").selectedOptions || [])
+      .map((option) => option.value)
+      .filter(Boolean),
+    rubrique: document.getElementById("q_rubrique").value,
+    type_demande: document.getElementById("q_type_demande").value,
+    priorite: document.getElementById("q_priorite").value,
+    demandeur: document.getElementById("q_demandeur").value.trim(),
+    modification: document.getElementById("q_modification").value.trim(),
+    justification: document.getElementById("q_justification").value.trim()
+  };
+
+  const feedback = document.getElementById("questionnaire-feedback");
+  feedback.className = "questionnaire-feedback";
+
+  if (!payload.prenom || !payload.fournisseur || !payload.energie || payload.segments.length === 0 || !payload.type_demande || !payload.modification) {
+    feedback.classList.add("error");
+    feedback.textContent = "Veuillez renseigner au minimum le prénom, le fournisseur, le type d’énergie, au moins un segment, le type de demande et la modification demandée.";
+    return;
+  }
+
+  feedback.classList.add("pending");
+  feedback.textContent = "Envoi en cours…";
+
+  try {
+    const res = await fetch("/api/questionnaire", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      throw new Error(data.message || data.error || `HTTP ${res.status}`);
+    }
+
+    feedback.className = "questionnaire-feedback success";
+    feedback.textContent = "Demande envoyée avec succès.";
+
+    [
+      "q_prenom",
+      "q_fournisseur",
+      "q_energie",
+      "q_rubrique",
+      "q_type_demande",
+      "q_priorite",
+      "q_demandeur",
+      "q_modification",
+      "q_justification"
+    ].forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (el.tagName === "SELECT") {
+        if (id === "q_priorite") el.value = "normale";
+        else el.value = "";
+      } else {
+        el.value = "";
+      }
+    });
+
+    const qSegmentEl = document.getElementById("q_segment");
+    if (qSegmentEl) {
+      qSegmentEl.innerHTML = "";
+      updateQuestionnaireSegments();
+    }
+  } catch (e) {
+    feedback.className = "questionnaire-feedback error";
+    feedback.textContent = `Erreur : ${e.message}`;
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  updateQuestionnaireSegments();
+});
+
+// ---- Utils ----
+function escapeHtml(s) {
+  if (!s) return "";
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+function escapeAttr(s) {
+  if (!s) return "";
+  return String(s).replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}
+
+
+document.addEventListener("DOMContentLoaded", async () => {
+  recomputeFournisseurLists();
+  populateNewsSupplierFilter();
+  buildResumeTable();
+  await loadFournisseurRules();
+});
+
+</script>
+</body>
+</html>
