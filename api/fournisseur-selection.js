@@ -514,6 +514,46 @@ function parsePanelSheet(workbook) {
     defval: ""
   });
 
+  if (!data.length) {
+    throw new Error("Onglet panel vide ou format inattendu.");
+  }
+
+  const headerIndex = data.findIndex((row) => {
+    const first = slugify(row[0]);
+    const second = slugify(row[1]);
+    return first.includes("fournisseur") && second.includes("panel");
+  });
+
+  if (headerIndex === -1) {
+    throw new Error("Impossible de trouver l'en-tête de l'onglet Fournisseurs Panel.");
+  }
+
+  const panelBySupplier = {};
+
+  for (let i = headerIndex + 1; i < data.length; i += 1) {
+    const rawSupplier = normalizeText(data[i][0]);
+    const rawPanel = normalizeText(data[i][1]);
+
+    if (!rawSupplier) continue;
+
+    const supplier = normalizeSupplierName(rawSupplier);
+    const panel = rawPanel || "";
+
+    panelBySupplier[supplier] = {
+      supplier,
+      panel,
+      panelPriority: PANEL_PRIORITY[panel.toLowerCase()] ?? 99
+    };
+  }
+
+  return panelBySupplier;
+}
+
+  const data = xlsx.utils.sheet_to_json(sheet, {
+    header: 1,
+    defval: ""
+  });
+
   const panelBySupplier = {};
 
   for (let i = 0; i < data.length; i += 1) {
