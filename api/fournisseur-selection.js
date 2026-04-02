@@ -514,6 +514,37 @@ function parsePanelSheet(workbook) {
     defval: ""
   });
 
+  if (data.length < 2) {
+    throw new Error("Onglet panel vide ou format inattendu.");
+  }
+
+  const panelBySupplier = {};
+
+  // On démarre à 1 pour skip le header
+  for (let i = 1; i < data.length; i++) {
+    const rawSupplier = normalizeText(data[i][0]);
+    const rawPanel = normalizeText(data[i][1]);
+
+    if (!rawSupplier) continue;
+
+    const supplier = normalizeSupplierName(rawSupplier);
+    const panel = rawPanel || "";
+
+    panelBySupplier[supplier] = {
+      supplier,
+      panel,
+      panelPriority: PANEL_PRIORITY[panel.toLowerCase()] ?? 99
+    };
+  }
+    console.log("Panel loaded:", panelBySupplier);
+  return panelBySupplier;
+  
+}
+  const data = xlsx.utils.sheet_to_json(sheet, {
+    header: 1,
+    defval: ""
+  });
+
   if (!data.length) {
     throw new Error("Onglet panel vide ou format inattendu.");
   }
