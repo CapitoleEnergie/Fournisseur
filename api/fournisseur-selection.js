@@ -509,34 +509,41 @@ module.exports = function handler(req, res) {
         : null;
 
     return res.status(200).json({
-      meta: {
-        fileName: path.basename(EXCEL_FILE),
-        rulesSheet: RULES_SHEET,
-        panelSheet: PANEL_SHEET,
-        totalSuppliers: engine.fournisseurs.length
-      },
-      input: {
-        energie: normalizedEnergy,
-        segment: normalizedSegment,
-        syndic: normalizedSyndic,
-        note: params.note,
-        volume: params.volume,
-        ddf: query.ddf || "",
-        dff: query.dff || "",
-        fournisseur_actuel: currentSupplier || ""
-      },
-      topSuppliers,
-      eligibleCount: eligibleResults.length,
-      partnerSupplier: partnerSupplier
-        ? {
-            label: "FOURNISSEUR PARTENAIRE",
-            supplier: partnerSupplier.supplier,
-            eligible: partnerSupplier.eligible,
-            panel: partnerSupplier.panel || "",
-            evaluations: partnerSupplier.evaluations
-          }
-        : null
-    });
+  meta: {
+    fileName: path.basename(EXCEL_FILE),
+    rulesSheet: RULES_SHEET,
+    panelSheet: PANEL_SHEET,
+    totalSuppliers: engine.fournisseurs.length
+  },
+  input: {
+    energie: normalizedEnergy,
+    segment: normalizedSegment,
+    syndic: normalizedSyndic,
+    note: params.note,
+    volume: params.volume,
+    ddf: query.ddf || "",
+    dff: query.dff || "",
+    fournisseur_actuel: currentSupplier || ""
+  },
+
+  // 🔥 NOUVEAU : tous les fournisseurs
+  allSuppliers: results,
+
+  // 🔥 existant
+  topSuppliers,
+  eligibleCount: eligibleResults.length,
+
+  partnerSupplier: partnerSupplier
+    ? {
+        label: "FOURNISSEUR PARTENAIRE",
+        supplier: partnerSupplier.supplier,
+        eligible: partnerSupplier.eligible,
+        panel: partnerSupplier.panel || "",
+        evaluations: partnerSupplier.evaluations,
+        score: partnerSupplier.score // 👈 bonus utile
+      }
+    : null
+});
   } catch (error) {
     console.error("fournisseur-selection error:", error);
     return res.status(500).json({
