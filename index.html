@@ -514,7 +514,6 @@ textarea::placeholder { color: #b0b0b0; }
     <div class="form-group"><label>État PDL / PCE</label><select id="etat_pdl"><option value="" disabled selected>— Sélectionner —</option><option value="premiere_mes">Première mise en service</option><option value="mes">Mise en service</option><option value="en_service">En service</option><option value="ferme">Fermé</option></select></div>
     <div class="form-group"><label>Syndic ?</label><select id="syndic"><option value="" disabled selected>— Sélectionner —</option><option value="oui">Oui</option><option value="non">Non</option></select></div>
     <div class="form-group"><label>Fournisseur actuel</label><select id="fournisseur_actuel"><option value="" disabled selected>— Sélectionner —</option><option value="ALTERNA">ALTERNA</option><option value="DYNEFF">DYNEFF</option><option value="EKWATEUR">EKWATEUR</option><option value="ENDESA">ENDESA</option><option value="ENERGEM">ENERGEM</option><option value="ENERGIE D'ICI">ENERGIE D'ICI</option><option value="ENGIE">ENGIE</option><option value="ENI">ENI</option><option value="ENOVOS">ENOVOS</option><option value="GAZ DE BORDEAUX">GAZ DE BORDEAUX</option><option value="GEDIA">GEDIA</option><option value="GEG">GEG</option><option value="HELLIO">HELLIO</option><option value="ILEK">ILEK</option><option value="LA BELLENERGIE">LA BELLENERGIE</option><option value="MET">MET</option><option value="MINT Energie">MINT Energie</option><option value="NATGAS">NATGAS</option><option value="OHM">OHM</option><option value="PICOTY">PICOTY</option><option value="PRIMEO">PRIMEO</option><option value="SAVE">SAVE</option><option value="SEFE">SEFE</option><option value="SYNELVA">SYNELVA</option><option value="TOTALENERGIES">TOTALENERGIES</option><option value="VATTENFALL">VATTENFALL</option><option value="AUTRE">— AUTRE (hors partenaires)</option></select></div>
-    <div class="form-group"><label>Nombre de compteurs</label><input type="number" id="nb_compteurs" min="1" placeholder="ex: 1"></div>
   </div>
   <div style="display:flex; align-items:center; flex-wrap:wrap; gap:8px;">
     <button class="btn-primary" onclick="analyser()">
@@ -1667,7 +1666,7 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
 }
 
 function reinitialiser() {
-  ["energie","segment","note","volume","ddf","dff","etat_pdl","syndic","nb_compteurs","fournisseur_actuel"].forEach(id => {
+  ["energie","segment","note","volume","ddf","dff","etat_pdl","syndic","fournisseur_actuel"].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = "";
   });
@@ -1680,7 +1679,7 @@ function reinitialiser() {
 }
 
 // ============ SALESFORCE MAPPER ============
-const FIELD_MAPPING = { energie: { field: "Energy_Type__c" }, segment: { field: "Segment__c" }, note: { field: "Credit_Score__c" }, volumeElec: { field: "VolumeTotalAnnuel__c" }, volumeGaz: { field: "VolumeReel__c" }, ddf: { field: "Desired_Start_Date__c" }, dff: { field: "Desired_End_Date__c" }, profil: { field: "Profil__c" }, etat_pdl: { field: "PDL_PCE_Status__c" }, fournisseur_actuel: { field: "Current_Supplier__c" }, deja_client: { field: "Customer_Status__c" }, type_offre: { field: "Offer_Type__c" }, energie_verte: { field: "Green_Energy__c" }, nb_compteurs: { field: "Meter_Count__c" }, fin_contrat: { field: "Current_Contract_End_Date__c" }, commentaires_sales: { field: "Sales_Comments__c" } };
+const FIELD_MAPPING = { energie: { field: "Energy_Type__c" }, segment: { field: "Segment__c" }, note: { field: "Credit_Score__c" }, volumeElec: { field: "VolumeTotalAnnuel__c" }, volumeGaz: { field: "VolumeReel__c" }, ddf: { field: "Desired_Start_Date__c" }, dff: { field: "Desired_End_Date__c" }, profil: { field: "Profil__c" }, etat_pdl: { field: "PDL_PCE_Status__c" }, fournisseur_actuel: { field: "Current_Supplier__c" }, deja_client: { field: "Customer_Status__c" }, type_offre: { field: "Offer_Type__c" }, energie_verte: { field: "Green_Energy__c" }, fin_contrat: { field: "Current_Contract_End_Date__c" }, commentaires_sales: { field: "Sales_Comments__c" } };
 const ENERGY_MAP = { gaz:"gaz", gas:"gaz", "gaz naturel":"gaz", electricite:"elec", électricité:"elec", electricité:"elec", elec:"elec", electricity:"elec" };
 const SEGMENT_MAP = { t1:"T1", t2:"T2", t3:"T3", t4:"T4", tp:"TP", c1:"C1", c2:"C2", c3:"C3", c4:"C4", c5:"C5", "c4 bt":"C4", "c5 btinf36":"C5" };
 const ETAT_PDL_MAP = { "première mise en service":"premiere_mes", "premiere mise en service":"premiere_mes", "1ere mise en service":"premiere_mes", "1ère mise en service":"premiere_mes", "mise en service":"mes", "en service":"en_service", ferme:"ferme", fermé:"ferme" };
@@ -1704,8 +1703,7 @@ function normalizeSalesforceData(sfData) {
     profil: energie === "gaz" ? (sfData[FIELD_MAPPING.profil.field] || "") : "",
     etat_pdl: (() => { const r = sfData[FIELD_MAPPING.etat_pdl.field]; return r ? mapVal(r, ETAT_PDL_MAP, "etat_pdl") : ""; })(),
     syndic: (() => { const r = sfData["Syndic__c"]; return r ? mapVal(r, BOOLEAN_MAP, "syndic") : ""; })(),
-    fournisseur_actuel: sfData[FIELD_MAPPING.fournisseur_actuel.field] || "",
-    nb_compteurs: (() => { const n = toNum(sfData[FIELD_MAPPING.nb_compteurs.field], "nb_compteurs"); return n !== null ? Math.round(n) : null; })()
+    fournisseur_actuel: sfData[FIELD_MAPPING.fournisseur_actuel.field] || ""
   };
   const required = ["energie","segment","note","volume","ddf","dff"];
   const missing = required.filter(k => appData[k] === null || appData[k] === undefined || appData[k] === "");
@@ -1721,7 +1719,6 @@ function populateForm(appData) {
   setS("note", appData.note ?? ""); setS("volume", appData.volume ?? "");
   setS("ddf", appData.ddf || ""); setS("dff", appData.dff || "");
   setS("etat_pdl", appData.etat_pdl || ""); setS("syndic", appData.syndic || ""); setS("fournisseur_actuel", appData.fournisseur_actuel || "");
-  setS("nb_compteurs", appData.nb_compteurs ?? "");
 }
 
 function initFromSalesforce(sfData) {
