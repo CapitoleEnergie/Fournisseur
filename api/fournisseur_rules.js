@@ -5,7 +5,7 @@ import xlsx from "xlsx";
 const EXCEL_FILE = path.join(
   process.cwd(),
   "data",
-  "Fichier Fournisseur_SALESFORCE - V3 .xlsx"
+  "regles_all_fournisseurs.xlsx"
 );
 
 const SHEET_NAME = "Résumé global";
