@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import xlsx from "xlsx";
 
-const EXCEL_FILE = path.join(process.cwd(), "data", "Top fournisseurs.xlsx");
+const EXCEL_FILE = path.join(process.cwd(), "data", "Chiffres_fournisseurs.xlsx");
 const SHEET_NAME = "1.Top fournisseurs C4";
 
 function safeNumber(value) {
