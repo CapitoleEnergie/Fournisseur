@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const xlsx = require("xlsx");
 
-const EXCEL_FILE = path.join(process.cwd(), "data", "fournisseurs_export new .xlsx");
+const EXCEL_FILE = path.join(process.cwd(), "data", "regle_fournisseur.xlsx");
 const RULES_SHEET = "Fournisseurs Export";
 const PANEL_SHEET = "Fournisseurs Panel";
 
