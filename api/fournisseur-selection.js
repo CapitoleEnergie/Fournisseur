@@ -64,6 +64,19 @@ function safeNumber(value) {
 }
 
 function parseFrenchDate(value) {
+  if (value === null || value === undefined || value === "") return null;
+
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return new Date(value.getFullYear(), value.getMonth(), value.getDate());
+  }
+
+  if (typeof value === "number" && Number.isFinite(value)) {
+    const parsed = xlsx.SSF.parse_date_code(value);
+    if (parsed) {
+      return new Date(parsed.y, parsed.m - 1, parsed.d);
+    }
+  }
+
   const s = normalizeText(value);
   if (!s) return null;
 
@@ -74,6 +87,13 @@ function parseFrenchDate(value) {
 
   if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
     return new Date(s.slice(0, 10));
+  }
+
+  if (/^\d{5}(?:\.\d+)?$/.test(s)) {
+    const parsed = xlsx.SSF.parse_date_code(Number(s));
+    if (parsed) {
+      return new Date(parsed.y, parsed.m - 1, parsed.d);
+    }
   }
 
   return null;
@@ -230,11 +250,17 @@ function evaluateVolumeRule(ruleValue, volume) {
 
 function evaluateDdfRule(ruleValue, ddfDate) {
   const value = normalizeText(ruleValue);
-  if (!value || !ddfDate) {
-    return { eligible: true, status: "neutral", reason: value || "DDF max non renseignee" };
+  const upper = value.toUpperCase();
+
+  if (!value) {
+    return { eligible: true, status: "neutral", reason: "DDF max non renseignee" };
   }
 
-  if (value.includes("M+") || value.includes("N+")) {
+  if (!ddfDate) {
+    return { eligible: true, status: "neutral", reason: value };
+  }
+
+  if (/\bM\s*\+\s*\d+\b/i.test(upper) || /\bN\s*\+\s*\d+\b/i.test(upper)) {
     return { eligible: true, status: "warn", reason: value };
   }
 
@@ -242,8 +268,10 @@ function evaluateDdfRule(ruleValue, ddfDate) {
     return { eligible: true, status: "ok", reason: "Pas de limite" };
   }
 
-  const maxDate = parseFrenchDate(value);
-  if (!maxDate) return { eligible: true, status: "warn", reason: value };
+  const maxDate = parseFrenchDate(ruleValue);
+  if (!maxDate) {
+    return { eligible: true, status: "warn", reason: value };
+  }
 
   if (ddfDate > maxDate) {
     return {
@@ -253,7 +281,11 @@ function evaluateDdfRule(ruleValue, ddfDate) {
     };
   }
 
-  return { eligible: true, status: "ok", reason: "DDF compatible" };
+  return {
+    eligible: true,
+    status: "ok",
+    reason: `DDF compatible jusqu'au ${maxDate.toLocaleDateString("fr-FR")}`
+  };
 }
 
 function evaluateHorizonRule(ruleValue, dffDate) {
@@ -382,6 +414,28 @@ function getHorizonRuleKey(energie) {
     : "HORIZON ELECTRICITE (date fin fourniture)";
 }
 
+function getRuleValue(rules, candidates = []) {
+  const entries = Object.entries(rules || {});
+  for (const candidate of candidates) {
+    const wanted = slugify(candidate);
+    const found = entries.find(([key]) => slugify(key) === wanted || slugify(key).includes(wanted));
+    if (found && found[1] !== undefined && found[1] !== null && String(found[1]).trim() !== "") {
+      return found[1];
+    }
+  }
+  return "";
+}
+
+function getDdfRuleValue(rules) {
+  return getRuleValue(rules, [
+    "DDF MAX (date début fourniture)",
+    "DDF MAX (date debut fourniture)",
+    "DDF MAX",
+    "date début fourniture",
+    "date debut fourniture"
+  ]);
+}
+
 function evaluateSupplier(input) {
   const supplier = input.supplier;
   const rules = input.rules || {};
@@ -399,7 +453,8 @@ function evaluateSupplier(input) {
   const horizonEval = evaluateHorizonRule(rules[getHorizonRuleKey(params.energie)], params.dffDate);
   evaluations.push({ criterion: "Horizon", ...horizonEval });
 
-  const ddfEval = evaluateDdfRule(rules["DDF MAX (date début fourniture)"], params.ddfDate);
+  const ddfRuleValue = getDdfRuleValue(rules);
+  const ddfEval = evaluateDdfRule(ddfRuleValue, params.ddfDate);
   evaluations.push({ criterion: "DDF max", ...ddfEval });
 
   const scoringEval = evaluateScoringRule(rules["SCORING MINIMUM"], params.note);
@@ -424,7 +479,7 @@ function evaluateSupplier(input) {
       segment: rules[getSegmentRuleKey(params.segment)] || "",
       syndic: rules["SYNDIC ?"] || "",
       horizon: rules[getHorizonRuleKey(params.energie)] || "",
-      ddfMax: rules["DDF MAX (date début fourniture)"] || "",
+      ddfMax: ddfRuleValue || "",
       scoring: rules["SCORING MINIMUM"] || "",
       volumeMinimal: rules["VOLUME MINIMAL (CAR en MWh)"] || ""
     }
@@ -509,41 +564,36 @@ module.exports = function handler(req, res) {
         : null;
 
     return res.status(200).json({
-  meta: {
-    fileName: path.basename(EXCEL_FILE),
-    rulesSheet: RULES_SHEET,
-    panelSheet: PANEL_SHEET,
-    totalSuppliers: engine.fournisseurs.length
-  },
-  input: {
-    energie: normalizedEnergy,
-    segment: normalizedSegment,
-    syndic: normalizedSyndic,
-    note: params.note,
-    volume: params.volume,
-    ddf: query.ddf || "",
-    dff: query.dff || "",
-    fournisseur_actuel: currentSupplier || ""
-  },
-
-  // 🔥 NOUVEAU : tous les fournisseurs
-  allSuppliers: results,
-
-  // 🔥 existant
-  topSuppliers,
-  eligibleCount: eligibleResults.length,
-
-  partnerSupplier: partnerSupplier
-    ? {
-        label: "FOURNISSEUR PARTENAIRE",
-        supplier: partnerSupplier.supplier,
-        eligible: partnerSupplier.eligible,
-        panel: partnerSupplier.panel || "",
-        evaluations: partnerSupplier.evaluations,
-        score: partnerSupplier.score // 👈 bonus utile
-      }
-    : null
-});
+      meta: {
+        fileName: path.basename(EXCEL_FILE),
+        rulesSheet: RULES_SHEET,
+        panelSheet: PANEL_SHEET,
+        totalSuppliers: engine.fournisseurs.length
+      },
+      input: {
+        energie: normalizedEnergy,
+        segment: normalizedSegment,
+        syndic: normalizedSyndic,
+        note: params.note,
+        volume: params.volume,
+        ddf: query.ddf || "",
+        dff: query.dff || "",
+        fournisseur_actuel: currentSupplier || ""
+      },
+      allSuppliers: results,
+      topSuppliers,
+      eligibleCount: eligibleResults.length,
+      partnerSupplier: partnerSupplier
+        ? {
+            label: "FOURNISSEUR PARTENAIRE",
+            supplier: partnerSupplier.supplier,
+            eligible: partnerSupplier.eligible,
+            panel: partnerSupplier.panel || "",
+            evaluations: partnerSupplier.evaluations,
+            score: partnerSupplier.score
+          }
+        : null
+    });
   } catch (error) {
     console.error("fournisseur-selection error:", error);
     return res.status(500).json({
