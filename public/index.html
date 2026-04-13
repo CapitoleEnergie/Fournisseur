@@ -212,6 +212,40 @@ textarea::placeholder { color: #b0b0b0; }
 .tab-btn-challenge { border-bottom-color: transparent !important; }
 .tab-btn-challenge.active { color: var(--rose) !important; border-bottom-color: var(--rose) !important; }
 .tab-btn-challenge:hover { color: var(--rose) !important; }
+.tab-btn {
+  position: relative;
+}
+
+.tab-notif-badge {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #E53935;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  margin-left: 6px;
+  box-shadow: 0 2px 8px rgba(229, 57, 53, 0.28);
+}
+
+.tab-notif-badge.show {
+  display: inline-flex;
+}
+
+.tab-notif-badge.dot {
+  min-width: 10px;
+  width: 10px;
+  height: 10px;
+  padding: 0;
+  line-height: 10px;
+  font-size: 0;
+}
 
 /* ===== TOKEN SETUP ===== */
 .token-overlay { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; padding: 40px 24px; text-align: center; }
@@ -493,12 +527,14 @@ textarea::placeholder { color: #b0b0b0; }
 <div style="flex:1"></div>
 <div style="display:flex;align-items:center;border-left:1px solid var(--gris);margin-left:8px;padding-left:8px;">
 <button class="tab-btn tab-btn-news" id="btn-news" onclick="switchTab('news')" title="News Fournisseurs">
-<svg fill="currentColor" height="14" viewbox="0 0 24 24" width="14"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"></path></svg>
-<span>News Fournisseurs</span>
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+  <span>News Fournisseurs</span>
+  <span id="news-tab-badge" class="tab-notif-badge">0</span>
 </button>
 <button class="tab-btn tab-btn-challenge" id="btn-challenges" onclick="switchTab('challenges')" title="Challenges en cours">
-<svg fill="currentColor" height="14" viewbox="0 0 24 24" width="14"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg>
-<span>Challenges</span>
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+  <span>Challenges</span>
+  <span id="challenges-tab-badge" class="tab-notif-badge">0</span>
 </button>
 </div>
 </nav>
@@ -2212,6 +2248,8 @@ async function loadNews() {
       _matchedSuppliers: extractNewsSuppliers(task),
       _newsAttachments: extractTaskAttachments(task)
     }));
+    
+    updateNotificationBadges(NEWS_ALL_TASKS, CHALLENGES_ALL_TASKS);
 
     populateNewsSupplierFilter();
     buildNewsMonthFilterOptions(NEWS_ALL_TASKS);
@@ -2510,6 +2548,43 @@ async function submitQuestionnaire() {
 document.addEventListener("DOMContentLoaded", () => {
   updateQuestionnaireSegments();
 });
+
+function updateNotificationBadges(newsList = [], challengesList = []) {
+  const newsBadge = document.getElementById("news-tab-badge");
+  const challengesBadge = document.getElementById("challenges-tab-badge");
+
+  if (!newsBadge || !challengesBadge) return;
+
+  const now = new Date();
+  const DAYS_LIMIT = 7; // 👉 modifiable (ex : 3, 7, 14 jours)
+
+  const isRecent = (dateStr) => {
+    if (!dateStr) return false;
+    const d = new Date(dateStr);
+    if (isNaN(d)) return false;
+    const diff = (now - d) / (1000 * 60 * 60 * 24);
+    return diff <= DAYS_LIMIT;
+  };
+
+  const recentNews = newsList.filter(n => isRecent(n.date || n.created_at));
+  const recentChallenges = challengesList.filter(c => isRecent(c.date || c.created_at));
+
+  // News
+  if (recentNews.length > 0) {
+    newsBadge.textContent = recentNews.length;
+    newsBadge.classList.add("show");
+  } else {
+    newsBadge.classList.remove("show");
+  }
+
+  // Challenges
+  if (recentChallenges.length > 0) {
+    challengesBadge.textContent = recentChallenges.length;
+    challengesBadge.classList.add("show");
+  } else {
+    challengesBadge.classList.remove("show");
+  }
+}
 
 // ---- Utils ----
 function escapeHtml(s) {
