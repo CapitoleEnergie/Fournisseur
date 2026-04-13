@@ -511,8 +511,8 @@ textarea::placeholder { color: #b0b0b0; }
 <div class="form-grid">
 <div class="form-group"><label>Type d'énergie</label><select id="energie" onchange="onEnergieChange()"><option disabled="" selected="" value="">— Sélectionner —</option><option value="gaz">Gaz</option><option value="elec">Électricité</option></select></div>
 <div class="form-group"><label>Segment</label><select id="segment"><option disabled="" selected="" value="">— Sélectionner —</option></select></div>
-<div class="form-group"><label>Note de crédit (/10 Ellipro)</label><input id="note" max="10" min="0" placeholder="ex: 6" step="1" type="number" value="6"/></div>
-<div class="form-group"><label>Volume (MWh/an)</label><input id="volume" min="0" placeholder="ex: 248.8" type="number" value="248.8"/></div>
+<div class="form-group"><label>Note de crédit (/10 Ellipro)</label><input id="note" max="10" min="0" placeholder="ex: 6" step="1" type="number" value="0"/></div>
+<div class="form-group"><label>Volume (MWh/an)</label><input id="volume" min="0" placeholder="ex: 0" type="number" value="0"/></div>
 <div class="form-group"><label>DDF souhaitée (Date début fourniture)</label><input id="ddf" oninput="autoFormatDate(this)" pattern="\d{2}/\d{2}/\d{4}" placeholder="JJ/MM/AAAA" type="text" value="01/01/2028"/></div>
 <div class="form-group"><label>Date de fin de fourniture souhaitée</label><input id="dff" oninput="autoFormatDate(this)" pattern="\d{2}/\d{2}/\d{4}" placeholder="JJ/MM/AAAA" type="text" value="31/12/2030"/></div>
 <div class="form-group"><label>Profil <span id="profil-gaz-only" style="font-size:10px;color:#aaa;font-weight:400;text-transform:none;letter-spacing:0;">(Gaz uniquement)</span></label><select disabled="" id="profil" style="color:#bbb;background:#f7f7f7;cursor:not-allowed;"><option selected="" value="">— Sélectionner —</option></select></div>
@@ -2543,6 +2543,26 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (dffInput) {
     dffInput.addEventListener("blur", () => validateDateField(dffInput));
+  }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  const noteInput = document.getElementById("note");
+
+  if (noteInput) {
+    noteInput.addEventListener("input", () => {
+      let value = parseInt(noteInput.value, 10);
+
+      if (isNaN(value)) return;
+
+      if (value > 10) {
+        noteInput.value = 10;
+      }
+
+      if (value < 0) {
+        noteInput.value = 0;
+      }
+    });
   }
 });
 
