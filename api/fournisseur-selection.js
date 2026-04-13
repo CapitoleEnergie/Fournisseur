@@ -248,6 +248,24 @@ function evaluateVolumeRule(ruleValue, volume) {
   return { eligible: true, status: "ok", reason: `Volume ${volume} MWh ≥ minimum ${minVolume} MWh` };
 }
 
+function evaluateUpfrontPaymentRule(ruleValue) {
+  const value = normalizeText(ruleValue);
+
+  if (!value) {
+    return {
+      eligible: true,
+      status: "neutral",
+      reason: "Paiement UPFRONT non renseigne"
+    };
+  }
+
+  return {
+    eligible: true,
+    status: "neutral",
+    reason: value
+  };
+}
+
 function evaluateDdfRule(ruleValue, ddfDate) {
   const value = normalizeText(ruleValue);
   const upper = value.toUpperCase();
@@ -463,6 +481,9 @@ function evaluateSupplier(input) {
   const volumeEval = evaluateVolumeRule(rules["VOLUME MINIMAL (CAR en MWh)"], params.volume);
   evaluations.push({ criterion: "Volume minimal", ...volumeEval });
 
+  const upfrontPaymentEval = evaluateUpfrontPaymentRule(rules["Paiement UPFRONT"]);
+  evaluations.push({ criterion: "Paiement UPFRONT", ...upfrontPaymentEval });
+
   const eligible = evaluations.every((e) => e.eligible !== false);
   const warnings = evaluations.filter((e) => e.status === "warn").length;
 
@@ -477,6 +498,7 @@ function evaluateSupplier(input) {
     evaluations,
     rulesUsed: {
       segment: rules[getSegmentRuleKey(params.segment)] || "",
+      upfrontPayment: rules["Paiement UPFRONT"] || "",
       syndic: rules["SYNDIC ?"] || "",
       horizon: rules[getHorizonRuleKey(params.energie)] || "",
       ddfMax: ddfRuleValue || "",
