@@ -8,8 +8,8 @@
  */
 (function () {
   // ── CONFIG ─────────────────────────────────────────────────
-  const APP_SLUG   = 'fournisseur';         // ex: "portail-it"
-  const HUB_URL    = 'https://hub-capitole.vercel.app/';  // URL du hub
+  const APP_SLUG   = window.__CAP_SLUG__    || 'fournisseur';
+  const HUB_URL    = window.__CAP_HUB_URL__ || 'https://hub-capitole.vercel.app';
   const VERIFY_URL = HUB_URL + '/api/verify-app-token';
   const SESSION_KEY = 'cap_auth_' + APP_SLUG;
 
