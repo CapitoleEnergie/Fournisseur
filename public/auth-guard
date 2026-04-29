@@ -1,0 +1,116 @@
+/**
+ * ============================================================
+ *  AUTH GUARD — Capitole Énergie
+ *  À coller dans le <head> de CHAQUE page HTML de l'application
+ *  Remplace APP_SLUG par le slug exact de cette application
+ *  (ex: "portail-it", "fournisseur", etc.)
+ * ============================================================
+ */
+(function () {
+  // ── CONFIG ─────────────────────────────────────────────────
+  const APP_SLUG   = 'REMPLACER_PAR_LE_SLUG';         // ex: "portail-it"
+  const HUB_URL    = 'https://VOTRE_HUB.vercel.app';  // URL du hub
+  const VERIFY_URL = HUB_URL + '/api/verify-app-token';
+  const SESSION_KEY = 'cap_auth_' + APP_SLUG;
+
+  // ── HELPERS ────────────────────────────────────────────────
+  function redirectToHub(reason) {
+    console.warn('[AuthGuard] Accès refusé :', reason);
+    window.location.replace(HUB_URL + '?blocked=1&app=' + APP_SLUG);
+  }
+
+  function showLoading() {
+    const div = document.createElement('div');
+    div.id = '__cap_guard__';
+    div.style.cssText = [
+      'position:fixed', 'inset:0', 'z-index:99999',
+      'background:#EDEDFF', 'display:flex', 'flex-direction:column',
+      'align-items:center', 'justify-content:center', 'gap:16px',
+      'font-family:Poppins,sans-serif'
+    ].join(';');
+    div.innerHTML = `
+      <div style="width:48px;height:48px;border-radius:12px;
+        background:linear-gradient(135deg,#0C32FF,#E543DC,#FFC14F);
+        display:flex;align-items:center;justify-content:center;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+          <path d="M7 2l10 10L7 22"/>
+        </svg>
+      </div>
+      <div style="width:28px;height:28px;border:3px solid #EDEDFF;
+        border-top-color:#5020EA;border-radius:50%;
+        animation:spin .7s linear infinite"></div>
+      <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+    `;
+    document.documentElement.appendChild(div);
+  }
+
+  function removeLoading() {
+    const el = document.getElementById('__cap_guard__');
+    if (el) el.remove();
+  }
+
+  // ── SESSION CACHE (validité 8h) ────────────────────────────
+  function getSession() {
+    try {
+      const raw = sessionStorage.getItem(SESSION_KEY);
+      if (!raw) return null;
+      const session = JSON.parse(raw);
+      if (session.expires > Date.now()) return session;
+      sessionStorage.removeItem(SESSION_KEY);
+      return null;
+    } catch { return null; }
+  }
+
+  function saveSession(email) {
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+      email,
+      expires: Date.now() + 8 * 60 * 60 * 1000 // 8 heures
+    }));
+  }
+
+  // ── MAIN ───────────────────────────────────────────────────
+  async function guard() {
+    // 1. Session déjà validée → pas besoin de revérifier
+    const cached = getSession();
+    if (cached) return; // accès OK
+
+    // 2. Bloquer le rendu le temps de vérifier
+    showLoading();
+
+    // 3. Lire le token dans l'URL
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+
+    if (!token) {
+      return redirectToHub('Aucun token dans l\'URL');
+    }
+
+    // 4. Vérifier le token auprès du hub
+    try {
+      const res = await fetch(VERIFY_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, slug: APP_SLUG })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        return redirectToHub(err.error || 'Token invalide');
+      }
+
+      const data = await res.json();
+
+      // 5. Token valide → sauvegarder la session et nettoyer l'URL
+      saveSession(data.email);
+      const cleanUrl = window.location.pathname + window.location.hash;
+      window.history.replaceState({}, document.title, cleanUrl);
+      removeLoading();
+
+    } catch (err) {
+      return redirectToHub('Erreur réseau : ' + err.message);
+    }
+  }
+
+  // Lancer immédiatement, avant que la page se charge
+  guard();
+})();
