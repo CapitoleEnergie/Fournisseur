@@ -1,4 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "cleanUrls": true
+  "cleanUrls": true,
+  "routes": [
+    { "src": "/auth-guard.js", "dest": "/public/auth-guard.js" }
+  ]
 }
