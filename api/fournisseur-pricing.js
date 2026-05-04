@@ -145,7 +145,7 @@ function loadWorkbookData() {
   const rows = xlsx.utils.sheet_to_json(sheet, {
     range: 14,
     defval: null,
-    raw: false
+    raw: true
   });
 
   function normalizeKey(str = "") {
