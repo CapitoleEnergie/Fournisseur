@@ -301,8 +301,8 @@ function evaluateRegularisationCommissionsRule(ruleValue) {
   const upper = value.toUpperCase();
 
   if (!value) return { eligible: true, status: "neutral", reason: "Régularisation commissions non renseignée" };
-  if (upper === "OUI") return { eligible: true, status: "warn", reason: "Régularisation des commissions acceptée" };
-  if (upper === "NON") return { eligible: true, status: "ok", reason: "Régularisation des commissions non proposée" };
+  if (upper === "OUI") return { eligible: true, status: "warn", reason: "Oui" };
+  if (upper === "NON") return { eligible: true, status: "ok", reason: "Non" };
   return { eligible: true, status: "warn", reason: value };
 }
 
