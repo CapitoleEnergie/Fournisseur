@@ -318,8 +318,36 @@ function evaluateDdfRule(ruleValue, ddfDate) {
     return { eligible: true, status: "neutral", reason: value };
   }
 
-  if (/\bM\s*\+\s*\d+\b/i.test(upper) || /\bN\s*\+\s*\d+\b/i.test(upper)) {
-    return { eligible: true, status: "warn", reason: value };
+  // M+X (mois) ou N+X (années) → calculer la date limite depuis aujourd'hui
+  const moisMatch = upper.match(/\bM\s*\+\s*(\d+)\b/i);
+  const anneesMatch = upper.match(/\bN\s*\+\s*(\d+)\b/i);
+
+  if (moisMatch || anneesMatch) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dateMax = new Date(today);
+
+    if (moisMatch) {
+      dateMax.setMonth(dateMax.getMonth() + parseInt(moisMatch[1], 10));
+    } else {
+      dateMax.setFullYear(dateMax.getFullYear() + parseInt(anneesMatch[1], 10));
+    }
+
+    const label = dateMax.toLocaleDateString("fr-FR");
+
+    if (dateMax >= ddfDate) {
+      return {
+        eligible: true,
+        status: "ok",
+        reason: `${value} — limite le ${label}, compatible avec la DDF`
+      };
+    }
+
+    return {
+      eligible: true,
+      status: "warn",
+      reason: `${value} — limite le ${label}, DDF ${ddfDate.toLocaleDateString("fr-FR")} trop lointaine`
+    };
   }
 
   if (slugify(value) === "pas de limite") {
