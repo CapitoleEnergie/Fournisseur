@@ -143,26 +143,24 @@ function loadWorkbookData() {
   const periodInfo = extractDateRange(matrix?.[7]?.[1] || "");
 
   const rows = xlsx.utils.sheet_to_json(sheet, {
-    range: 14,
+    range: 15,
     defval: null,
-    raw: false
+    raw: true
   });
 
-  const segmentKey = Object.keys(rows[0] || {}).find((k) =>
-    k.includes("Compteur segment")
-  );
-  const supplierKey = Object.keys(rows[0] || {}).find((k) =>
-    k.includes("Nom Fournisseur")
-  );
-  const priceKey = Object.keys(rows[0] || {}).find((k) =>
-    k.includes("Average Prix Moyen Pondéré Non Margé")
-  );
-  const volumeKey = Object.keys(rows[0] || {}).find((k) =>
-    k.includes("Average Volume du compteur")
-  );
-  const countKey = Object.keys(rows[0] || {}).find((k) =>
-    k.includes("Record Count")
-  );
+  function normalizeKey(str = "") {
+    return String(str)
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+  }
+
+  const keys = Object.keys(rows[0] || {});
+  const segmentKey = keys.find((k) => normalizeKey(k).includes("compteur segment"));
+  const supplierKey = keys.find((k) => normalizeKey(k).includes("nom fournisseur"));
+  const priceKey = keys.find((k) => normalizeKey(k).includes("prix moyen") && normalizeKey(k).includes("average"));
+  const volumeKey = keys.find((k) => normalizeKey(k).includes("volume du compteur"));
+  const countKey = keys.find((k) => normalizeKey(k).includes("record count"));
 
   if (!segmentKey || !supplierKey || !priceKey || !volumeKey || !countKey) {
     throw new Error("Colonnes Excel introuvables ou format inattendu.");
