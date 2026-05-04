@@ -266,6 +266,16 @@ function evaluateUpfrontPaymentRule(ruleValue) {
   };
 }
 
+function evaluateRegularisationCommissionsRule(ruleValue) {
+  const value = normalizeText(ruleValue);
+  const upper = value.toUpperCase();
+
+  if (!value) return { eligible: true, status: "neutral", reason: "Régularisation commissions non renseignée" };
+  if (upper === "OUI") return { eligible: true, status: "warn", reason: "Régularisation des commissions acceptée" };
+  if (upper === "NON") return { eligible: true, status: "ok", reason: "Régularisation des commissions non proposée" };
+  return { eligible: true, status: "warn", reason: value };
+}
+
 function evaluateDdfRule(ruleValue, ddfDate) {
   const value = normalizeText(ruleValue);
   const upper = value.toUpperCase();
@@ -483,6 +493,13 @@ function evaluateSupplier(input) {
 
   const upfrontPaymentEval = evaluateUpfrontPaymentRule(rules["Paiement UPFRONT"]);
   evaluations.push({ criterion: "Paiement UPFRONT", ...upfrontPaymentEval });
+
+  const regCommValue = getRuleValue(rules, [
+  "Régularisation des commissions",
+  "Regularisation des commissions"
+  ]);
+  const regCommEval = evaluateRegularisationCommissionsRule(regCommValue);
+  evaluations.push({ criterion: "Régularisation commissions", ...regCommEval });
 
   const eligible = evaluations.every((e) => e.eligible !== false);
   const warnings = evaluations.filter((e) => e.status === "warn").length;
