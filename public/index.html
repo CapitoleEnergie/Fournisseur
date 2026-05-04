@@ -1561,6 +1561,7 @@ async function analyser() {
 
   let selectionData = null;
   try {
+    const commRaw = (document.getElementById("commission_estimee")?.value || "").replace(/[^\d.,]/g, "").replace(",", ".");
     const query = new URLSearchParams({
       energie,
       segment,
@@ -1569,7 +1570,8 @@ async function analyser() {
       volume: String(volume),
       ddf: document.getElementById("ddf").value,
       dff: document.getElementById("dff").value,
-      fournisseur_actuel
+      fournisseur_actuel,
+      commission_estimee: commRaw || ""
     });
     selectionData = await apiFetch(`/api/fournisseur-selection?${query.toString()}`);
   } catch (e) {
