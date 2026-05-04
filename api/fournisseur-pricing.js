@@ -143,7 +143,7 @@ function loadWorkbookData() {
   const periodInfo = extractDateRange(matrix?.[7]?.[1] || "");
 
   const rows = xlsx.utils.sheet_to_json(sheet, {
-    range: 15,
+    range: 14,
     defval: null,
     raw: false
   });
