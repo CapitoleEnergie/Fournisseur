@@ -177,6 +177,15 @@ textarea::placeholder { color: #b0b0b0; }
 
 /* ===================== RÉSUMÉ TAB ===================== */
 #tab-resume main { max-width: 1280px; padding-top: 36px; }
+
+/* ===================== PANEL TAB ===================== */
+#tab-panel main { max-width: 860px; padding-top: 36px; }
+.panel-badge { display: inline-flex; align-items: center; justify-content: center; padding: 3px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.panel-badge.gold-premium { background: #FFF8E1; color: #B8860B; border: 1px solid #FFD700; }
+.panel-badge.gold { background: #FFFDE7; color: #DAA520; border: 1px solid #FFD700; }
+.panel-badge.silver { background: #F5F5F5; color: #555; border: 1px solid #BDBDBD; }
+.panel-badge.bronze { background: #FBE9E7; color: #BF6A3C; border: 1px solid #FFAB91; }
+.panel-badge.empty { background: #FAFAFA; color: #999; border: 1px solid #E0E0E0; }
 .resume-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
 .resume-header h1 { font-size: 32px; }
 .resume-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
@@ -529,6 +538,10 @@ textarea::placeholder { color: #b0b0b0; }
 <svg fill="currentColor" height="14" viewbox="0 0 24 24" width="14"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"></path></svg>
       Résumé Fournisseurs
     </button>
+<button class="tab-btn" id="btn-panel" onclick="switchTab('panel')">
+<svg fill="currentColor" height="14" viewbox="0 0 24 24" width="14"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"></path></svg>
+      Fournisseurs Panel
+    </button>
 <div style="flex:1"></div>
 <div style="display:flex;align-items:center;border-left:1px solid var(--gris);margin-left:8px;padding-left:8px;">
 <button class="tab-btn tab-btn-news" id="btn-news" onclick="switchTab('news')" title="News Fournisseurs">
@@ -553,13 +566,15 @@ textarea::placeholder { color: #b0b0b0; }
 <div class="form-group"><label>Type d'énergie</label><select id="energie" onchange="onEnergieChange()"><option disabled="" selected="" value="">— Sélectionner —</option><option value="gaz">Gaz</option><option value="elec">Électricité</option></select></div>
 <div class="form-group"><label>Segment</label><select id="segment"><option disabled="" selected="" value="">— Sélectionner —</option></select></div>
 <div class="form-group"><label>Note de crédit (/10 Ellipro)</label><input id="note" max="10" min="0" placeholder="ex: 6" step="1" type="number" value="0"/></div>
-<div class="form-group"><label>Volume (MWh/an)</label><input id="volume" min="0" placeholder="ex: 0" type="number" value="0"/></div>
-<div class="form-group"><label>DDF souhaitée (Date début fourniture)</label><input id="ddf" oninput="autoFormatDate(this)" pattern="\d{2}/\d{2}/\d{4}" placeholder="JJ/MM/AAAA" type="text" value="01/01/2028"/></div>
-<div class="form-group"><label>Date de fin de fourniture souhaitée</label><input id="dff" oninput="autoFormatDate(this)" pattern="\d{2}/\d{2}/\d{4}" placeholder="JJ/MM/AAAA" type="text" value="31/12/2030"/></div>
+<div class="form-group"><label>Volume (MWh/an)</label><input id="volume" min="0" oninput="updateCommission()" placeholder="ex: 0" type="number" value="0"/></div>
+<div class="form-group"><label>DDF souhaitée (Date début fourniture)</label><input id="ddf" oninput="autoFormatDate(this); updateCommission();" pattern="\d{2}/\d{2}/\d{4}" placeholder="JJ/MM/AAAA" type="text" value="01/01/2028"/></div>
+<div class="form-group"><label>Date de fin de fourniture souhaitée</label><input id="dff" oninput="autoFormatDate(this); updateCommission();" pattern="\d{2}/\d{2}/\d{4}" placeholder="JJ/MM/AAAA" type="text" value="31/12/2030"/></div>
 <div class="form-group"><label>Profil <span id="profil-gaz-only" style="font-size:10px;color:#aaa;font-weight:400;text-transform:none;letter-spacing:0;">(Gaz uniquement)</span></label><select disabled="" id="profil" style="color:#bbb;background:#f7f7f7;cursor:not-allowed;"><option selected="" value="">— Sélectionner —</option></select></div>
 <div class="form-group"><label>État PDL / PCE</label><select id="etat_pdl"><option disabled="" selected="" value="">— Sélectionner —</option><option value="premiere_mes">Première mise en service</option><option value="mes">Mise en service</option><option value="en_service">En service</option><option value="ferme">Fermé</option></select></div>
 <div class="form-group"><label>Syndic ?</label><select id="syndic"><option disabled="" selected="" value="">— Sélectionner —</option><option value="oui">Oui</option><option value="non">Non</option></select></div>
 <div class="form-group"><label>Fournisseur actuel</label><select id="fournisseur_actuel"><option disabled="" selected="" value="">— Sélectionner —</option><option value="ALTERNA">ALTERNA</option><option value="DYNEFF">DYNEFF</option><option value="EKWATEUR">EKWATEUR</option><option value="ENDESA">ENDESA</option><option value="ENERGEM">ENERGEM</option><option value="ENERGIE D'ICI">ENERGIE D'ICI</option><option value="ENGIE">ENGIE</option><option value="ENOVOS">ENOVOS</option><option value="GAZ DE BORDEAUX">GAZ DE BORDEAUX</option><option value="GEDIA">GEDIA</option><option value="GEG">GEG</option><option value="HELLIO">HELLIO</option><option value="ILEK">ILEK</option><option value="LA BELLENERGIE">LA BELLENERGIE</option><option value="MET">MET</option><option value="MINT Energie">MINT Energie</option><option value="NATGAS">NATGAS</option><option value="OHM">OHM</option><option value="PICOTY">PICOTY</option><option value="PRIMEO">PRIMEO</option><option value="SAVE">SAVE</option><option value="SEFE">SEFE</option><option value="SYNELVA">SYNELVA</option><option value="TOTALENERGIES">TOTALENERGIES</option><option value="VATTENFALL">VATTENFALL</option><option value="AUTRE">— AUTRE (hors partenaires)</option></select></div>
+<div class="form-group"><label>Marge globale (€/MWh)</label><input id="marge_globale" min="0" oninput="updateCommission()" placeholder="ex: 20" step="0.1" type="number"/></div>
+<div class="form-group"><label>Commission estimée <span style="font-size:10px;color:#aaa;font-weight:400;text-transform:none;letter-spacing:0;">Vol × (mois/12) × (Marge/2)</span></label><input id="commission_estimee" readonly style="background:#F3F3F3;color:var(--principal);font-weight:700;cursor:default;" type="text" placeholder="—"/></div>
 
 </div>
 <div style="display:flex; align-items:center; flex-wrap:wrap; gap:8px;">
@@ -592,6 +607,35 @@ textarea::placeholder { color: #b0b0b0; }
 <table class="resume-table" id="resume-table">
 <thead id="resume-thead"></thead>
 <tbody id="resume-tbody"></tbody>
+</table>
+</div>
+</main>
+</div>
+<!-- ============ TAB FOURNISSEURS PANEL ============ -->
+<div class="tab-content" id="tab-panel">
+<main>
+<div class="resume-header">
+<div>
+<h1>Fournisseurs Panel</h1>
+<p class="subtitle" style="margin-bottom:0">Classement panel des fournisseurs partenaires — Gold Premium, Gold, Silver, Bronze.</p>
+</div>
+<div class="resume-controls">
+<input class="search-input" id="search-panel" oninput="filterPanelTable()" placeholder="🔍 Rechercher un fournisseur..."/>
+</div>
+</div>
+<div id="panel-loading-banner" style="display:none;background:var(--rouge-bg);border:1px solid var(--rouge-border);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--rouge);"></div>
+<div class="table-wrapper">
+<table class="resume-table" id="panel-table" style="min-width:400px;">
+<thead>
+<tr>
+<th class="criteria-col" style="min-width:220px;">Fournisseur</th>
+<th>Panel</th>
+</tr>
+</thead>
+<tbody id="panel-tbody">
+<tr><td colspan="2" style="text-align:center;color:#aaa;padding:24px;font-size:13px;">
+<div class="loading-spinner" style="margin:0 auto 10px;"></div>Chargement…</td></tr>
+</tbody>
 </table>
 </div>
 </main>
@@ -1006,6 +1050,7 @@ function switchTab(tab) {
   document.getElementById("tab-" + tab).classList.add("active");
   document.getElementById("btn-" + tab).classList.add("active");
   if (tab === "resume") buildResumeTable();
+  if (tab === "panel") buildPanelTable();
   if (tab === "news") {
     markTabAsSeen("news", NEWS_ALL_TASKS);
     loadNews();
@@ -1769,16 +1814,53 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
 }
 
 function reinitialiser() {
-  ["energie","segment","note","volume","ddf","dff","etat_pdl","syndic","nb_compteurs","fournisseur_actuel"].forEach(id => {
+  ["energie","segment","note","volume","ddf","dff","etat_pdl","syndic","nb_compteurs","fournisseur_actuel","marge_globale"].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = "";
   });
+  const commEl = document.getElementById("commission_estimee");
+  if (commEl) commEl.value = "";
   const profilEl = document.getElementById("profil");
   profilEl.innerHTML = '<option value="" disabled selected>— Sélectionner —</option>';
   profilEl.disabled = true; profilEl.style.color = "#bbb"; profilEl.style.background = "#f7f7f7"; profilEl.style.cursor = "not-allowed";
   const resultsDiv = document.getElementById("results");
   resultsDiv.style.display = "none"; resultsDiv.innerHTML = "";
   window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// ============ COMMISSION ESTIMÉE ============
+function updateCommission() {
+  const commEl = document.getElementById("commission_estimee");
+  if (!commEl) return;
+
+  const volume = parseFloat(document.getElementById("volume")?.value);
+  const marge = parseFloat(document.getElementById("marge_globale")?.value);
+  const ddfStr = document.getElementById("ddf")?.value;
+  const dffStr = document.getElementById("dff")?.value;
+
+  // Réinitialiser si données incomplètes
+  if (!volume || !marge || !ddfStr || !dffStr ||
+      !/^\d{2}\/\d{2}\/\d{4}$/.test(ddfStr) || !/^\d{2}\/\d{2}\/\d{4}$/.test(dffStr)) {
+    commEl.value = "";
+    return;
+  }
+
+  // Parser les dates JJ/MM/AAAA
+  const [dj, dm, dy] = ddfStr.split("/").map(Number);
+  const [fj, fm, fy] = dffStr.split("/").map(Number);
+  const ddfDate = new Date(dy, dm - 1, dj);
+  const dffDate = new Date(fy, fm - 1, fj);
+
+  if (dffDate <= ddfDate) { commEl.value = ""; return; }
+
+  // Différence en mois (DFF - DDF)
+  const nbMois = (fy - dy) * 12 + (fm - dm) + (fj - dj) / 30;
+
+  // Commission = Volume × (nbMois / 12) × (Marge / 2)
+  const commission = volume * (nbMois / 12) * (marge / 2);
+
+  // Formatage avec séparateur de milliers
+  commEl.value = commission.toLocaleString("fr-FR", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + " €";
 }
 
 // ============ SALESFORCE MAPPER ============
@@ -2657,10 +2739,67 @@ function escapeAttr(s) {
 }
 
 
+// ============ PANEL FOURNISSEURS ============
+let PANEL_DATA = [];
+
+async function loadPanelData() {
+  try {
+    const data = await apiFetch('/api/fournisseur-panel');
+    PANEL_DATA = (data && Array.isArray(data.suppliers)) ? data.suppliers : [];
+    if (document.getElementById('tab-panel')?.classList.contains('active')) {
+      buildPanelTable();
+    }
+  } catch (e) {
+    const banner = document.getElementById('panel-loading-banner');
+    if (banner) {
+      banner.style.display = 'block';
+      banner.textContent = '⚠️ Impossible de charger les données panel : ' + (e.message || 'Erreur réseau');
+    }
+    console.warn('Impossible de charger les données panel :', e.message || e);
+  }
+}
+
+function buildPanelTable() {
+  const tbody = document.getElementById('panel-tbody');
+  if (!tbody) return;
+
+  const search = (document.getElementById('search-panel')?.value || '').toLowerCase().trim();
+  const filtered = PANEL_DATA.filter(s =>
+    !search ||
+    (s.supplier || '').toLowerCase().includes(search) ||
+    (s.panel || '').toLowerCase().includes(search)
+  );
+
+  function getPanelBadgeClass(panel) {
+    const p = (panel || '').toLowerCase().trim();
+    if (p === 'gold premium') return 'gold-premium';
+    if (p === 'gold') return 'gold';
+    if (p === 'silver') return 'silver';
+    if (p === 'bronze') return 'bronze';
+    return 'empty';
+  }
+
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="2" style="text-align:center;color:#aaa;padding:24px;font-size:13px;">Aucun résultat.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(s => {
+    const badgeClass = getPanelBadgeClass(s.panel);
+    const badge = s.panel
+      ? `<span class="panel-badge ${badgeClass}">${escapeHtml(s.panel)}</span>`
+      : `<span style="color:#bbb;font-size:12px;">—</span>`;
+    return `<tr><td style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:13.5px;">${escapeHtml(s.supplier)}</td><td>${badge}</td></tr>`;
+  }).join('');
+}
+
+function filterPanelTable() { buildPanelTable(); }
+
 document.addEventListener("DOMContentLoaded", async () => {
   recomputeFournisseurLists();
   buildResumeTable();
   await loadFournisseurRules();
+  loadPanelData();
   await Promise.allSettled([loadNews(), loadChallenges()]);
 
   const noteInput = document.getElementById("note");
