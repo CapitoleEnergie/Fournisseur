@@ -237,9 +237,16 @@ function evaluateScoringRule(ruleValue, note) {
 }
 
 function evaluateVolumeRule(ruleValue, volume) {
+  const normalized = normalizeText(ruleValue);
+
+  // "Aucun" ou "aucun" → pas de volume minimal → vert ok
+  if (slugify(normalized) === "aucun") {
+    return { eligible: true, status: "ok", reason: "Aucun volume minimal requis" };
+  }
+
   const minVolume = extractMinVolume(ruleValue);
   if (minVolume === null || volume === null || volume === undefined) {
-    return { eligible: true, status: "neutral", reason: normalizeText(ruleValue) || "Pas de volume minimum exploitable" };
+    return { eligible: true, status: "neutral", reason: normalized || "Pas de volume minimum exploitable" };
   }
 
   if (volume < minVolume) {
@@ -248,22 +255,45 @@ function evaluateVolumeRule(ruleValue, volume) {
   return { eligible: true, status: "ok", reason: `Volume ${volume} MWh ≥ minimum ${minVolume} MWh` };
 }
 
-function evaluateUpfrontPaymentRule(ruleValue) {
+function evaluateUpfrontPaymentRule(ruleValue, commissionEstimee) {
   const value = normalizeText(ruleValue);
+  const upper = value.toUpperCase();
 
   if (!value) {
-    return {
-      eligible: true,
-      status: "neutral",
-      reason: "Paiement UPFRONT non renseigne"
-    };
+    return { eligible: true, status: "neutral", reason: "Paiement UPFRONT non renseigné" };
   }
 
-  return {
-    eligible: true,
-    status: "neutral",
-    reason: value
-  };
+  // "Non" → jaune warn
+  if (upper === "NON") {
+    return { eligible: true, status: "warn", reason: "Paiement UPFRONT non proposé" };
+  }
+
+  // Tout ce qui commence par OUI
+  if (upper.startsWith("OUI")) {
+    // Chercher un seuil "< XK" dans la chaîne (ex: "OUI si < 50k", "OUI si < 30k et DDF < M+24")
+    // Le regex matche uniquement les "< nombre k" (pas "< M+12" qui n'a pas de k)
+    const allMatches = [...upper.matchAll(/[<≤]\s*(\d+(?:[.,]\d+)?)\s*K/gi)];
+    const thresholdMatch = allMatches.length > 0 ? allMatches[allMatches.length - 1] : null;
+
+    if (thresholdMatch) {
+      const threshold = parseFloat(thresholdMatch[1].replace(",", ".")) * 1000;
+
+      if (commissionEstimee === null || commissionEstimee === undefined) {
+        return { eligible: true, status: "warn", reason: `${value} — commission estimée non renseignée` };
+      }
+
+      if (commissionEstimee < threshold) {
+        return { eligible: true, status: "ok", reason: `${value} — commission ${commissionEstimee.toLocaleString("fr-FR")} € < seuil ${threshold.toLocaleString("fr-FR")} €` };
+      }
+
+      return { eligible: true, status: "warn", reason: `${value} — commission ${commissionEstimee.toLocaleString("fr-FR")} € ≥ seuil ${threshold.toLocaleString("fr-FR")} €` };
+    }
+
+    // "OUI" simple ou "OUI si DDF < M+12" (pas de seuil K) → vert ok
+    return { eligible: true, status: "ok", reason: value };
+  }
+
+  return { eligible: true, status: "warn", reason: value };
 }
 
 function evaluateRegularisationCommissionsRule(ruleValue) {
@@ -327,7 +357,7 @@ function evaluateHorizonRule(ruleValue, dffDate) {
     return { eligible: false, status: "ko", reason: `Horizon ${year} < fin fourniture ${dffYear}` };
   }
   if (year === dffYear) {
-    return { eligible: true, status: "warn", reason: `Horizon ${year} = fin fourniture` };
+    return { eligible: true, status: "ok", reason: `Horizon ${year} couvre la fin de fourniture ${dffYear}` };
   }
   return { eligible: true, status: "ok", reason: `Horizon ${year} couvre la periode` };
 }
@@ -491,7 +521,7 @@ function evaluateSupplier(input) {
   const volumeEval = evaluateVolumeRule(rules["VOLUME MINIMAL (CAR en MWh)"], params.volume);
   evaluations.push({ criterion: "Volume minimal", ...volumeEval });
 
-  const upfrontPaymentEval = evaluateUpfrontPaymentRule(rules["Paiement UPFRONT"]);
+  const upfrontPaymentEval = evaluateUpfrontPaymentRule(rules["Paiement UPFRONT"], params.commissionEstimee);
   evaluations.push({ criterion: "Paiement UPFRONT", ...upfrontPaymentEval });
 
   const regCommValue = getRuleValue(rules, [
@@ -568,6 +598,7 @@ module.exports = function handler(req, res) {
       syndic: normalizedSyndic,
       note: safeNumber(query.note),
       volume: safeNumber(query.volume),
+      commissionEstimee: safeNumber(query.commission_estimee),
       ddfDate: parseFrenchDate(query.ddf),
       dffDate: parseFrenchDate(query.dff)
     };
@@ -615,6 +646,7 @@ module.exports = function handler(req, res) {
         syndic: normalizedSyndic,
         note: params.note,
         volume: params.volume,
+        commissionEstimee: params.commissionEstimee,
         ddf: query.ddf || "",
         dff: query.dff || "",
         fournisseur_actuel: currentSupplier || ""
