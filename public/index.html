@@ -1627,7 +1627,7 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
       const rowClass = isPartner ? 'selection-partner' : isTop5 ? 'selection-top5' : !isEligible ? 'selection-ineligible' : '';
       const scoreValue = Number.isFinite(Number(r?.score ?? r?.scoring ?? r?.eligibilityScore)) ? Number(r?.score ?? r?.scoring ?? r?.eligibilityScore) : null;
       let rankingBadge = `<span class="selection-rank-badge standard">Classé</span>`;
-      if (isPartner) rankingBadge = `<span class="selection-rank-badge partner">Fournisseur partenaire</span>`;
+      if (isPartner) rankingBadge = `<span class="selection-rank-badge partner">Fournisseur Actuel</span>`;
       else if (isTop5) rankingBadge = `<span class="selection-rank-badge top5">Top 5 sélectionné</span>`;
       else if (!isEligible) rankingBadge = `<span class="selection-rank-badge ineligible">Non éligible</span>`;
 
