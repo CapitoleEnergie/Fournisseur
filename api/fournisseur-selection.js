@@ -228,10 +228,7 @@ function evaluateScoringRule(ruleValue, note) {
   if (!Number.isFinite(minimum)) return { eligible: true, status: "neutral", reason: value };
 
   if (note < minimum) {
-    return { eligible: false, status: "ko", reason: `Note ${note}/10 < minimum ${minimum}/10` };
-  }
-  if (note === minimum) {
-    return { eligible: true, status: "warn", reason: `Note ${note}/10 au minimum requis` };
+    return { eligible: true, status: "warn", reason: `Note ${note}/10 < minimum ${minimum}/10` };
   }
   return { eligible: true, status: "ok", reason: `Note ${note}/10 ≥ minimum ${minimum}/10` };
 }
@@ -250,12 +247,12 @@ function evaluateVolumeRule(ruleValue, volume) {
   }
 
   if (volume < minVolume) {
-    return { eligible: false, status: "ko", reason: `Volume ${volume} MWh < minimum ${minVolume} MWh` };
+    return { eligible: true, status: "warn", reason: `Volume ${volume} MWh < minimum ${minVolume} MWh` };
   }
   return { eligible: true, status: "ok", reason: `Volume ${volume} MWh ≥ minimum ${minVolume} MWh` };
 }
 
-function evaluateUpfrontPaymentRule(ruleValue, commissionEstimee) {
+function evaluateUpfrontPaymentRule(ruleValue, commissionEstimee, ddfDate) {
   const value = normalizeText(ruleValue);
   const upper = value.toUpperCase();
 
@@ -263,34 +260,74 @@ function evaluateUpfrontPaymentRule(ruleValue, commissionEstimee) {
     return { eligible: true, status: "neutral", reason: "Paiement UPFRONT non renseigné" };
   }
 
-  // "Non" → jaune warn
   if (upper === "NON") {
     return { eligible: true, status: "warn", reason: "Paiement UPFRONT non proposé" };
   }
 
-  // Tout ce qui commence par OUI
   if (upper.startsWith("OUI")) {
-    // Chercher un seuil "< XK" dans la chaîne (ex: "OUI si < 50k", "OUI si < 30k et DDF < M+24")
-    // Le regex matche uniquement les "< nombre k" (pas "< M+12" qui n'a pas de k)
-    const allMatches = [...upper.matchAll(/[<≤]\s*(\d+(?:[.,]\d+)?)\s*K/gi)];
-    const thresholdMatch = allMatches.length > 0 ? allMatches[allMatches.length - 1] : null;
+    // --- Vérification seuil commission ---
+    const allKMatches = [...upper.matchAll(/[<≤]\s*(\d+(?:[.,]\d+)?)\s*K/gi)];
+    const thresholdMatch = allKMatches.length > 0 ? allKMatches[allKMatches.length - 1] : null;
+    const threshold = thresholdMatch ? parseFloat(thresholdMatch[1].replace(",", ".")) * 1000 : null;
 
-    if (thresholdMatch) {
-      const threshold = parseFloat(thresholdMatch[1].replace(",", ".")) * 1000;
-
+    let commOk = true;
+    let commReason = "";
+    if (threshold !== null) {
       if (commissionEstimee === null || commissionEstimee === undefined) {
-        return { eligible: true, status: "warn", reason: `${value} — commission estimée non renseignée` };
+        commOk = false;
+        commReason = `commission estimée non renseignée (seuil ${threshold.toLocaleString("fr-FR")} €)`;
+      } else if (commissionEstimee <= threshold) {
+        commReason = `commission ${commissionEstimee.toLocaleString("fr-FR")} € ≤ seuil ${threshold.toLocaleString("fr-FR")} €`;
+      } else {
+        commOk = false;
+        commReason = `commission ${commissionEstimee.toLocaleString("fr-FR")} € > seuil ${threshold.toLocaleString("fr-FR")} €`;
       }
-
-      if (commissionEstimee < threshold) {
-        return { eligible: true, status: "ok", reason: `${value} — commission ${commissionEstimee.toLocaleString("fr-FR")} € < seuil ${threshold.toLocaleString("fr-FR")} €` };
-      }
-
-      return { eligible: true, status: "warn", reason: `${value} — commission ${commissionEstimee.toLocaleString("fr-FR")} € ≥ seuil ${threshold.toLocaleString("fr-FR")} €` };
     }
 
-    // "OUI" simple ou "OUI si DDF < M+12" (pas de seuil K) → vert ok
-    return { eligible: true, status: "ok", reason: value };
+    // --- Vérification DDF M+X ou N+X dans la règle upfront ---
+    const moisMatch = upper.match(/DDF\s*[<≤]\s*M\s*\+\s*(\d+)/i);
+    const anneesMatch = upper.match(/DDF\s*[<≤]\s*N\s*\+\s*(\d+)/i);
+    let ddfOk = true;
+    let ddfReason = "";
+
+    if (moisMatch || anneesMatch) {
+      if (!ddfDate) {
+        ddfOk = false;
+        ddfReason = "DDF non renseignée";
+      } else {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const dateMax = new Date(today);
+        if (moisMatch) {
+          dateMax.setMonth(dateMax.getMonth() + parseInt(moisMatch[1], 10));
+        } else {
+          dateMax.setFullYear(dateMax.getFullYear() + parseInt(anneesMatch[1], 10));
+        }
+        const label = dateMax.toLocaleDateString("fr-FR");
+        if (dateMax >= ddfDate) {
+          ddfReason = `DDF compatible (limite ${label})`;
+        } else {
+          ddfOk = false;
+          ddfReason = `DDF ${ddfDate.toLocaleDateString("fr-FR")} > limite ${label}`;
+        }
+      }
+    }
+
+    // --- Résultat combiné ---
+    const hasDdfCondition = !!(moisMatch || anneesMatch);
+    const hasCommCondition = threshold !== null;
+
+    if (!hasCommCondition && !hasDdfCondition) {
+      return { eligible: true, status: "ok", reason: value };
+    }
+
+    const parts = [commReason, ddfReason].filter(Boolean);
+    const allOk = commOk && ddfOk;
+    return {
+      eligible: true,
+      status: allOk ? "ok" : "warn",
+      reason: `${value} — ${parts.join(" | ")}`
+    };
   }
 
   return { eligible: true, status: "warn", reason: value };
@@ -361,8 +398,8 @@ function evaluateDdfRule(ruleValue, ddfDate) {
 
   if (ddfDate > maxDate) {
     return {
-      eligible: false,
-      status: "ko",
+      eligible: true,
+      status: "warn",
       reason: `DDF ${ddfDate.toLocaleDateString("fr-FR")} > DDF max ${maxDate.toLocaleDateString("fr-FR")}`
     };
   }
@@ -382,7 +419,7 @@ function evaluateHorizonRule(ruleValue, dffDate) {
 
   const dffYear = dffDate.getFullYear();
   if (year < dffYear) {
-    return { eligible: false, status: "ko", reason: `Horizon ${year} < fin fourniture ${dffYear}` };
+    return { eligible: true, status: "warn", reason: `Horizon ${year} < fin fourniture ${dffYear}` };
   }
   if (year === dffYear) {
     return { eligible: true, status: "ok", reason: `Horizon ${year} couvre la fin de fourniture ${dffYear}` };
@@ -549,7 +586,7 @@ function evaluateSupplier(input) {
   const volumeEval = evaluateVolumeRule(rules["VOLUME MINIMAL (CAR en MWh)"], params.volume);
   evaluations.push({ criterion: "Volume minimal", ...volumeEval });
 
-  const upfrontPaymentEval = evaluateUpfrontPaymentRule(rules["Paiement UPFRONT"], params.commissionEstimee);
+  const upfrontPaymentEval = evaluateUpfrontPaymentRule(rules["Paiement UPFRONT"], params.commissionEstimee, params.ddfDate);
   evaluations.push({ criterion: "Paiement UPFRONT", ...upfrontPaymentEval });
 
   const regCommValue = getRuleValue(rules, [
@@ -562,7 +599,7 @@ function evaluateSupplier(input) {
   const eligible = evaluations.every((e) => e.eligible !== false);
   const warnings = evaluations.filter((e) => e.status === "warn").length;
 
-  const score = (eligible ? 100 : 0) - warnings * 5 - ((panelInfo?.panelPriority ?? 99) * 2);
+  const score = (eligible ? 100 : 0) - warnings * 5;
 
   return {
     supplier,
@@ -642,12 +679,7 @@ module.exports = function handler(req, res) {
 
     const eligibleResults = results
       .filter((r) => r.eligible)
-      .sort((a, b) => {
-        if (a.panelPriority !== b.panelPriority) {
-          return a.panelPriority - b.panelPriority;
-        }
-        return b.score - a.score;
-      });
+      .sort((a, b) => b.score - a.score);
 
     const topSuppliers = eligibleResults.slice(0, 5);
 
