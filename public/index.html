@@ -1589,6 +1589,7 @@ async function analyser() {
   let selectionData = null;
   try {
     const commRaw = (document.getElementById("commission_estimee")?.value || "").replace(/[^\d.,]/g, "").replace(",", ".");
+    const margeRaw = (document.getElementById("marge_globale")?.value || "").replace(",", ".");
     const query = new URLSearchParams({
       energie,
       segment,
@@ -1599,7 +1600,8 @@ async function analyser() {
       dff: document.getElementById("dff").value,
       fournisseur_actuel,
       commission_estimee: commRaw || "",
-      etat_pdl: document.getElementById("etat_pdl")?.value || ""
+      etat_pdl: document.getElementById("etat_pdl")?.value || "",
+      marge_globale: margeRaw || ""
     });
     selectionData = await apiFetch(`/api/fournisseur-selection?${query.toString()}`);
   } catch (e) {
