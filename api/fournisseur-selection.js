@@ -847,13 +847,11 @@ function evaluateSupplier(input) {
   if (regulRaw === "NON" || regulRaw.startsWith("NON")) scoreRegul = 1;
 
   // Score métier total (max 10)
-  const scoreMetier = scoreUpfront + scoreMarge + scoreHorizon + scoringMin + scoreRegul;
+  const scoreMetier = scoreUpfront + scoreMarge + scoreHorizon + scoringMin + scoreRegul; // max 10
 
-  // Score technique (tie-breaker) : moins de warnings = mieux
-  const scoreTech = -warnings;
-
-  // Score final : scoreMetier en priorité, scoreTech en départage
-  const score = eligible ? scoreMetier * 100 - warnings : -1;
+  // Score de tri : scoreMetier prioritaire, warnings comme départage (moins = mieux)
+  // On encode : scoreMetier * 1000 - warnings pour trier sans dépasser 10
+  const score = eligible ? scoreMetier * 1000 - warnings : -1;
 
   return {
     supplier,
