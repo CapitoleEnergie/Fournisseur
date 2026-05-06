@@ -139,7 +139,7 @@ textarea::placeholder { color: #b0b0b0; }
 .supplier-logo-wrap { width:40px; height:40px; border-radius:12px; background:#fff; border:1px solid #ece9ff; display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden; }
 .supplier-logo { width:30px; height:30px; object-fit:contain; display:block; }
 .supplier-name-stack { display:flex; flex-direction:column; gap:6px; min-width:0; }
-.supplier-name-text { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:260px; font-size:15px; font-weight:800; }
+.supplier-name-text { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:260px; font-size:17px; font-weight:800; }
 .selection-partner-card-note { margin-left:auto;font-size:11px;font-weight:400;opacity:0.75; }
 
 .classif-table td { padding: 10px 14px; vertical-align: middle; line-height: 1.45; }
@@ -175,7 +175,33 @@ textarea::placeholder { color: #b0b0b0; }
 .classif-section:nth-child(2) { animation-delay: 0.15s; }
 .classif-section:nth-child(3) { animation-delay: 0.25s; }
 
-/* ===================== RÉSUMÉ TAB ===================== */
+/* ===== CLASSIF TOGGLES ===== */
+.classif-toggle-bar { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:0; }
+.classif-toggle-btn { display:inline-flex; align-items:center; gap:7px; padding:6px 14px; border-radius:20px; border:2px solid #ddd; background:#fff; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.15s; user-select:none; }
+.classif-toggle-btn.top5 { border-color:var(--vert-border); color:var(--vert); }
+.classif-toggle-btn.top5.active { background:var(--vert-bg); }
+.classif-toggle-btn.alternatif { border-color:var(--principal); color:var(--principal); }
+.classif-toggle-btn.alternatif.active { background:#F0EBFF; }
+.classif-toggle-btn.horscible { border-color:var(--rouge-border); color:var(--rouge); }
+.classif-toggle-btn.horscible.active { background:var(--rouge-bg); }
+.classif-toggle-icon { width:18px; height:18px; border-radius:4px; border:2px solid currentColor; display:inline-flex; align-items:center; justify-content:center; font-size:12px; flex-shrink:0; }
+.classif-toggle-btn.active .classif-toggle-icon::after { content:"✓"; font-weight:900; }
+
+/* ===== MODAL SCORING ===== */
+.scoring-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:999; align-items:center; justify-content:center; }
+.scoring-modal-overlay.open { display:flex; }
+.scoring-modal { background:#fff; border-radius:16px; padding:28px 30px; max-width:620px; width:90%; max-height:80vh; overflow-y:auto; box-shadow:0 20px 60px rgba(80,32,234,0.15); position:relative; }
+.scoring-modal h2 { font-family:'Bricolage Grotesque',sans-serif; font-size:18px; color:var(--noir); margin-bottom:4px; }
+.scoring-modal .modal-subtitle { font-size:12px; color:#888; margin-bottom:20px; }
+.scoring-modal-close { position:absolute; top:16px; right:18px; background:none; border:none; font-size:20px; cursor:pointer; color:#aaa; line-height:1; }
+.scoring-rule-row { display:flex; align-items:center; gap:12px; padding:9px 0; border-bottom:1px solid #F0F0F0; }
+.scoring-rule-row:last-child { border-bottom:none; }
+.scoring-rule-label { font-size:13px; font-weight:700; color:var(--noir); flex:1; }
+.scoring-rule-desc { font-size:12px; color:#555; flex:2; }
+.scoring-rule-impact { font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px; white-space:nowrap; }
+.scoring-rule-impact.exclusion { background:var(--rouge-bg); color:var(--rouge); border:1px solid var(--rouge-border); }
+.scoring-rule-impact.warn { background:var(--orange-bg); color:var(--orange); border:1px solid var(--orange-border); }
+.scoring-rule-impact.ok { background:var(--vert-bg); color:var(--vert); border:1px solid var(--vert-border); }
 #tab-resume main { max-width: 1280px; padding-top: 36px; }
 
 /* ===================== PANEL TAB ===================== */
@@ -1709,7 +1735,7 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
         const volHtml = prixEval.vol !== null ? `<div style="font-size:12px;color:#666;font-weight:600;line-height:1.35;margin-top:7px;">Vol. moy: ${prixEval.vol.toFixed(0)} MWh</div>` : "";
         const nbHtml = prixEval.nb !== null ? `<div style="font-size:12px;color:#555;font-weight:700;line-height:1.35;margin-top:2px;">${prixEval.nb} appel${prixEval.nb > 1 ? "s" : ""} d'offres</div>` : "";
         prixHtml = `<div style="display:flex;flex-direction:column;gap:6px;min-width:150px;">
-          <div style="font-size:17px;font-weight:800;color:var(--noir);line-height:1.1;">${prixEval.prix.toFixed(2)} €/MWh</div>
+          <div style="font-size:14px;font-weight:800;color:var(--noir);line-height:1.1;">${prixEval.prix.toFixed(2)} €/MWh</div>
           ${ecartHtml}
           ${volHtml}
           ${nbHtml}
@@ -1769,20 +1795,30 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
 
   const top5Html = `
     <div class="classif-section">
-      <div class="classif-section-title vert-title" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-        ✅ TOP 5 sélectionné
-        <span class="color-badge vert-badge-small">${topSuppliers.length} fournisseur(s)</span>
-        <label style="margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;cursor:pointer;color:var(--principal);">
-          <input type="checkbox" id="chk-alternatif" style="accent-color:var(--principal);width:15px;height:15px;" onchange="toggleClassifView()">
-          Choix Alternatif
-        </label>
-        <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;cursor:pointer;color:var(--rouge);">
-          <input type="checkbox" id="chk-horscible" style="accent-color:var(--rouge);width:15px;height:15px;" onchange="toggleClassifView()">
-          Hors Cible
-        </label>
+      <div class="classif-section-title vert-title" id="classif-main-title" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <span id="classif-title-icon">✅</span>
+        <span id="classif-title-text">TOP 5 sélectionné</span>
+        <span class="color-badge vert-badge-small" id="classif-title-badge">${topSuppliers.length} fournisseur(s)</span>
+        <div class="classif-toggle-bar" style="margin-left:auto;">
+          <button class="classif-toggle-btn top5 active" id="toggle-top5" onclick="toggleClassifView('top5')">
+            <span class="classif-toggle-icon"></span> TOP 5
+          </button>
+          <button class="classif-toggle-btn alternatif" id="toggle-alternatif" onclick="toggleClassifView('alternatif')">
+            <span class="classif-toggle-icon"></span> Choix Alternatif
+          </button>
+          <button class="classif-toggle-btn horscible" id="toggle-horscible" onclick="toggleClassifView('horscible')">
+            <span class="classif-toggle-icon"></span> Hors Cible
+          </button>
+        </div>
+      </div>
+      <div style="padding:8px 16px 10px;background:#FAFAFA;border:1.5px solid var(--vert-border);border-top:none;border-bottom:none;display:flex;align-items:center;gap:10px;">
+        <button onclick="document.getElementById('scoring-modal').classList.add('open')" style="display:inline-flex;align-items:center;gap:6px;background:var(--bleu-clair);color:var(--principal);border:none;border-radius:8px;padding:5px 13px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">
+          ℹ️ Informations scoring
+        </button>
+        <span style="font-size:11px;color:#aaa;">Le scoring détermine le classement des fournisseurs éligibles</span>
       </div>
       <div id="classif-view-top5">
-        <div class="classif-table-wrap">
+        <div class="classif-table-wrap" style="border-top:none;border-radius:0 0 12px 12px;">
           <table class="classif-table">
             <thead><tr><th>Fournisseur</th><th>Panel</th><th>Éligibilité</th><th>Scoring</th><th style="min-width:140px">Prix (30j)</th><th>Analyse</th></tr></thead>
             <tbody>${renderSelectionRows(topSuppliers)}</tbody>
@@ -1790,7 +1826,7 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
         </div>
       </div>
       <div id="classif-view-alternatif" style="display:none;">
-        <div class="classif-table-wrap">
+        <div class="classif-table-wrap" style="border-top:none;border-radius:0 0 12px 12px;">
           <table class="classif-table">
             <thead><tr><th>Fournisseur</th><th>Panel</th><th>Éligibilité</th><th>Scoring</th><th style="min-width:140px">Prix (30j)</th><th>Analyse</th></tr></thead>
             <tbody>${renderSelectionRows(allSuppliers.filter(r => r.eligible && !topSupplierNames.has(r.supplier)))}</tbody>
@@ -1798,11 +1834,65 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
         </div>
       </div>
       <div id="classif-view-horscible" style="display:none;">
-        <div class="classif-table-wrap">
+        <div class="classif-table-wrap" style="border-top:none;border-radius:0 0 12px 12px;">
           <table class="classif-table">
             <thead><tr><th>Fournisseur</th><th>Panel</th><th>Éligibilité</th><th>Scoring</th><th style="min-width:140px">Prix (30j)</th><th>Analyse</th></tr></thead>
             <tbody>${renderSelectionRows(allSuppliers.filter(r => !r.eligible))}</tbody>
           </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL SCORING -->
+    <div class="scoring-modal-overlay" id="scoring-modal" onclick="if(event.target===this)this.classList.remove('open')">
+      <div class="scoring-modal">
+        <button class="scoring-modal-close" onclick="document.getElementById('scoring-modal').classList.remove('open')">✕</button>
+        <h2>ℹ️ Comprendre le scoring</h2>
+        <p class="modal-subtitle">Le score (sur 100) détermine le classement des fournisseurs éligibles. Chaque alerte ⚠️ retire 5 points.</p>
+        <div class="scoring-rule-row">
+          <span class="scoring-rule-label">Segment</span>
+          <span class="scoring-rule-desc">Le segment du dossier doit être couvert par le fournisseur</span>
+          <span class="scoring-rule-impact exclusion">Exclusion</span>
+        </div>
+        <div class="scoring-rule-row">
+          <span class="scoring-rule-label">Syndic</span>
+          <span class="scoring-rule-desc">Si le dossier est Syndic, le fournisseur doit l'accepter</span>
+          <span class="scoring-rule-impact exclusion">Exclusion</span>
+        </div>
+        <div class="scoring-rule-row">
+          <span class="scoring-rule-label">1ère MES / re-MES</span>
+          <span class="scoring-rule-desc">Selon l'état PDL sélectionné, le fournisseur doit accepter la mise en service</span>
+          <span class="scoring-rule-impact exclusion">Exclusion si NON</span>
+        </div>
+        <div class="scoring-rule-row">
+          <span class="scoring-rule-label">Horizon</span>
+          <span class="scoring-rule-desc">La date d'horizon du fournisseur doit couvrir la fin de fourniture souhaitée</span>
+          <span class="scoring-rule-impact warn">Alerte −5 pts</span>
+        </div>
+        <div class="scoring-rule-row">
+          <span class="scoring-rule-label">DDF Max</span>
+          <span class="scoring-rule-desc">La date de début fourniture doit être compatible avec la limite du fournisseur (date fixe ou M+X / N+X)</span>
+          <span class="scoring-rule-impact warn">Alerte −5 pts</span>
+        </div>
+        <div class="scoring-rule-row">
+          <span class="scoring-rule-label">Scoring minimum</span>
+          <span class="scoring-rule-desc">La note crédit du dossier doit atteindre le minimum requis par le fournisseur</span>
+          <span class="scoring-rule-impact warn">Alerte −5 pts</span>
+        </div>
+        <div class="scoring-rule-row">
+          <span class="scoring-rule-label">Volume minimal</span>
+          <span class="scoring-rule-desc">Le volume annuel doit respecter le minimum exigé (si "Aucun" : toujours valide)</span>
+          <span class="scoring-rule-impact warn">Alerte −5 pts</span>
+        </div>
+        <div class="scoring-rule-row">
+          <span class="scoring-rule-label">Paiement UPFRONT</span>
+          <span class="scoring-rule-desc">Si seuil en K€ : la commission estimée doit être ≤ au seuil. Si DDF M+X incluse : les deux conditions doivent être respectées</span>
+          <span class="scoring-rule-impact warn">Alerte −5 pts</span>
+        </div>
+        <div class="scoring-rule-row">
+          <span class="scoring-rule-label">Régularisation commissions</span>
+          <span class="scoring-rule-desc">Indique si le fournisseur propose une régularisation des commissions</span>
+          <span class="scoring-rule-impact ok">Informatif</span>
         </div>
       </div>
     </div>`;
@@ -1843,35 +1933,35 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
   div.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-function toggleClassifView() {
-  const chkAlternatif = document.getElementById("chk-alternatif");
-  const chkHorsCible = document.getElementById("chk-horscible");
-  const viewTop5 = document.getElementById("classif-view-top5");
-  const viewAlternatif = document.getElementById("classif-view-alternatif");
-  const viewHorsCible = document.getElementById("classif-view-horscible");
+function toggleClassifView(selected) {
+  const views = { top5: 'classif-view-top5', alternatif: 'classif-view-alternatif', horscible: 'classif-view-horscible' };
+  const toggles = { top5: 'toggle-top5', alternatif: 'toggle-alternatif', horscible: 'toggle-horscible' };
+  const titles = {
+    top5:       { icon: '✅', text: 'TOP 5 sélectionné',       cls: 'vert-title' },
+    alternatif: { icon: '🔵', text: 'Choix Alternatif',        cls: 'vert-title' },
+    horscible:  { icon: '🔴', text: 'Fournisseurs Hors Cible', cls: 'rouge-title' }
+  };
 
-  if (!chkAlternatif || !chkHorsCible) return;
+  Object.keys(views).forEach(k => {
+    const view = document.getElementById(views[k]);
+    const btn = document.getElementById(toggles[k]);
+    if (view) view.style.display = k === selected ? 'block' : 'none';
+    if (btn) btn.classList.toggle('active', k === selected);
+  });
 
-  // Les deux cases sont mutuellement exclusives
-  if (chkAlternatif.checked && chkHorsCible.checked) {
-    // Désactiver l'autre case selon celle qui vient d'être cochée
-    const lastChecked = document.activeElement;
-    if (lastChecked === chkAlternatif) chkHorsCible.checked = false;
-    else chkAlternatif.checked = false;
-  }
-
-  if (chkAlternatif.checked) {
-    viewTop5.style.display = "none";
-    viewAlternatif.style.display = "block";
-    viewHorsCible.style.display = "none";
-  } else if (chkHorsCible.checked) {
-    viewTop5.style.display = "none";
-    viewAlternatif.style.display = "none";
-    viewHorsCible.style.display = "block";
-  } else {
-    viewTop5.style.display = "block";
-    viewAlternatif.style.display = "none";
-    viewHorsCible.style.display = "none";
+  // Titre dynamique
+  const titleEl = document.getElementById('classif-main-title');
+  const iconEl = document.getElementById('classif-title-icon');
+  const textEl = document.getElementById('classif-title-text');
+  if (titleEl && iconEl && textEl && titles[selected]) {
+    const t = titles[selected];
+    iconEl.textContent = t.icon;
+    textEl.textContent = t.text;
+    titleEl.className = `classif-section-title ${t.cls}`;
+    titleEl.style.display = 'flex';
+    titleEl.style.alignItems = 'center';
+    titleEl.style.gap = '10px';
+    titleEl.style.flexWrap = 'wrap';
   }
 }
 
