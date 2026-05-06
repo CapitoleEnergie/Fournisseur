@@ -700,9 +700,9 @@ module.exports = function handler(req, res) {
 
     const engine = loadSelectionEngine();
 
-    const etatPdl = normalizeText(query.etat_pdl || "").toLowerCase();
-    const mesType = etatPdl.includes("premi") ? "premiere"
-      : (etatPdl.includes("mise en service") || etatPdl.includes("re-mes") || etatPdl === "mise en service") ? "remise"
+    const etatPdl = normalizeText(query.etat_pdl || "").toLowerCase().replace(/\s+/g, "_");
+    const mesType = etatPdl === "premiere_mes" ? "premiere"
+      : etatPdl === "mes" ? "remise"
       : null;
 
     const params = {
