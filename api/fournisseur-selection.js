@@ -343,6 +343,38 @@ function evaluateRegularisationCommissionsRule(ruleValue) {
   return { eligible: true, status: "warn", reason: value };
 }
 
+function evaluateMesRule(ruleValue, mesType) {
+  // mesType = "premiere" | "remise" | null
+  // Si non pertinent (En service, Fermé, non renseigné) → neutral sans impact
+  if (!mesType) {
+    return null; // null = ne pas afficher la règle
+  }
+
+  const value = normalizeText(ruleValue);
+  const upper = value.toUpperCase();
+
+  if (!value) {
+    return { eligible: true, status: "neutral", reason: "Règle MES non renseignée" };
+  }
+
+  // "NON" → exclusion rouge
+  if (upper === "NON") {
+    return { eligible: false, status: "ko", reason: `Non accepté` };
+  }
+
+  // "OUI" strict → vert
+  if (upper === "OUI") {
+    return { eligible: true, status: "ok", reason: "Accepté" };
+  }
+
+  // "OUI (...)" ou "OUI avec conditions" ou toute variante → jaune warn
+  if (upper.startsWith("OUI")) {
+    return { eligible: true, status: "warn", reason: value };
+  }
+
+  return { eligible: true, status: "warn", reason: value };
+}
+
 function evaluateDdfRule(ruleValue, ddfDate) {
   const value = normalizeText(ruleValue);
   const upper = value.toUpperCase();
@@ -596,6 +628,17 @@ function evaluateSupplier(input) {
   const regCommEval = evaluateRegularisationCommissionsRule(regCommValue);
   evaluations.push({ criterion: "Régularisation commissions", ...regCommEval });
 
+  // MES : uniquement si Première mise en service ou Mise en service
+  if (params.mesType) {
+    const mesRuleKey = params.mesType === "premiere" ? "1ère MES" : "re-MES";
+    const mesLabel = params.mesType === "premiere" ? "1ère mise en service" : "Remise en service";
+    const mesRuleValue = getRuleValue(rules, [mesRuleKey, mesRuleKey.replace("è", "e")]);
+    const mesEval = evaluateMesRule(mesRuleValue, params.mesType);
+    if (mesEval !== null) {
+      evaluations.push({ criterion: mesLabel, ...mesEval });
+    }
+  }
+
   const eligible = evaluations.every((e) => e.eligible !== false);
   const warnings = evaluations.filter((e) => e.status === "warn").length;
 
@@ -657,6 +700,11 @@ module.exports = function handler(req, res) {
 
     const engine = loadSelectionEngine();
 
+    const etatPdl = normalizeText(query.etat_pdl || "").toLowerCase();
+    const mesType = etatPdl.includes("premi") ? "premiere"
+      : (etatPdl.includes("mise en service") || etatPdl.includes("re-mes") || etatPdl === "mise en service") ? "remise"
+      : null;
+
     const params = {
       energie: normalizedEnergy,
       segment: normalizedSegment,
@@ -665,7 +713,8 @@ module.exports = function handler(req, res) {
       volume: safeNumber(query.volume),
       commissionEstimee: safeNumber(query.commission_estimee),
       ddfDate: parseFrenchDate(query.ddf),
-      dffDate: parseFrenchDate(query.dff)
+      dffDate: parseFrenchDate(query.dff),
+      mesType
     };
 
     const results = engine.fournisseurs.map((supplier) =>
