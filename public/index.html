@@ -1759,7 +1759,7 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
         </td>
         <td>${getPanelBadge(r.panel)}</td>
         <td>${getEligibilityBadge(r.eligible)}</td>
-        <td>${scoreValue !== null ? `<span class="score-pill ${isEligible ? (isTop5 ? 'vert' : 'orange') : 'rouge'}">${scoreValue}/100</span>` : `<span style="color:#bbb;font-size:11px;">—</span>`}</td>
+        <td>${scoreValue !== null ? `<span class="score-pill ${isEligible ? (isTop5 ? 'vert' : 'orange') : 'rouge'}">${r.scoreMetier ?? scoreValue}/10</span>` : `<span style="color:#bbb;font-size:11px;">—</span>`}</td>
         <td>${prixHtml}</td>
         <td class="justif-cell">${renderEvaluationLines(r.evaluations)}</td>
       </tr>`;
