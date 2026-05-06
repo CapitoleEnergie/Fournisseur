@@ -1998,8 +1998,9 @@ function toggleClassifView(selected) {
     badge.textContent = `${count} fournisseur(s)`;
     badge.className = 'color-badge ' + (selected === 'horscible' ? 'rouge-badge-small' : 'vert-badge-small');
   }
+}
 
-
+function reinitialiser() {
   ["energie","segment","note","volume","ddf","dff","etat_pdl","syndic","nb_compteurs","fournisseur_actuel","marge_globale"].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = "";
