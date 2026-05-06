@@ -1807,19 +1807,19 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
           data-count-horscible="${allSuppliers.filter(r => !r.eligible).length}"
         >${topSuppliers.length} fournisseur(s)</span>
         <div class="classif-toggle-bar" style="margin-left:auto;">
-          <button class="classif-toggle-btn top5 active" id="toggle-top5" onclick="toggleClassifView('top5')">
+          <button type="button" class="classif-toggle-btn top5 active" id="toggle-top5" onclick="toggleClassifView('top5')">
             <span class="classif-toggle-icon"></span> TOP 5
           </button>
-          <button class="classif-toggle-btn alternatif" id="toggle-alternatif" onclick="toggleClassifView('alternatif')">
+          <button type="button" class="classif-toggle-btn alternatif" id="toggle-alternatif" onclick="toggleClassifView('alternatif')">
             <span class="classif-toggle-icon"></span> Choix Alternatif
           </button>
-          <button class="classif-toggle-btn horscible" id="toggle-horscible" onclick="toggleClassifView('horscible')">
+          <button type="button" class="classif-toggle-btn horscible" id="toggle-horscible" onclick="toggleClassifView('horscible')">
             <span class="classif-toggle-icon"></span> Hors Cible
           </button>
         </div>
       </div>
       <div style="padding:8px 16px 10px;background:#FAFAFA;border:1.5px solid var(--vert-border);border-top:none;border-bottom:none;display:flex;align-items:center;gap:10px;">
-        <button onclick="document.getElementById('scoring-modal').classList.add('open')" style="display:inline-flex;align-items:center;gap:6px;background:var(--bleu-clair);color:var(--principal);border:none;border-radius:8px;padding:5px 13px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">
+        <button type="button" onclick="document.getElementById('scoring-modal').classList.add('open')" style="display:inline-flex;align-items:center;gap:6px;background:var(--bleu-clair);color:var(--principal);border:none;border-radius:8px;padding:5px 13px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">
           ℹ️ Informations scoring
         </button>
         <span style="font-size:11px;color:#aaa;">Le scoring détermine le classement des fournisseurs éligibles</span>
@@ -1853,53 +1853,74 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
     <!-- MODAL SCORING -->
     <div class="scoring-modal-overlay" id="scoring-modal" onclick="if(event.target===this)this.classList.remove('open')">
       <div class="scoring-modal">
-        <button class="scoring-modal-close" onclick="document.getElementById('scoring-modal').classList.remove('open')">✕</button>
+        <button type="button" class="scoring-modal-close" onclick="document.getElementById('scoring-modal').classList.remove('open')">✕</button>
         <h2>ℹ️ Comprendre le scoring</h2>
-        <p class="modal-subtitle">Le score (sur 100) détermine le classement des fournisseurs éligibles. Chaque alerte ⚠️ retire 5 points.</p>
-        <div class="scoring-rule-row">
-          <span class="scoring-rule-label">Segment</span>
-          <span class="scoring-rule-desc">Le segment du dossier doit être couvert par le fournisseur</span>
-          <span class="scoring-rule-impact exclusion">Exclusion</span>
+        <p class="modal-subtitle">Le score est sur <strong>10 points</strong>. Il détermine le classement des fournisseurs éligibles. En cas d'égalité, le nombre d'alertes ⚠️ départage (moins d'alertes = mieux classé).</p>
+
+        <div class="scoring-rule-row" style="background:#F8F8FF;border-radius:8px;padding:10px 12px;margin-bottom:8px;border:none;">
+          <span class="scoring-rule-label" style="color:var(--principal);">PAIEMENT UPFRONT</span>
+          <span class="scoring-rule-desc">100% upfront (OUI) : <strong>3 pts</strong> — Sous conditions (OUI si…) : <strong>1 pt</strong> — Non : <strong>0 pt</strong></span>
+          <span class="scoring-rule-impact ok">max 3 pts</span>
         </div>
-        <div class="scoring-rule-row">
-          <span class="scoring-rule-label">Syndic</span>
-          <span class="scoring-rule-desc">Si le dossier est Syndic, le fournisseur doit l'accepter</span>
-          <span class="scoring-rule-impact exclusion">Exclusion</span>
+        <div class="scoring-rule-row" style="background:#F8F8FF;border-radius:8px;padding:10px 12px;margin-bottom:8px;border:none;">
+          <span class="scoring-rule-label" style="color:var(--principal);">MARGE ÉLECTRICITÉ</span>
+          <span class="scoring-rule-desc">≥ 25 €/MWh : <strong>2 pts</strong> — Entre 20 et 25 : <strong>1 pt</strong> — &lt; 20 : <strong>0 pt</strong></span>
+          <span class="scoring-rule-impact ok">max 2 pts</span>
         </div>
-        <div class="scoring-rule-row">
-          <span class="scoring-rule-label">1ère MES / re-MES</span>
-          <span class="scoring-rule-desc">Selon l'état PDL sélectionné, le fournisseur doit accepter la mise en service</span>
-          <span class="scoring-rule-impact exclusion">Exclusion si NON</span>
+        <div class="scoring-rule-row" style="background:#F8F8FF;border-radius:8px;padding:10px 12px;margin-bottom:8px;border:none;">
+          <span class="scoring-rule-label" style="color:var(--principal);">MARGE GAZ</span>
+          <span class="scoring-rule-desc">≥ 20 €/MWh : <strong>2 pts</strong> — Entre 15 et 20 : <strong>1 pt</strong> — &lt; 15 : <strong>0 pt</strong></span>
+          <span class="scoring-rule-impact ok">max 2 pts</span>
         </div>
-        <div class="scoring-rule-row">
-          <span class="scoring-rule-label">Horizon</span>
-          <span class="scoring-rule-desc">La date d'horizon du fournisseur doit couvrir la fin de fourniture souhaitée</span>
-          <span class="scoring-rule-impact warn">Alerte −5 pts</span>
+        <div class="scoring-rule-row" style="background:#F8F8FF;border-radius:8px;padding:10px 12px;margin-bottom:8px;border:none;">
+          <span class="scoring-rule-label" style="color:var(--principal);">HORIZON</span>
+          <span class="scoring-rule-desc">&gt; 2029 : <strong>2 pts</strong> — = 2029 : <strong>1 pt</strong> — &lt; 2029 : <strong>0 pt</strong></span>
+          <span class="scoring-rule-impact ok">max 2 pts</span>
         </div>
-        <div class="scoring-rule-row">
-          <span class="scoring-rule-label">DDF Max</span>
-          <span class="scoring-rule-desc">La date de début fourniture doit être compatible avec la limite du fournisseur (date fixe ou M+X / N+X)</span>
-          <span class="scoring-rule-impact warn">Alerte −5 pts</span>
+        <div class="scoring-rule-row" style="background:#F8F8FF;border-radius:8px;padding:10px 12px;margin-bottom:8px;border:none;">
+          <span class="scoring-rule-label" style="color:var(--principal);">SCORING MINIMUM</span>
+          <span class="scoring-rule-desc">&lt; 5/10 : <strong>2 pts</strong> — = 5/10 : <strong>1 pt</strong> — &gt; 5/10 : <strong>0 pt</strong> (seuil bas = fournisseur permissif)</span>
+          <span class="scoring-rule-impact ok">max 2 pts</span>
         </div>
-        <div class="scoring-rule-row">
-          <span class="scoring-rule-label">Scoring minimum</span>
-          <span class="scoring-rule-desc">La note crédit du dossier doit atteindre le minimum requis par le fournisseur</span>
-          <span class="scoring-rule-impact warn">Alerte −5 pts</span>
+        <div class="scoring-rule-row" style="background:#F8F8FF;border-radius:8px;padding:10px 12px;margin-bottom:12px;border:none;">
+          <span class="scoring-rule-label" style="color:var(--principal);">RÉGULARISATION</span>
+          <span class="scoring-rule-desc">Non : <strong>1 pt</strong> — Oui : <strong>0 pt</strong></span>
+          <span class="scoring-rule-impact ok">max 1 pt</span>
         </div>
-        <div class="scoring-rule-row">
-          <span class="scoring-rule-label">Volume minimal</span>
-          <span class="scoring-rule-desc">Le volume annuel doit respecter le minimum exigé (si "Aucun" : toujours valide)</span>
-          <span class="scoring-rule-impact warn">Alerte −5 pts</span>
-        </div>
-        <div class="scoring-rule-row">
-          <span class="scoring-rule-label">Paiement UPFRONT</span>
-          <span class="scoring-rule-desc">Si seuil en K€ : la commission estimée doit être ≤ au seuil. Si DDF M+X incluse : les deux conditions doivent être respectées</span>
-          <span class="scoring-rule-impact warn">Alerte −5 pts</span>
-        </div>
-        <div class="scoring-rule-row">
-          <span class="scoring-rule-label">Régularisation commissions</span>
-          <span class="scoring-rule-desc">Indique si le fournisseur propose une régularisation des commissions</span>
-          <span class="scoring-rule-impact ok">Informatif</span>
+
+        <div style="border-top:2px solid var(--principal);padding-top:12px;margin-top:4px;">
+          <div style="font-size:13px;font-weight:800;color:var(--principal);margin-bottom:10px;">Critères d'exclusion (sans impact sur le score)</div>
+          <div class="scoring-rule-row">
+            <span class="scoring-rule-label">Segment</span>
+            <span class="scoring-rule-desc">Le segment du dossier doit être couvert</span>
+            <span class="scoring-rule-impact exclusion">Exclusion</span>
+          </div>
+          <div class="scoring-rule-row">
+            <span class="scoring-rule-label">Syndic</span>
+            <span class="scoring-rule-desc">Si dossier Syndic, le fournisseur doit l'accepter</span>
+            <span class="scoring-rule-impact exclusion">Exclusion</span>
+          </div>
+          <div class="scoring-rule-row">
+            <span class="scoring-rule-label">1ère MES / re-MES</span>
+            <span class="scoring-rule-desc">Le fournisseur doit accepter la mise en service si NON</span>
+            <span class="scoring-rule-impact exclusion">Exclusion si NON</span>
+          </div>
+          <div style="font-size:13px;font-weight:800;color:#888;margin:10px 0 6px;">Alertes ⚠️ (départagent les égalités uniquement)</div>
+          <div class="scoring-rule-row">
+            <span class="scoring-rule-label">DDF Max</span>
+            <span class="scoring-rule-desc">La DDF doit être compatible avec la limite du fournisseur</span>
+            <span class="scoring-rule-impact warn">Alerte</span>
+          </div>
+          <div class="scoring-rule-row">
+            <span class="scoring-rule-label">Volume minimal</span>
+            <span class="scoring-rule-desc">Le volume doit respecter le minimum requis</span>
+            <span class="scoring-rule-impact warn">Alerte</span>
+          </div>
+          <div class="scoring-rule-row">
+            <span class="scoring-rule-label">Marge</span>
+            <span class="scoring-rule-desc">Marge saisie comparée au seuil fournisseur selon énergie/segment</span>
+            <span class="scoring-rule-impact warn">Alerte si dépassée</span>
+          </div>
         </div>
       </div>
     </div>`;
