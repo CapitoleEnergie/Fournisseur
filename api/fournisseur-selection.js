@@ -519,6 +519,8 @@ function evaluateMargeRule(ruleValue, energie, segment, volume, margeGlobale) {
     margeImpact: -5
   };
 }
+
+function evaluateDdfRule(ruleValue, ddfDate) {
   const value = normalizeText(ruleValue);
   const upper = value.toUpperCase();
 
@@ -789,9 +791,69 @@ function evaluateSupplier(input) {
 
   const eligible = evaluations.every((e) => e.eligible !== false);
   const warnings = evaluations.filter((e) => e.status === "warn").length;
-  const margeImpact = margeEval.margeImpact || 0;
 
-  const score = (eligible ? 100 : 0) - warnings * 5 + margeImpact;
+  // ── SCORING MÉTIER ──────────────────────────────────────────────
+  // 1. PAIEMENT UPFRONT : 3 = OUI sans condition / 1 = OUI avec conditions / 0 = NON
+  let scoreUpfront = 0;
+  const upfrontRaw = normalizeText(rules["Paiement UPFRONT"] || "").toUpperCase();
+  if (upfrontRaw.startsWith("OUI")) {
+    const hasCondition = /SI\s|[<≤]\s*\d|\(/.test(upfrontRaw);
+    scoreUpfront = hasCondition ? 1 : 3;
+  }
+
+  // 2. MARGE : selon énergie
+  let scoreMarge = 0;
+  const margeSeuilResult = margeEval; // déjà calculé
+  const margeSeuilRaw = (() => {
+    // Réutiliser le seuil parsé depuis margeEval.reason
+    const m = normalizeText(margeEval.reason || "").match(/seuil\s+(\d+(?:[.,]\d+)?)\s*€/i);
+    return m ? parseFloat(m[1].replace(",", ".")) : null;
+  })();
+
+  if (margeSeuilRaw === null || margeEval.status === "ok" && !margeEval.reason.includes("seuil")) {
+    // Grille / Pas de limite / non parseable → considéré favorable
+    scoreMarge = 2;
+  } else if (params.energie === "elec") {
+    if (margeSeuilRaw >= 25) scoreMarge = 2;
+    else if (margeSeuilRaw >= 20) scoreMarge = 1;
+    else scoreMarge = 0;
+  } else { // gaz
+    if (margeSeuilRaw >= 20) scoreMarge = 2;
+    else if (margeSeuilRaw >= 15) scoreMarge = 1;
+    else scoreMarge = 0;
+  }
+
+  // 3. HORIZON : > 2029 = 2 / = 2029 = 1 / < 2029 = 0
+  let scoreHorizon = 0;
+  const horizonYear = getYearFromHorizon(rules[getHorizonRuleKey(params.energie)] || "");
+  if (horizonYear !== null) {
+    if (horizonYear > 2029) scoreHorizon = 2;
+    else if (horizonYear === 2029) scoreHorizon = 1;
+    else scoreHorizon = 0;
+  }
+
+  // 4. SCORING MINIMUM : < 5/10 = 2 / = 5/10 = 1 / > 5/10 = 0
+  let scoringMin = 0;
+  const scoringRaw = safeNumber(normalizeText(rules["SCORING MINIMUM"] || "").replace(/\/10.*/, "").trim());
+  if (scoringRaw !== null) {
+    if (scoringRaw < 5) scoringMin = 2;
+    else if (scoringRaw === 5) scoringMin = 1;
+    else scoringMin = 0;
+  }
+
+  // 5. RÉGULARISATION : Non = 1 / Oui = 0
+  let scoreRegul = 0;
+  const regulRaw = normalizeText(regCommValue || "").toUpperCase();
+  if (regulRaw === "NON" || regulRaw.startsWith("NON")) scoreRegul = 1;
+
+  // Score métier total (max 10)
+  const scoreMetier = scoreUpfront + scoreMarge + scoreHorizon + scoringMin + scoreRegul;
+
+  // Score technique (tie-breaker) : moins de warnings = mieux
+  const scoreTech = -warnings;
+
+  // Score final : scoreMetier en priorité, scoreTech en départage
+  const score = eligible ? scoreMetier * 100 - warnings : -1;
 
   return {
     supplier,
@@ -799,6 +861,8 @@ function evaluateSupplier(input) {
     panel: panelInfo?.panel || "",
     panelPriority: panelInfo?.panelPriority ?? 99,
     score,
+    scoreMetier,
+    scoreDetail: { scoreUpfront, scoreMarge, scoreHorizon, scoringMin, scoreRegul },
     evaluations,
     rulesUsed: {
       segment: rules[getSegmentRuleKey(params.segment)] || "",
