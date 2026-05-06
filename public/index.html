@@ -139,7 +139,7 @@ textarea::placeholder { color: #b0b0b0; }
 .supplier-logo-wrap { width:40px; height:40px; border-radius:12px; background:#fff; border:1px solid #ece9ff; display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden; }
 .supplier-logo { width:30px; height:30px; object-fit:contain; display:block; }
 .supplier-name-stack { display:flex; flex-direction:column; gap:6px; min-width:0; }
-.supplier-name-text { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:260px; }
+.supplier-name-text { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:260px; font-size:15px; font-weight:800; }
 .selection-partner-card-note { margin-left:auto;font-size:11px;font-weight:400;opacity:0.75; }
 
 .classif-table td { padding: 10px 14px; vertical-align: middle; line-height: 1.45; }
@@ -1571,7 +1571,8 @@ async function analyser() {
       ddf: document.getElementById("ddf").value,
       dff: document.getElementById("dff").value,
       fournisseur_actuel,
-      commission_estimee: commRaw || ""
+      commission_estimee: commRaw || "",
+      etat_pdl: document.getElementById("etat_pdl")?.value || ""
     });
     selectionData = await apiFetch(`/api/fournisseur-selection?${query.toString()}`);
   } catch (e) {
@@ -1708,7 +1709,7 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
         const volHtml = prixEval.vol !== null ? `<div style="font-size:12px;color:#666;font-weight:600;line-height:1.35;margin-top:7px;">Vol. moy: ${prixEval.vol.toFixed(0)} MWh</div>` : "";
         const nbHtml = prixEval.nb !== null ? `<div style="font-size:12px;color:#555;font-weight:700;line-height:1.35;margin-top:2px;">${prixEval.nb} appel${prixEval.nb > 1 ? "s" : ""} d'offres</div>` : "";
         prixHtml = `<div style="display:flex;flex-direction:column;gap:6px;min-width:150px;">
-          <div style="font-size:22px;font-weight:800;color:var(--noir);line-height:1.1;">${prixEval.prix.toFixed(2)} €/MWh</div>
+          <div style="font-size:17px;font-weight:800;color:var(--noir);line-height:1.1;">${prixEval.prix.toFixed(2)} €/MWh</div>
           ${ecartHtml}
           ${volHtml}
           ${nbHtml}
@@ -1766,20 +1767,47 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
       </div>`
     : "";
 
-  const allSuppliersHtml = `
+  const top5Html = `
     <div class="classif-section">
-      <div class="classif-section-title vert-title">
-        ✅ Classement complet des fournisseurs
-        <span class="color-badge vert-badge-small">${topSuppliers.length} Top sélectionné(s)</span>
-        <span style="margin-left:auto;font-size:11px;font-weight:400;opacity:0.75;">Tous les fournisseurs affichés, non éligibles inclus en bas de tableau</span>
+      <div class="classif-section-title vert-title" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        ✅ TOP 5 sélectionné
+        <span class="color-badge vert-badge-small">${topSuppliers.length} fournisseur(s)</span>
+        <label style="margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;cursor:pointer;color:var(--principal);">
+          <input type="checkbox" id="chk-alternatif" style="accent-color:var(--principal);width:15px;height:15px;" onchange="toggleClassifView()">
+          Choix Alternatif
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;cursor:pointer;color:var(--rouge);">
+          <input type="checkbox" id="chk-horscible" style="accent-color:var(--rouge);width:15px;height:15px;" onchange="toggleClassifView()">
+          Hors Cible
+        </label>
       </div>
-      <div class="classif-table-wrap">
-        <table class="classif-table">
-          <thead><tr><th>Fournisseur</th><th>Panel</th><th>Éligibilité</th><th>Scoring</th><th style="min-width:140px">Prix (30j)</th><th>Analyse</th></tr></thead>
-          <tbody>${renderSelectionRows(allSuppliers)}</tbody>
-        </table>
+      <div id="classif-view-top5">
+        <div class="classif-table-wrap">
+          <table class="classif-table">
+            <thead><tr><th>Fournisseur</th><th>Panel</th><th>Éligibilité</th><th>Scoring</th><th style="min-width:140px">Prix (30j)</th><th>Analyse</th></tr></thead>
+            <tbody>${renderSelectionRows(topSuppliers)}</tbody>
+          </table>
+        </div>
+      </div>
+      <div id="classif-view-alternatif" style="display:none;">
+        <div class="classif-table-wrap">
+          <table class="classif-table">
+            <thead><tr><th>Fournisseur</th><th>Panel</th><th>Éligibilité</th><th>Scoring</th><th style="min-width:140px">Prix (30j)</th><th>Analyse</th></tr></thead>
+            <tbody>${renderSelectionRows(allSuppliers.filter(r => r.eligible && !topSupplierNames.has(r.supplier)))}</tbody>
+          </table>
+        </div>
+      </div>
+      <div id="classif-view-horscible" style="display:none;">
+        <div class="classif-table-wrap">
+          <table class="classif-table">
+            <thead><tr><th>Fournisseur</th><th>Panel</th><th>Éligibilité</th><th>Scoring</th><th style="min-width:140px">Prix (30j)</th><th>Analyse</th></tr></thead>
+            <tbody>${renderSelectionRows(allSuppliers.filter(r => !r.eligible))}</tbody>
+          </table>
+        </div>
       </div>
     </div>`;
+
+  const allSuppliersHtml = top5Html;
 
   div.innerHTML = `
     <div class="results-header">
@@ -1813,6 +1841,38 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
   `;
 
   div.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function toggleClassifView() {
+  const chkAlternatif = document.getElementById("chk-alternatif");
+  const chkHorsCible = document.getElementById("chk-horscible");
+  const viewTop5 = document.getElementById("classif-view-top5");
+  const viewAlternatif = document.getElementById("classif-view-alternatif");
+  const viewHorsCible = document.getElementById("classif-view-horscible");
+
+  if (!chkAlternatif || !chkHorsCible) return;
+
+  // Les deux cases sont mutuellement exclusives
+  if (chkAlternatif.checked && chkHorsCible.checked) {
+    // Désactiver l'autre case selon celle qui vient d'être cochée
+    const lastChecked = document.activeElement;
+    if (lastChecked === chkAlternatif) chkHorsCible.checked = false;
+    else chkAlternatif.checked = false;
+  }
+
+  if (chkAlternatif.checked) {
+    viewTop5.style.display = "none";
+    viewAlternatif.style.display = "block";
+    viewHorsCible.style.display = "none";
+  } else if (chkHorsCible.checked) {
+    viewTop5.style.display = "none";
+    viewAlternatif.style.display = "none";
+    viewHorsCible.style.display = "block";
+  } else {
+    viewTop5.style.display = "block";
+    viewAlternatif.style.display = "none";
+    viewHorsCible.style.display = "none";
+  }
 }
 
 function reinitialiser() {
