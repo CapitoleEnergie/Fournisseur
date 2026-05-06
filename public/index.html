@@ -103,6 +103,7 @@ textarea::placeholder { color: #b0b0b0; }
 .classif-section-title.rouge-title { background: var(--rouge-bg); color: var(--rouge); border: 1.5px solid var(--rouge-border); border-bottom: none; }
 .color-badge { font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 12px; margin-left: 6px; }
 .vert-badge-small { background: var(--vert); color: white; }
+.rouge-badge-small { background: var(--rouge); color: white; }
 .orange-badge-small { background: var(--orange); color: white; }
 .rouge-badge-small { background: var(--rouge); color: white; }
 
@@ -1798,7 +1799,11 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
       <div class="classif-section-title vert-title" id="classif-main-title" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
         <span id="classif-title-icon">✅</span>
         <span id="classif-title-text">TOP 5 sélectionné</span>
-        <span class="color-badge vert-badge-small" id="classif-title-badge">${topSuppliers.length} fournisseur(s)</span>
+        <span class="color-badge vert-badge-small" id="classif-title-badge"
+          data-count-top5="${topSuppliers.length}"
+          data-count-alternatif="${allSuppliers.filter(r => r.eligible && !topSupplierNames.has(r.supplier)).length}"
+          data-count-horscible="${allSuppliers.filter(r => !r.eligible).length}"
+        >${topSuppliers.length} fournisseur(s)</span>
         <div class="classif-toggle-bar" style="margin-left:auto;">
           <button class="classif-toggle-btn top5 active" id="toggle-top5" onclick="toggleClassifView('top5')">
             <span class="classif-toggle-icon"></span> TOP 5
@@ -1963,9 +1968,15 @@ function toggleClassifView(selected) {
     titleEl.style.gap = '10px';
     titleEl.style.flexWrap = 'wrap';
   }
-}
+  // Badge compteur dynamique
+  const badge = document.getElementById('classif-title-badge');
+  if (badge) {
+    const count = badge.getAttribute(`data-count-${selected}`) || '0';
+    badge.textContent = `${count} fournisseur(s)`;
+    badge.className = 'color-badge ' + (selected === 'horscible' ? 'rouge-badge-small' : 'vert-badge-small');
+  }
 
-function reinitialiser() {
+
   ["energie","segment","note","volume","ddf","dff","etat_pdl","syndic","nb_compteurs","fournisseur_actuel","marge_globale"].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = "";
