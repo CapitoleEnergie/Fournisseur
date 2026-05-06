@@ -375,7 +375,150 @@ function evaluateMesRule(ruleValue, mesType) {
   return { eligible: true, status: "warn", reason: value };
 }
 
-function evaluateDdfRule(ruleValue, ddfDate) {
+function evaluateMargeRule(ruleValue, energie, segment, volume, margeGlobale) {
+  const raw = normalizeText(ruleValue);
+  if (!raw) return { eligible: true, status: "neutral", reason: "Marge non renseignée", margeImpact: 0 };
+
+  // Cas neutres immédiats
+  const neutralKeywords = ["grille", "pas de limite", "pas de marge maximum", "cas par cas", "prm", "marge integree", "marge dans l abonnement"];
+  const rawSlug = slugify(raw);
+  if (neutralKeywords.some(k => rawSlug.includes(slugify(k)))) {
+    return { eligible: true, status: "ok", reason: raw.length > 80 ? raw.slice(0, 80) + "…" : raw, margeImpact: 0 };
+  }
+
+  // Découper le texte en blocs par énergie
+  // On cherche le bloc correspondant à l'énergie saisie
+  function extractEnergyBlock(text, eng) {
+    const norm = normalizeText(text);
+    // Identifier les blocs "Electricite= ..." et "Gaz= ..."
+    const elecPattern = /Electricite\s*(?:et\s*Gaz\s*)?=\s*/i;
+    const gazPattern = /Gaz\s*(?:et\s*Electricite\s*)?=\s*/i;
+    const bothPattern = /Electricite\s*et\s*Gaz\s*=\s*/i;
+
+    // Tester "Electricité et Gaz" d'abord (s'applique aux deux)
+    if (/electricite\s*(?:ou\s*)?(?:et\s*)?gaz\s*=/i.test(norm)) {
+      return norm.replace(/electricite\s*(?:ou\s*)?(?:et\s*)?gaz\s*=\s*/i, "").trim();
+    }
+
+    const elecIdx = norm.search(/electricite\s*=/i);
+    const gazIdx = norm.search(/gaz\s*=/i);
+
+    if (eng === "elec") {
+      if (elecIdx >= 0) {
+        const end = gazIdx > elecIdx ? gazIdx : norm.length;
+        return norm.slice(elecIdx).replace(/electricite\s*=\s*/i, "").slice(0, end - elecIdx).trim();
+      }
+      return null;
+    }
+
+    if (eng === "gaz") {
+      if (gazIdx >= 0) {
+        const end = elecIdx > gazIdx ? elecIdx : norm.length;
+        return norm.slice(gazIdx).replace(/gaz\s*=\s*/i, "").slice(0, end - gazIdx).trim();
+      }
+      return null;
+    }
+
+    return norm;
+  }
+
+  const block = extractEnergyBlock(raw, energie) || raw;
+
+  // Cas neutre dans le bloc extrait
+  const blockSlug = slugify(block);
+  if (neutralKeywords.some(k => blockSlug.includes(slugify(k)))) {
+    return { eligible: true, status: "ok", reason: block.length > 80 ? block.slice(0, 80) + "…" : block, margeImpact: 0 };
+  }
+
+  // Si marge non saisie → informatif
+  if (margeGlobale === null || margeGlobale === undefined) {
+    const preview = block.length > 80 ? block.slice(0, 80) + "…" : block;
+    return { eligible: true, status: "neutral", reason: `Marge non saisie — règle : ${preview}`, margeImpact: 0 };
+  }
+
+  // Chercher la ligne du segment dans le bloc
+  function findSegmentLine(text, seg) {
+    const lines = text.split(/\n/);
+    for (const line of lines) {
+      if (line.toUpperCase().includes(seg)) return line.trim();
+    }
+    return null;
+  }
+
+  // Chercher la ligne selon le volume (CAR)
+  function findVolumeLine(text, vol) {
+    if (vol === null || vol === undefined) return null;
+    const lines = text.split(/\n/);
+    const volMwh = vol;
+
+    for (const line of lines) {
+      const normLine = normalizeText(line);
+      const rangeMatch = normLine.match(/(\d+(?:[.,]\d+)?)\s*(MWh|GWh)\s*<\s*(?:CAR)?\s*<\s*(\d+(?:[.,]\d+)?)\s*(MWh|GWh)/i);
+      if (rangeMatch) {
+        const lo = safeNumber(rangeMatch[1]) * (rangeMatch[2].toLowerCase() === "gwh" ? 1000 : 1);
+        const hi = safeNumber(rangeMatch[3]) * (rangeMatch[4].toLowerCase() === "gwh" ? 1000 : 1);
+        if (lo !== null && hi !== null && volMwh > lo && volMwh <= hi) return line.trim();
+        continue;
+      }
+      const ltMatch = normLine.match(/[<≤]\s*(\d+(?:[.,]\d+)?)\s*(MWh|GWh)/i);
+      if (ltMatch) {
+        const limit = safeNumber(ltMatch[1]) * (ltMatch[2].toLowerCase() === "gwh" ? 1000 : 1);
+        if (limit !== null && volMwh <= limit) return line.trim();
+        continue;
+      }
+      const gtMatch = normLine.match(/[>≥]\s*(\d+(?:[.,]\d+)?)\s*(MWh|GWh)/i);
+      if (gtMatch) {
+        const limit = safeNumber(gtMatch[1]) * (gtMatch[2].toLowerCase() === "gwh" ? 1000 : 1);
+        if (limit !== null && volMwh > limit) return line.trim();
+        continue;
+      }
+    }
+    return null;
+  }
+
+  // Trouver la ligne pertinente
+  let targetLine = null;
+
+  // 1. Chercher segment d'abord
+  if (segment) targetLine = findSegmentLine(block, segment);
+
+  // 2. Si pas trouvé et bloc contient CAR ou seuils de volume → chercher par volume
+  if (!targetLine && /CAR|MWh|GWh/i.test(block) && volume !== null) {
+    targetLine = findVolumeLine(block, volume);
+  }
+
+  // 3. Fallback : prendre le bloc entier
+  if (!targetLine) targetLine = block;
+
+  // Extraire le seuil €/MWh de la ligne cible
+  const seuilMatch = normalizeText(targetLine).match(/(\d+(?:[.,]\d+)?)\s*€\s*\/\s*MWh/i);
+  if (!seuilMatch) {
+    // Pas de seuil extractible → neutre
+    const preview = targetLine.length > 80 ? targetLine.slice(0, 80) + "…" : targetLine;
+    return { eligible: true, status: "ok", reason: preview, margeImpact: 0 };
+  }
+
+  const seuil = safeNumber(seuilMatch[1]);
+  if (seuil === null) {
+    return { eligible: true, status: "neutral", reason: targetLine, margeImpact: 0 };
+  }
+
+  if (margeGlobale <= seuil) {
+    return {
+      eligible: true,
+      status: "ok",
+      reason: `Marge ${margeGlobale} €/MWh ≤ seuil ${seuil} €/MWh`,
+      margeImpact: 5
+    };
+  }
+
+  return {
+    eligible: true,
+    status: "warn",
+    reason: `Marge ${margeGlobale} €/MWh > seuil ${seuil} €/MWh`,
+    margeImpact: -5
+  };
+}
   const value = normalizeText(ruleValue);
   const upper = value.toUpperCase();
 
@@ -639,10 +782,16 @@ function evaluateSupplier(input) {
     }
   }
 
+  // Marge
+  const margeRuleValue = getRuleValue(rules, ["Marge", "MARGE"]);
+  const margeEval = evaluateMargeRule(margeRuleValue, params.energie, params.segment, params.volume, params.margeGlobale);
+  evaluations.push({ criterion: "Marge", ...margeEval });
+
   const eligible = evaluations.every((e) => e.eligible !== false);
   const warnings = evaluations.filter((e) => e.status === "warn").length;
+  const margeImpact = margeEval.margeImpact || 0;
 
-  const score = (eligible ? 100 : 0) - warnings * 5;
+  const score = (eligible ? 100 : 0) - warnings * 5 + margeImpact;
 
   return {
     supplier,
@@ -712,6 +861,7 @@ module.exports = function handler(req, res) {
       note: safeNumber(query.note),
       volume: safeNumber(query.volume),
       commissionEstimee: safeNumber(query.commission_estimee),
+      margeGlobale: safeNumber(query.marge_globale),
       ddfDate: parseFrenchDate(query.ddf),
       dffDate: parseFrenchDate(query.dff),
       mesType
