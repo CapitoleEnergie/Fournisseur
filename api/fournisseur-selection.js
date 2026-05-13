@@ -804,56 +804,112 @@ function evaluateSupplier(input) {
   const eligible = evaluations.every((e) => e.eligible !== false);
   const warnings = evaluations.filter((e) => e.status === "warn").length;
 
-  // ── SCORING MÉTIER ──────────────────────────────────────────────
-  // 1. PAIEMENT UPFRONT : 3 = OUI sans condition / 1 = OUI avec conditions / 0 = NON
+  // ── SCORING MÉTIER (contextuel au dossier) ─────────────────────
+  // Chaque composante évalue si le fournisseur CONVIENT à CE dossier précis.
+
+  // 1. PAIEMENT UPFRONT (max 3 pts)
+  //    OUI sans condition → 3 pts
+  //    OUI avec conditions → on évalue vs le dossier :
+  //      toutes respectées → 3 pts | 1 sur 2 → 2 pts | aucune → 0 pts
+  //    NON → 0 pts
   let scoreUpfront = 0;
   const upfrontRaw = normalizeText(rules["Paiement UPFRONT"] || "").toUpperCase();
   if (upfrontRaw.startsWith("OUI")) {
-    const hasCondition = /SI\s|[<≤]\s*\d|\(/.test(upfrontRaw);
-    scoreUpfront = hasCondition ? 1 : 3;
+    // Détecter les conditions
+    const allKMatches = [...upfrontRaw.matchAll(/[<≤]\s*(\d+(?:[.,]\d+)?)\s*K/gi)];
+    const thresholdMatch = allKMatches.length > 0 ? allKMatches[allKMatches.length - 1] : null;
+    const threshold = thresholdMatch ? parseFloat(thresholdMatch[1].replace(",", ".")) * 1000 : null;
+
+    const moisMatchUp = upfrontRaw.match(/DDF\s*[<≤]\s*M\s*\+\s*(\d+)/i);
+    const anneesMatchUp = upfrontRaw.match(/DDF\s*[<≤]\s*N\s*\+\s*(\d+)/i);
+
+    const hasCommCondition = threshold !== null;
+    const hasDdfCondition = !!(moisMatchUp || anneesMatchUp);
+
+    if (!hasCommCondition && !hasDdfCondition) {
+      // OUI sans condition → 3 pts
+      scoreUpfront = 3;
+    } else {
+      // Évaluer chaque condition vs le dossier
+      let conditionsTotal = 0;
+      let conditionsOk = 0;
+
+      if (hasCommCondition) {
+        conditionsTotal++;
+        if (params.commissionEstimee !== null && params.commissionEstimee !== undefined && params.commissionEstimee <= threshold) {
+          conditionsOk++;
+        }
+      }
+
+      if (hasDdfCondition && params.ddfDate) {
+        conditionsTotal++;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const dateMax = new Date(today);
+        if (moisMatchUp) {
+          dateMax.setMonth(dateMax.getMonth() + parseInt(moisMatchUp[1], 10));
+        } else {
+          dateMax.setFullYear(dateMax.getFullYear() + parseInt(anneesMatchUp[1], 10));
+        }
+        if (dateMax >= params.ddfDate) {
+          conditionsOk++;
+        }
+      }
+
+      if (conditionsTotal > 0 && conditionsOk === conditionsTotal) {
+        scoreUpfront = 3; // toutes les conditions respectées
+      } else if (conditionsTotal > 1 && conditionsOk >= 1) {
+        scoreUpfront = 2; // une condition sur deux respectée
+      } else {
+        scoreUpfront = 0; // aucune condition respectée
+      }
+    }
   }
 
-  // 2. MARGE : selon énergie
+  // 2. MARGE (max 2 pts) — contextuelle au dossier
+  //    Marge saisie ≤ seuil → 2 pts | Marge > seuil → 0 pts
+  //    Pas de seuil / grille / pas de limite → 2 pts (pas de contrainte = favorable)
+  //    Marge non saisie → 2 pts (pas d'info pour pénaliser)
   let scoreMarge = 0;
-  const margeSeuilResult = margeEval; // déjà calculé
-  const margeSeuilRaw = (() => {
-    // Réutiliser le seuil parsé depuis margeEval.reason
-    const m = normalizeText(margeEval.reason || "").match(/seuil\s+(\d+(?:[.,]\d+)?)\s*€/i);
-    return m ? parseFloat(m[1].replace(",", ".")) : null;
-  })();
-
-  if (margeSeuilRaw === null || margeEval.status === "ok" && !margeEval.reason.includes("seuil")) {
-    // Grille / Pas de limite / non parseable → considéré favorable
+  if (margeEval.status === "ok") {
     scoreMarge = 2;
-  } else if (params.energie === "elec") {
-    if (margeSeuilRaw >= 25) scoreMarge = 2;
-    else if (margeSeuilRaw >= 20) scoreMarge = 1;
-    else scoreMarge = 0;
-  } else { // gaz
-    if (margeSeuilRaw >= 20) scoreMarge = 2;
-    else if (margeSeuilRaw >= 15) scoreMarge = 1;
-    else scoreMarge = 0;
+  } else if (margeEval.status === "warn") {
+    scoreMarge = 0;
+  } else {
+    // neutral = pas de contrainte ou non renseigné → favorable
+    scoreMarge = 2;
   }
 
-  // 3. HORIZON : > 2029 = 2 / = 2029 = 1 / < 2029 = 0
+  // 3. HORIZON (max 2 pts) — vs la DFF du dossier
+  //    Horizon ≥ année DFF → 2 pts | Horizon < DFF → 0 pts
   let scoreHorizon = 0;
   const horizonYear = getYearFromHorizon(rules[getHorizonRuleKey(params.energie)] || "");
-  if (horizonYear !== null) {
-    if (horizonYear > 2029) scoreHorizon = 2;
-    else if (horizonYear === 2029) scoreHorizon = 1;
-    else scoreHorizon = 0;
+  if (horizonYear !== null && params.dffDate) {
+    const dffYear = params.dffDate.getFullYear();
+    if (horizonYear >= dffYear) {
+      scoreHorizon = 2;
+    } else {
+      scoreHorizon = 0;
+    }
+  } else if (horizonYear !== null) {
+    // Pas de DFF saisie → on ne peut pas comparer, on reste neutre favorable
+    scoreHorizon = 2;
   }
 
-  // 4. SCORING MINIMUM : < 5 = 2 / = 5 = 1 / > 5 = 0 (seuil bas = fournisseur permissif)
+  // 4. SCORING MINIMUM (max 2 pts) — vs la note du dossier
+  //    Note dossier ≥ minimum fournisseur → 2 pts | Note < minimum → 0 pts
+  //    Pas de scoring renseigné → 2 pts (pas de contrainte)
   let scoringMin = 0;
-  const scoringRaw = safeNumber(normalizeText(rules["SCORING MINIMUM"] || "").replace(/\/10.*/, "").replace(/[^\d.,]/g, " ").trim().split(/\s+/)[0]);
-  if (scoringRaw !== null) {
-    if (scoringRaw < 5) scoringMin = 2;
-    else if (scoringRaw === 5) scoringMin = 1;
-    else scoringMin = 0;
+  const scoringRawValue = normalizeText(rules["SCORING MINIMUM"] || "");
+  const scoringMinMatch = scoringRawValue.match(/(\d+)/);
+  const scoringMinVal = scoringMinMatch ? safeNumber(scoringMinMatch[1]) : null;
+  if (scoringMinVal !== null && params.note !== null && params.note !== undefined) {
+    scoringMin = params.note >= scoringMinVal ? 2 : 0;
+  } else {
+    scoringMin = 2; // pas de contrainte ou note non saisie → favorable
   }
 
-  // 5. RÉGULARISATION : Non = 1 / Oui = 0
+  // 5. RÉGULARISATION (max 1 pt) : Non = 1 / Oui = 0
   let scoreRegul = 0;
   const regulRaw = normalizeText(regCommValue || "").toUpperCase();
   if (regulRaw === "NON" || regulRaw.startsWith("NON")) scoreRegul = 1;
