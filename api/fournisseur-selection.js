@@ -268,9 +268,26 @@ function evaluateUpfrontPaymentRule(ruleValue, commissionEstimee, ddfDate) {
 
   if (upper.startsWith("OUI")) {
     // --- Vérification seuil commission ---
-    const allKMatches = [...upper.matchAll(/[<≤]\s*(\d+(?:[.,]\d+)?)\s*K/gi)];
-    const thresholdMatch = allKMatches.length > 0 ? allKMatches[allKMatches.length - 1] : null;
-    const threshold = thresholdMatch ? parseFloat(thresholdMatch[1].replace(",", ".")) * 1000 : null;
+    // Supporte les formats : "< 50K", "< 50k", "< 10 000 €", "< 10000€", "< 2,5 GWh"
+    let threshold = null;
+
+    // Format "< XK" ou "< X k"
+    const kMatches = [...upper.matchAll(/[<≤]\s*(\d+(?:[.,]\d+)?)\s*K/gi)];
+    if (kMatches.length > 0) {
+      const lastK = kMatches[kMatches.length - 1];
+      threshold = parseFloat(lastK[1].replace(",", ".")) * 1000;
+    }
+
+    // Format "< X XXX €" ou "< XXXXX €" (nombre avec espaces + symbole €)
+    if (threshold === null) {
+      const euroMatches = [...normalizeText(ruleValue).toUpperCase().matchAll(/[<≤]\s*([\d\s]+(?:[.,]\d+)?)\s*€/gi)];
+      if (euroMatches.length > 0) {
+        const lastEuro = euroMatches[euroMatches.length - 1];
+        const cleaned = lastEuro[1].replace(/\s/g, "").replace(",", ".");
+        const val = parseFloat(cleaned);
+        if (Number.isFinite(val)) threshold = val;
+      }
+    }
 
     let commOk = true;
     let commReason = "";
@@ -815,15 +832,28 @@ function evaluateSupplier(input) {
   let scoreUpfront = 0;
   const upfrontRaw = normalizeText(rules["Paiement UPFRONT"] || "").toUpperCase();
   if (upfrontRaw.startsWith("OUI")) {
-    // Détecter les conditions
-    const allKMatches = [...upfrontRaw.matchAll(/[<≤]\s*(\d+(?:[.,]\d+)?)\s*K/gi)];
-    const thresholdMatch = allKMatches.length > 0 ? allKMatches[allKMatches.length - 1] : null;
-    const threshold = thresholdMatch ? parseFloat(thresholdMatch[1].replace(",", ".")) * 1000 : null;
+    // Détecter les conditions — mêmes formats que evaluateUpfrontPaymentRule
+    let thresholdScore = null;
+
+    const kMatchesScore = [...upfrontRaw.matchAll(/[<≤]\s*(\d+(?:[.,]\d+)?)\s*K/gi)];
+    if (kMatchesScore.length > 0) {
+      const lastK = kMatchesScore[kMatchesScore.length - 1];
+      thresholdScore = parseFloat(lastK[1].replace(",", ".")) * 1000;
+    }
+    if (thresholdScore === null) {
+      const euroMatchesScore = [...normalizeText(rules["Paiement UPFRONT"] || "").toUpperCase().matchAll(/[<≤]\s*([\d\s]+(?:[.,]\d+)?)\s*€/gi)];
+      if (euroMatchesScore.length > 0) {
+        const lastEuro = euroMatchesScore[euroMatchesScore.length - 1];
+        const cleaned = lastEuro[1].replace(/\s/g, "").replace(",", ".");
+        const val = parseFloat(cleaned);
+        if (Number.isFinite(val)) thresholdScore = val;
+      }
+    }
 
     const moisMatchUp = upfrontRaw.match(/DDF\s*[<≤]\s*M\s*\+\s*(\d+)/i);
     const anneesMatchUp = upfrontRaw.match(/DDF\s*[<≤]\s*N\s*\+\s*(\d+)/i);
 
-    const hasCommCondition = threshold !== null;
+    const hasCommCondition = thresholdScore !== null;
     const hasDdfCondition = !!(moisMatchUp || anneesMatchUp);
 
     if (!hasCommCondition && !hasDdfCondition) {
@@ -836,7 +866,7 @@ function evaluateSupplier(input) {
 
       if (hasCommCondition) {
         conditionsTotal++;
-        if (params.commissionEstimee !== null && params.commissionEstimee !== undefined && params.commissionEstimee <= threshold) {
+        if (params.commissionEstimee !== null && params.commissionEstimee !== undefined && params.commissionEstimee <= thresholdScore) {
           conditionsOk++;
         }
       }
@@ -1050,7 +1080,9 @@ module.exports = function handler(req, res) {
             eligible: partnerSupplier.eligible,
             panel: partnerSupplier.panel || "",
             evaluations: partnerSupplier.evaluations,
-            score: partnerSupplier.score
+            score: partnerSupplier.score,
+            scoreMetier: partnerSupplier.scoreMetier,
+            scoreDetail: partnerSupplier.scoreDetail
           }
         : null
     });
