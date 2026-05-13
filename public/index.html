@@ -1704,7 +1704,7 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
       const isPartner = partnerSupplierName && r.supplier === partnerSupplierName;
       const isEligible = Boolean(r.eligible);
       const rowClass = isPartner ? 'selection-partner' : isTop5 ? 'selection-top5' : !isEligible ? 'selection-ineligible' : '';
-      const scoreValue = Number.isFinite(Number(r?.score ?? r?.scoring ?? r?.eligibilityScore)) ? Number(r?.score ?? r?.scoring ?? r?.eligibilityScore) : null;
+      const scoreDisplay = Number.isFinite(r?.scoreMetier) ? r.scoreMetier : null;
       let rankingBadge = `<span class="selection-rank-badge standard">Choix alternatif</span>`;
       if (isPartner) rankingBadge = `<span class="selection-rank-badge partner">Fournisseur Actuel</span>`;
       else if (isTop5) rankingBadge = `<span class="selection-rank-badge top5">Top Fournisseur</span>`;
@@ -1761,7 +1761,7 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
         </td>
         <td>${getPanelBadge(r.panel)}</td>
         <td>${getEligibilityBadge(r.eligible)}</td>
-        <td>${scoreValue !== null ? `<span class="score-pill ${isEligible ? (isTop5 ? 'vert' : 'orange') : 'rouge'}">${r.scoreMetier ?? scoreValue}/10</span>` : `<span style="color:#bbb;font-size:11px;">—</span>`}</td>
+        <td>${scoreDisplay !== null ? `<span class="score-pill ${isEligible ? (isTop5 ? 'vert' : 'orange') : 'rouge'}">${scoreDisplay}/10</span>` : `<span style="color:#bbb;font-size:11px;">—</span>`}</td>
         <td>${prixHtml}</td>
         <td class="justif-cell">${renderEvaluationLines(r.evaluations)}</td>
       </tr>`;
