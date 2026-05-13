@@ -1637,7 +1637,6 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
     ...(Array.isArray(selectionData?.topSuppliers) ? selectionData.topSuppliers : [])
   ];
 
-  const topSupplierNames = new Set(topSuppliers.map((item) => item?.supplier).filter(Boolean));
   const partnerSupplierName = partnerSupplier?.supplier || null;
 
   const dedupedAllSuppliers = [];
@@ -1652,10 +1651,6 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
   const allSuppliers = dedupedAllSuppliers
     .filter((item) => item?.supplier !== partnerSupplierName)
     .sort((a, b) => {
-      const aTop = topSupplierNames.has(a?.supplier) ? 1 : 0;
-      const bTop = topSupplierNames.has(b?.supplier) ? 1 : 0;
-      if (aTop !== bTop) return bTop - aTop;
-
       const aEligible = a?.eligible ? 1 : 0;
       const bEligible = b?.eligible ? 1 : 0;
       if (aEligible !== bEligible) return bEligible - aEligible;
@@ -1668,6 +1663,10 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
 
       return (a._originalIndex || 0) - (b._originalIndex || 0);
     });
+
+  // Top Fournisseurs = scoreMetier 9 ou 10
+  const topFournisseurs = allSuppliers.filter(r => r.eligible && (r.scoreMetier >= 9));
+  const topSupplierNames = new Set(topFournisseurs.map((item) => item?.supplier).filter(Boolean));
 
   function getPanelBadge(panel = "") {
     const panelText = String(panel || "").trim();
@@ -1706,10 +1705,10 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
       const isEligible = Boolean(r.eligible);
       const rowClass = isPartner ? 'selection-partner' : isTop5 ? 'selection-top5' : !isEligible ? 'selection-ineligible' : '';
       const scoreValue = Number.isFinite(Number(r?.score ?? r?.scoring ?? r?.eligibilityScore)) ? Number(r?.score ?? r?.scoring ?? r?.eligibilityScore) : null;
-      let rankingBadge = `<span class="selection-rank-badge standard">Classé</span>`;
+      let rankingBadge = `<span class="selection-rank-badge standard">Choix alternatif</span>`;
       if (isPartner) rankingBadge = `<span class="selection-rank-badge partner">Fournisseur Actuel</span>`;
-      else if (isTop5) rankingBadge = `<span class="selection-rank-badge top5">Top 5 sélectionné</span>`;
-      else if (!isEligible) rankingBadge = `<span class="selection-rank-badge ineligible">Non éligible</span>`;
+      else if (isTop5) rankingBadge = `<span class="selection-rank-badge top5">Top Fournisseur</span>`;
+      else if (!isEligible) rankingBadge = `<span class="selection-rank-badge ineligible">Hors cible</span>`;
 
       let prixHtml = '<span style="color:#bbb;font-size:11px;">—</span>';
       if (prixEval) {
@@ -1755,7 +1754,7 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
               <img src="${escapeAttr(getSupplierLogo(r.supplier))}" alt="${escapeAttr(r.supplier)}" class="supplier-logo" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=&quot;font-size:11px;color:#999;font-weight:700;&quot;>Logo</span>';">
             </div>
             <div class="supplier-name-stack">
-              <strong class="supplier-name-text">${index + 1}. ${escapeHtml(r.supplier)}</strong>
+              <strong class="supplier-name-text">${escapeHtml(r.supplier)}</strong>
               <div>${rankingBadge}</div>
             </div>
           </div>
@@ -1803,15 +1802,15 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
     <div class="classif-section">
       <div class="classif-section-title vert-title" id="classif-main-title" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
         <span id="classif-title-icon">✅</span>
-        <span id="classif-title-text">TOP 5 sélectionné</span>
+        <span id="classif-title-text">Top Fournisseurs</span>
         <span class="color-badge vert-badge-small" id="classif-title-badge"
-          data-count-top5="${topSuppliers.length}"
+          data-count-top5="${topFournisseurs.length}"
           data-count-alternatif="${allSuppliers.filter(r => r.eligible && !topSupplierNames.has(r.supplier)).length}"
           data-count-horscible="${allSuppliers.filter(r => !r.eligible).length}"
-        >${topSuppliers.length} fournisseur(s)</span>
+        >${topFournisseurs.length} fournisseur(s)</span>
         <div class="classif-toggle-bar" style="margin-left:auto;">
           <button type="button" class="classif-toggle-btn top5 active" id="toggle-top5" onclick="toggleClassifView('top5')">
-            <span class="classif-toggle-icon"></span> TOP 5
+            <span class="classif-toggle-icon"></span> Top Fournisseurs
           </button>
           <button type="button" class="classif-toggle-btn alternatif" id="toggle-alternatif" onclick="toggleClassifView('alternatif')">
             <span class="classif-toggle-icon"></span> Choix Alternatif
@@ -1825,13 +1824,13 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
         <button type="button" onclick="document.getElementById('scoring-modal').classList.add('open')" style="display:inline-flex;align-items:center;gap:6px;background:var(--bleu-clair);color:var(--principal);border:none;border-radius:8px;padding:5px 13px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">
           ℹ️ Informations scoring
         </button>
-        <span style="font-size:11px;color:#aaa;">Le scoring détermine le classement des fournisseurs éligibles</span>
+        <span style="font-size:11px;color:#aaa;">Score 9 ou 10/10 = Top Fournisseur pour ce dossier</span>
       </div>
       <div id="classif-view-top5">
         <div class="classif-table-wrap" style="border-top:none;border-radius:0 0 12px 12px;">
           <table class="classif-table">
             <thead><tr><th>Fournisseur</th><th>Panel</th><th>Éligibilité</th><th>Scoring</th><th style="min-width:140px">Prix (30j)</th><th>Analyse</th></tr></thead>
-            <tbody>${renderSelectionRows(topSuppliers)}</tbody>
+            <tbody>${renderSelectionRows(topFournisseurs)}</tbody>
           </table>
         </div>
       </div>
@@ -1920,6 +1919,22 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
             <span class="scoring-rule-impact warn">Alerte si dépassée</span>
           </div>
         </div>
+
+        <div style="border-top:2px solid var(--principal);padding-top:12px;margin-top:4px;">
+          <div style="font-size:13px;font-weight:800;color:var(--principal);margin-bottom:10px;">Catégories de classement</div>
+          <div class="scoring-rule-row" style="background:var(--vert-bg);border:1px solid var(--vert-border);border-radius:8px;padding:10px 12px;margin-bottom:6px;">
+            <span class="scoring-rule-label" style="color:var(--vert);">✅ Top Fournisseur</span>
+            <span class="scoring-rule-desc">Score <strong>9 ou 10/10</strong> — le fournisseur convient parfaitement à ce dossier</span>
+          </div>
+          <div class="scoring-rule-row" style="background:var(--orange-bg);border:1px solid var(--orange-border);border-radius:8px;padding:10px 12px;margin-bottom:6px;">
+            <span class="scoring-rule-label" style="color:var(--orange);">🔵 Choix Alternatif</span>
+            <span class="scoring-rule-desc">Score <strong>&lt; 9/10</strong> mais éligible — des conditions ne sont pas optimales</span>
+          </div>
+          <div class="scoring-rule-row" style="background:var(--rouge-bg);border:1px solid var(--rouge-border);border-radius:8px;padding:10px 12px;">
+            <span class="scoring-rule-label" style="color:var(--rouge);">🔴 Hors Cible</span>
+            <span class="scoring-rule-desc">Non éligible — au moins un critère d'exclusion bloquant</span>
+          </div>
+        </div>
       </div>
     </div>`;
 
@@ -1948,9 +1963,9 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
 
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;">
       <span class="selection-rank-badge partner">Fournisseur Actuel</span>
-      <span class="selection-rank-badge top5">Top 5 sélectionné par les règles</span>
-      <span class="selection-rank-badge ineligible">Non éligible</span>
-      <span class="selection-rank-badge standard">Autres fournisseurs classés</span>
+      <span class="selection-rank-badge top5">Top Fournisseur (9-10/10)</span>
+      <span class="selection-rank-badge ineligible">Hors cible</span>
+      <span class="selection-rank-badge standard">Choix alternatif</span>
     </div>
 
     ${allSuppliersHtml}
@@ -1963,7 +1978,7 @@ function toggleClassifView(selected) {
   const views = { top5: 'classif-view-top5', alternatif: 'classif-view-alternatif', horscible: 'classif-view-horscible' };
   const toggles = { top5: 'toggle-top5', alternatif: 'toggle-alternatif', horscible: 'toggle-horscible' };
   const titles = {
-    top5:       { icon: '✅', text: 'TOP 5 sélectionné',       cls: 'vert-title' },
+    top5:       { icon: '✅', text: 'Top Fournisseurs',          cls: 'vert-title' },
     alternatif: { icon: '🔵', text: 'Choix Alternatif',        cls: 'vert-title' },
     horscible:  { icon: '🔴', text: 'Fournisseurs Hors Cible', cls: 'rouge-title' }
   };
