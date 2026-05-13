@@ -385,7 +385,7 @@ function evaluateMargeRule(ruleValue, energie, segment, volume, margeGlobale) {
   const neutralKeywords = ["grille", "pas de limite", "pas de marge maximum", "cas par cas", "prm", "marge integree", "marge dans l abonnement"];
   const rawSlug = slugify(raw);
   if (neutralKeywords.some(k => rawSlug.includes(slugify(k)))) {
-    return { eligible: true, status: "ok", reason: raw.length > 80 ? raw.slice(0, 80) + "…" : raw, margeImpact: 0 };
+    return { eligible: true, status: "ok", reason: raw, margeImpact: 0 };
   }
 
   // Découper le texte en blocs par énergie
@@ -429,13 +429,12 @@ function evaluateMargeRule(ruleValue, energie, segment, volume, margeGlobale) {
   // Cas neutre dans le bloc extrait
   const blockSlug = slugify(block);
   if (neutralKeywords.some(k => blockSlug.includes(slugify(k)))) {
-    return { eligible: true, status: "ok", reason: block.length > 80 ? block.slice(0, 80) + "…" : block, margeImpact: 0 };
+    return { eligible: true, status: "ok", reason: block, margeImpact: 0 };
   }
 
   // Si marge non saisie → informatif
   if (margeGlobale === null || margeGlobale === undefined) {
-    const preview = block.length > 80 ? block.slice(0, 80) + "…" : block;
-    return { eligible: true, status: "neutral", reason: `Marge non saisie — règle : ${preview}`, margeImpact: 0 };
+    return { eligible: true, status: "neutral", reason: `Marge non saisie — règle : ${block}`, margeImpact: 0 };
   }
 
   // Chercher la ligne du segment dans le bloc
@@ -496,8 +495,7 @@ function evaluateMargeRule(ruleValue, energie, segment, volume, margeGlobale) {
   const seuilMatch = normalizeText(targetLine).match(/(\d+(?:[.,]\d+)?)\s*€\s*\/\s*MWh/i);
   if (!seuilMatch) {
     // Pas de seuil extractible → neutre
-    const preview = targetLine.length > 80 ? targetLine.slice(0, 80) + "…" : targetLine;
-    return { eligible: true, status: "ok", reason: preview, margeImpact: 0 };
+    return { eligible: true, status: "ok", reason: targetLine, margeImpact: 0 };
   }
 
   const seuil = safeNumber(seuilMatch[1]);
