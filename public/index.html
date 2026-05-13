@@ -599,7 +599,7 @@ textarea::placeholder { color: #b0b0b0; }
 <div class="form-group"><label>Profil <span id="profil-gaz-only" style="font-size:10px;color:#aaa;font-weight:400;text-transform:none;letter-spacing:0;">(Gaz uniquement)</span></label><select disabled="" id="profil" style="color:#bbb;background:#f7f7f7;cursor:not-allowed;"><option selected="" value="">— Sélectionner —</option></select></div>
 <div class="form-group"><label>État PDL / PCE</label><select id="etat_pdl"><option disabled="" selected="" value="">— Sélectionner —</option><option value="premiere_mes">Première mise en service</option><option value="mes">Mise en service</option><option value="en_service">En service</option><option value="ferme">Fermé</option></select></div>
 <div class="form-group"><label>Syndic ?</label><select id="syndic"><option disabled="" selected="" value="">— Sélectionner —</option><option value="oui">Oui</option><option value="non">Non</option></select></div>
-<div class="form-group"><label>Fournisseur actuel</label><select id="fournisseur_actuel"><option disabled="" selected="" value="">— Sélectionner —</option><option value="ALTERNA">ALTERNA</option><option value="DYNEFF">DYNEFF</option><option value="EKWATEUR">EKWATEUR</option><option value="ENDESA">ENDESA</option><option value="ENERGEM">ENERGEM</option><option value="ENERGIE D'ICI">ENERGIE D'ICI</option><option value="ENGIE">ENGIE</option><option value="ENOVOS">ENOVOS</option><option value="GAZ DE BORDEAUX">GAZ DE BORDEAUX</option><option value="GEDIA">GEDIA</option><option value="GEG">GEG</option><option value="HELLIO">HELLIO</option><option value="ILEK">ILEK</option><option value="LA BELLENERGIE">LA BELLENERGIE</option><option value="MET">MET</option><option value="MINT Energie">MINT Energie</option><option value="NATGAS">NATGAS</option><option value="OHM">OHM</option><option value="PICOTY">PICOTY</option><option value="PRIMEO">PRIMEO</option><option value="SAVE">SAVE</option><option value="SEFE">SEFE</option><option value="SYNELVA">SYNELVA</option><option value="TOTALENERGIES">TOTALENERGIES</option><option value="VATTENFALL">VATTENFALL</option><option value="AUTRE">— AUTRE (hors partenaires)</option></select></div>
+<div class="form-group"><label>Fournisseur actuel</label><select id="fournisseur_actuel"><option disabled="" selected="" value="">— Sélectionner —</option><option value="ALTERNA">ALTERNA</option><option value="DYNEFF">DYNEFF</option><option value="EKWATEUR">EKWATEUR</option><option value="ENDESA">ENDESA</option><option value="ENERGEM">ENERGEM</option><option value="ENERGIE D'ICI">ENERGIE D'ICI</option><option value="ENGIE">ENGIE</option><option value="ENOVOS">ENOVOS</option><option value="GAZ DE BORDEAUX">GAZ DE BORDEAUX</option><option value="GEDIA">GEDIA</option><option value="GEG">GEG</option><option value="HELLIO">HELLIO</option><option value="ILEK">ILEK</option><option value="LA BELLENERGIE">LA BELLENERGIE</option><option value="MET">MET</option><option value="MINT Energie">MINT Energie</option><option value="NATGAS">NATGAS</option><option value="OHM (mid)">OHM (mid)</option><option value="OHM (GC)">OHM (GC)</option><option value="PICOTY">PICOTY</option><option value="PRIMEO">PRIMEO</option><option value="SAVE">SAVE</option><option value="SEFE">SEFE</option><option value="SYNELVA">SYNELVA</option><option value="TOTALENERGIES">TOTALENERGIES</option><option value="VATTENFALL (C5)">VATTENFALL (C5)</option><option value="VATTENFALL (GC)">VATTENFALL (GC)</option><option value="AUTRE">— AUTRE (hors partenaires)</option></select></div>
 <div class="form-group"><label>Marge globale (€/MWh)</label><input id="marge_globale" min="0" oninput="updateCommission()" placeholder="ex: 20" step="0.1" type="number"/></div>
 <div class="form-group"><label>Commission estimée <span style="font-size:10px;color:#aaa;font-weight:400;text-transform:none;letter-spacing:0;">Vol × (mois/12) × (Marge/2)</span></label><input id="commission_estimee" readonly style="background:#F3F3F3;color:var(--principal);font-weight:700;cursor:default;" type="text" placeholder="—"/></div>
 
@@ -1303,6 +1303,12 @@ function classifierFournisseur(f, params) {
   let redhibitoires = 0;
   let doutes = 0;
 
+  // ---- 0. GAZ EUROPÉEN : uniquement Syndic ----
+  if (f.toUpperCase().includes("GAZ EUROP") && params.syndic !== "oui") {
+    criteres.push({ label: "Syndic obligatoire", statut: "ko", detail: "Gaz Européen fait uniquement du Syndic — hors cible si Syndic = Non." });
+    redhibitoires++;
+  }
+
   // ---- 1. SEGMENT COUVERT ----
   if (!segVal || segVal === "—" || segVal === "NON") {
     criteres.push({ label: `Segment ${segment}`, statut: "ko", detail: `Segment ${segment} non couvert par ce fournisseur.` });
@@ -1365,17 +1371,14 @@ function classifierFournisseur(f, params) {
   if (isFournisseurActuel) {
     criteres.push({ label: "Note crédit", statut: "ok", detail: `Fournisseur actuel du client — note Ellipro non applicable pour ce renouvellement.` });
   } else {
-    const noteMinMatch = scoring_raw.match(/(\d+)\/10/);
+    const noteMinMatch = scoring_raw.match(/(\d+)/);
     const noteMin = noteMinMatch ? parseInt(noteMinMatch[1]) : null;
     if (noteMin !== null) {
-      if (note < noteMin) {
-        criteres.push({ label: "Note crédit", statut: "ko", detail: `Note client ${note}/10 < minimum requis ${noteMin}/10 — non éligible.` });
-        redhibitoires++;
-      } else if (note === noteMin) {
-        criteres.push({ label: "Note crédit", statut: "warn", detail: `Note client ${note}/10 = minimum requis — limite, à surveiller.` });
-        doutes++;
+      if (note >= noteMin) {
+        criteres.push({ label: "Note crédit", statut: "ok", detail: `Note client ${note} ≥ minimum requis ${noteMin} — OK.` });
       } else {
-        criteres.push({ label: "Note crédit", statut: "ok", detail: `Note client ${note}/10 ≥ minimum ${noteMin}/10 — OK.` });
+        criteres.push({ label: "Note crédit", statut: "warn", detail: `Note client ${note} < minimum requis ${noteMin} — à surveiller.` });
+        doutes++;
       }
     } else {
       criteres.push({ label: "Note crédit", statut: "neutral", detail: `Scoring minimum non standardisé : ${scoring_raw}.` });
@@ -1704,7 +1707,7 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
       const rowClass = isPartner ? 'selection-partner' : isTop5 ? 'selection-top5' : !isEligible ? 'selection-ineligible' : '';
       const scoreValue = Number.isFinite(Number(r?.score ?? r?.scoring ?? r?.eligibilityScore)) ? Number(r?.score ?? r?.scoring ?? r?.eligibilityScore) : null;
       let rankingBadge = `<span class="selection-rank-badge standard">Classé</span>`;
-      if (isPartner) rankingBadge = `<span class="selection-rank-badge partner">Fournisseur partenaire</span>`;
+      if (isPartner) rankingBadge = `<span class="selection-rank-badge partner">Fournisseur Actuel</span>`;
       else if (isTop5) rankingBadge = `<span class="selection-rank-badge top5">Top 5 sélectionné</span>`;
       else if (!isEligible) rankingBadge = `<span class="selection-rank-badge ineligible">Non éligible</span>`;
 
@@ -1784,7 +1787,7 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
   const partnerHtml = partnerSupplier
     ? `<div class="classif-section" style="margin-top:20px;">
         <div class="classif-section-title orange-title">
-          ⭐ FOURNISSEUR PARTENAIRE
+          ⭐ FOURNISSEUR ACTUEL
           <span class="selection-partner-card-note">Toujours affiché séparément lorsqu’il correspond au fournisseur actuel</span>
         </div>
         <div class="classif-table-wrap">
@@ -1879,7 +1882,7 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
         </div>
         <div class="scoring-rule-row" style="background:#F8F8FF;border-radius:8px;padding:10px 12px;margin-bottom:8px;border:none;">
           <span class="scoring-rule-label" style="color:var(--principal);">SCORING MINIMUM</span>
-          <span class="scoring-rule-desc">&lt; 5/10 : <strong>2 pts</strong> — = 5/10 : <strong>1 pt</strong> — &gt; 5/10 : <strong>0 pt</strong> (seuil bas = fournisseur permissif)</span>
+          <span class="scoring-rule-desc">&lt; 5 : <strong>2 pts</strong> — = 5 : <strong>1 pt</strong> — &gt; 5 : <strong>0 pt</strong> (seuil bas = fournisseur permissif)</span>
           <span class="scoring-rule-impact ok">max 2 pts</span>
         </div>
         <div class="scoring-rule-row" style="background:#F8F8FF;border-radius:8px;padding:10px 12px;margin-bottom:12px;border:none;">
@@ -1949,7 +1952,7 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
     ${partnerHtml}
 
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;">
-      <span class="selection-rank-badge partner">Fournisseur partenaire</span>
+      <span class="selection-rank-badge partner">Fournisseur Actuel</span>
       <span class="selection-rank-badge top5">Top 5 sélectionné par les règles</span>
       <span class="selection-rank-badge ineligible">Non éligible</span>
       <span class="selection-rank-badge standard">Autres fournisseurs classés</span>
