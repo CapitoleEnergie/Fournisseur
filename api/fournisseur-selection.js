@@ -127,10 +127,10 @@ function normalizeSupplierName(raw = "") {
     ["enovos luxembourg s a", "ENOVOS"],
     ["primeo", "PRIMEO"],
     ["primeo energie france", "PRIMEO"],
-    ["ohm", "OHM"],
-    ["ohm energie", "OHM"],
-    ["ohm gc", "OHM"],
-    ["ohm mid", "OHM"],
+    ["ohm", "OHM (mid)"],
+    ["ohm energie", "OHM (mid)"],
+    ["ohm gc", "OHM (GC)"],
+    ["ohm mid", "OHM (mid)"],
     ["dyneff", "DYNEFF"],
     ["dyneff s a s", "DYNEFF"],
     ["bcm energy", "BCM ENERGY"],
@@ -145,9 +145,9 @@ function normalizeSupplierName(raw = "") {
     ["gaz europeen", "GAZ Européen"],
     ["gaz de bordeaux", "GAZ DE BORDEAUX"],
     ["energie d ici", "ENERGIE D'ICI"],
-    ["vattenfall c5", "VATTENFALL"],
-    ["vattenfall gc", "VATTENFALL"],
-    ["vattenfall", "VATTENFALL"],
+    ["vattenfall c5", "VATTENFALL (C5)"],
+    ["vattenfall gc", "VATTENFALL (GC)"],
+    ["vattenfall", "VATTENFALL (C5)"],
     ["picoty", "PICOTY"],
     ["natgas", "NATGAS"],
     ["elmy", "ELMY"],
@@ -221,16 +221,18 @@ function evaluateScoringRule(ruleValue, note) {
     return { eligible: true, status: "neutral", reason: value || "Scoring non renseigne" };
   }
 
-  const match = value.match(/(\d+)\s*\/\s*10/);
+  // Nouveau format : juste un nombre (ex: "4", "5", "6") ou ancien format "X/10"
+  const match = value.match(/(\d+)(?:\s*\/\s*10)?/);
   if (!match) return { eligible: true, status: "neutral", reason: value };
 
   const minimum = Number(match[1]);
   if (!Number.isFinite(minimum)) return { eligible: true, status: "neutral", reason: value };
 
-  if (note < minimum) {
-    return { eligible: true, status: "warn", reason: `Note ${note}/10 < minimum ${minimum}/10` };
+  if (note >= minimum) {
+    return { eligible: true, status: "ok", reason: `Note ${note} ≥ minimum ${minimum}` };
   }
-  return { eligible: true, status: "ok", reason: `Note ${note}/10 ≥ minimum ${minimum}/10` };
+  // note < minimum → alerte orange mais pas rédhibitoire
+  return { eligible: true, status: "warn", reason: `Note ${note} < minimum ${minimum}` };
 }
 
 function evaluateVolumeRule(ruleValue, volume) {
@@ -750,6 +752,16 @@ function evaluateSupplier(input) {
   const syndicEval = evaluateSyndicRule(rules["SYNDIC ?"], params.syndic);
   evaluations.push({ criterion: "Syndic", ...syndicEval });
 
+  // Gaz Européen fait UNIQUEMENT du Syndic → hors cible si syndic ≠ oui
+  if (slugify(supplier).includes("gaz europeen") && params.syndic !== "oui") {
+    evaluations.push({
+      criterion: "Syndic obligatoire (Gaz Européen)",
+      eligible: false,
+      status: "ko",
+      reason: "Gaz Européen fait uniquement du Syndic — hors cible"
+    });
+  }
+
   const horizonEval = evaluateHorizonRule(rules[getHorizonRuleKey(params.energie)], params.dffDate);
   evaluations.push({ criterion: "Horizon", ...horizonEval });
 
@@ -767,6 +779,8 @@ function evaluateSupplier(input) {
   evaluations.push({ criterion: "Paiement UPFRONT", ...upfrontPaymentEval });
 
   const regCommValue = getRuleValue(rules, [
+  "Régularisation sur consommation",
+  "Regularisation sur consommation",
   "Régularisation des commissions",
   "Regularisation des commissions"
   ]);
@@ -832,9 +846,9 @@ function evaluateSupplier(input) {
     else scoreHorizon = 0;
   }
 
-  // 4. SCORING MINIMUM : < 5/10 = 2 / = 5/10 = 1 / > 5/10 = 0
+  // 4. SCORING MINIMUM : < 5 = 2 / = 5 = 1 / > 5 = 0 (seuil bas = fournisseur permissif)
   let scoringMin = 0;
-  const scoringRaw = safeNumber(normalizeText(rules["SCORING MINIMUM"] || "").replace(/\/10.*/, "").trim());
+  const scoringRaw = safeNumber(normalizeText(rules["SCORING MINIMUM"] || "").replace(/\/10.*/, "").replace(/[^\d.,]/g, " ").trim().split(/\s+/)[0]);
   if (scoringRaw !== null) {
     if (scoringRaw < 5) scoringMin = 2;
     else if (scoringRaw === 5) scoringMin = 1;
@@ -846,12 +860,12 @@ function evaluateSupplier(input) {
   const regulRaw = normalizeText(regCommValue || "").toUpperCase();
   if (regulRaw === "NON" || regulRaw.startsWith("NON")) scoreRegul = 1;
 
-  // Score métier total (max 10)
-  const scoreMetier = scoreUpfront + scoreMarge + scoreHorizon + scoringMin + scoreRegul; // max 10
+  // Score métier total (max 10, min 0)
+  const scoreMetier = Math.min(Math.max(scoreUpfront + scoreMarge + scoreHorizon + scoringMin + scoreRegul, 0), 10);
 
   // Score de tri : scoreMetier prioritaire, warnings comme départage (moins = mieux)
-  // On encode : scoreMetier * 1000 - warnings pour trier sans dépasser 10
-  const score = eligible ? scoreMetier * 1000 - warnings : -1;
+  // Jamais négatif : non éligible = 0
+  const score = eligible ? Math.max(scoreMetier * 1000 - warnings, 0) : 0;
 
   return {
     supplier,
@@ -977,7 +991,7 @@ module.exports = function handler(req, res) {
       eligibleCount: eligibleResults.length,
       partnerSupplier: partnerSupplier
         ? {
-            label: "FOURNISSEUR PARTENAIRE",
+            label: "FOURNISSEUR ACTUEL",
             supplier: partnerSupplier.supplier,
             eligible: partnerSupplier.eligible,
             panel: partnerSupplier.panel || "",
