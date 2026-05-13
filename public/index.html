@@ -1858,31 +1858,26 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
       <div class="scoring-modal">
         <button type="button" class="scoring-modal-close" onclick="document.getElementById('scoring-modal').classList.remove('open')">✕</button>
         <h2>ℹ️ Comprendre le scoring</h2>
-        <p class="modal-subtitle">Le score est sur <strong>10 points</strong>. Il détermine le classement des fournisseurs éligibles. En cas d'égalité, le nombre d'alertes ⚠️ départage (moins d'alertes = mieux classé).</p>
+        <p class="modal-subtitle">Le score est sur <strong>10 points</strong>. Il évalue si le fournisseur <strong>convient à ce dossier précis</strong> (conditions UPFRONT, marge, horizon, scoring). En cas d'égalité, le nombre d'alertes ⚠️ départage.</p>
 
         <div class="scoring-rule-row" style="background:#F8F8FF;border-radius:8px;padding:10px 12px;margin-bottom:8px;border:none;">
           <span class="scoring-rule-label" style="color:var(--principal);">PAIEMENT UPFRONT</span>
-          <span class="scoring-rule-desc">100% upfront (OUI) : <strong>3 pts</strong> — Sous conditions (OUI si…) : <strong>1 pt</strong> — Non : <strong>0 pt</strong></span>
+          <span class="scoring-rule-desc">OUI sans condition : <strong>3 pts</strong> — OUI conditions toutes respectées : <strong>3 pts</strong> — 1 condition sur 2 : <strong>2 pts</strong> — Aucune : <strong>0 pt</strong></span>
           <span class="scoring-rule-impact ok">max 3 pts</span>
         </div>
         <div class="scoring-rule-row" style="background:#F8F8FF;border-radius:8px;padding:10px 12px;margin-bottom:8px;border:none;">
-          <span class="scoring-rule-label" style="color:var(--principal);">MARGE ÉLECTRICITÉ</span>
-          <span class="scoring-rule-desc">≥ 25 €/MWh : <strong>2 pts</strong> — Entre 20 et 25 : <strong>1 pt</strong> — &lt; 20 : <strong>0 pt</strong></span>
-          <span class="scoring-rule-impact ok">max 2 pts</span>
-        </div>
-        <div class="scoring-rule-row" style="background:#F8F8FF;border-radius:8px;padding:10px 12px;margin-bottom:8px;border:none;">
-          <span class="scoring-rule-label" style="color:var(--principal);">MARGE GAZ</span>
-          <span class="scoring-rule-desc">≥ 20 €/MWh : <strong>2 pts</strong> — Entre 15 et 20 : <strong>1 pt</strong> — &lt; 15 : <strong>0 pt</strong></span>
+          <span class="scoring-rule-label" style="color:var(--principal);">MARGE</span>
+          <span class="scoring-rule-desc">Marge du dossier ≤ seuil fournisseur : <strong>2 pts</strong> — Marge &gt; seuil : <strong>0 pt</strong> — Pas de contrainte : <strong>2 pts</strong></span>
           <span class="scoring-rule-impact ok">max 2 pts</span>
         </div>
         <div class="scoring-rule-row" style="background:#F8F8FF;border-radius:8px;padding:10px 12px;margin-bottom:8px;border:none;">
           <span class="scoring-rule-label" style="color:var(--principal);">HORIZON</span>
-          <span class="scoring-rule-desc">&gt; 2029 : <strong>2 pts</strong> — = 2029 : <strong>1 pt</strong> — &lt; 2029 : <strong>0 pt</strong></span>
+          <span class="scoring-rule-desc">Horizon ≥ année fin fourniture du dossier : <strong>2 pts</strong> — Horizon &lt; fin fourniture : <strong>0 pt</strong></span>
           <span class="scoring-rule-impact ok">max 2 pts</span>
         </div>
         <div class="scoring-rule-row" style="background:#F8F8FF;border-radius:8px;padding:10px 12px;margin-bottom:8px;border:none;">
           <span class="scoring-rule-label" style="color:var(--principal);">SCORING MINIMUM</span>
-          <span class="scoring-rule-desc">&lt; 5 : <strong>2 pts</strong> — = 5 : <strong>1 pt</strong> — &gt; 5 : <strong>0 pt</strong> (seuil bas = fournisseur permissif)</span>
+          <span class="scoring-rule-desc">Note du dossier ≥ minimum fournisseur : <strong>2 pts</strong> — Note &lt; minimum : <strong>0 pt</strong></span>
           <span class="scoring-rule-impact ok">max 2 pts</span>
         </div>
         <div class="scoring-rule-row" style="background:#F8F8FF;border-radius:8px;padding:10px 12px;margin-bottom:12px;border:none;">
