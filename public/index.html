@@ -591,13 +591,13 @@ textarea::placeholder { color: #b0b0b0; }
 <p class="subtitle">Renseignez le profil du client pour obtenir la classification complète de tous les fournisseurs éligibles.</p>
 <div class="form-grid">
 <div class="form-group"><label>Type d'énergie</label><select id="energie" onchange="onEnergieChange()"><option disabled="" selected="" value="">— Sélectionner —</option><option value="gaz">Gaz</option><option value="elec">Électricité</option></select></div>
-<div class="form-group"><label>Segment</label><select id="segment"><option disabled="" selected="" value="">— Sélectionner —</option></select></div>
+<div class="form-group"><label>Segment</label><select id="segment" onchange="onSegmentChange()"><option disabled="" selected="" value="">— Sélectionner —</option></select></div>
 <div class="form-group"><label>Note de crédit (/10 Ellipro)</label><input id="note" max="10" min="0" placeholder="ex: 6" step="1" type="number" value="0"/></div>
 <div class="form-group"><label>Volume (MWh/an)</label><input id="volume" min="0" oninput="updateCommission()" placeholder="ex: 0" type="number" value="0"/></div>
 <div class="form-group"><label>DDF souhaitée (Date début fourniture)</label><input id="ddf" oninput="autoFormatDate(this); updateCommission();" pattern="\d{2}/\d{2}/\d{4}" placeholder="JJ/MM/AAAA" type="text" value="01/01/2028"/></div>
 <div class="form-group"><label>Date de fin de fourniture souhaitée</label><input id="dff" oninput="autoFormatDate(this); updateCommission();" pattern="\d{2}/\d{2}/\d{4}" placeholder="JJ/MM/AAAA" type="text" value="31/12/2030"/></div>
 <div class="form-group"><label>Profil <span id="profil-gaz-only" style="font-size:10px;color:#aaa;font-weight:400;text-transform:none;letter-spacing:0;">(Gaz uniquement)</span></label><select disabled="" id="profil" style="color:#bbb;background:#f7f7f7;cursor:not-allowed;"><option selected="" value="">— Sélectionner —</option></select></div>
-<div class="form-group"><label>État PDL / PCE</label><select id="etat_pdl"><option disabled="" selected="" value="">— Sélectionner —</option><option value="premiere_mes">Première mise en service</option><option value="mes">Mise en service</option><option value="en_service">En service</option><option value="ferme">Fermé</option></select></div>
+<div class="form-group"><label>État PDL / PCE</label><select id="etat_pdl" onchange="onEtatPdlChange()"><option disabled="" selected="" value="">— Sélectionner —</option><option value="premiere_mes">Première mise en service</option><option value="mes">Mise en service</option><option value="en_service">En service</option><option value="ferme">Fermé</option></select></div>
 <div class="form-group"><label>Syndic ?</label><select id="syndic"><option disabled="" selected="" value="">— Sélectionner —</option><option value="oui">Oui</option><option value="non">Non</option></select></div>
 <div class="form-group"><label>Fournisseur actuel</label><select id="fournisseur_actuel"><option disabled="" selected="" value="">— Sélectionner —</option><option value="ALTERNA">ALTERNA</option><option value="DYNEFF">DYNEFF</option><option value="EKWATEUR">EKWATEUR</option><option value="ENDESA">ENDESA</option><option value="ENERGEM">ENERGEM</option><option value="ENERGIE D'ICI">ENERGIE D'ICI</option><option value="ENGIE">ENGIE</option><option value="ENOVOS">ENOVOS</option><option value="GAZ DE BORDEAUX">GAZ DE BORDEAUX</option><option value="GEDIA">GEDIA</option><option value="GEG">GEG</option><option value="HELLIO">HELLIO</option><option value="ILEK">ILEK</option><option value="LA BELLENERGIE">LA BELLENERGIE</option><option value="MET">MET</option><option value="MINT Energie">MINT Energie</option><option value="NATGAS">NATGAS</option><option value="OHM (mid)">OHM (mid)</option><option value="OHM (GC)">OHM (GC)</option><option value="PICOTY">PICOTY</option><option value="PRIMEO">PRIMEO</option><option value="SAVE">SAVE</option><option value="SEFE">SEFE</option><option value="SYNELVA">SYNELVA</option><option value="TOTALENERGIES">TOTALENERGIES</option><option value="VATTENFALL (C5)">VATTENFALL (C5)</option><option value="VATTENFALL (GC)">VATTENFALL (GC)</option><option value="AUTRE">— AUTRE (hors partenaires)</option></select></div>
 <div class="form-group"><label>Marge globale (€/MWh)</label><input id="marge_globale" min="0" oninput="updateCommission()" placeholder="ex: 20" step="0.1" type="number"/></div>
@@ -1185,6 +1185,73 @@ function onEnergieChange() {
     profilEl.innerHTML = '<option value="">— Non applicable (Élec) —</option>';
     profilEl.disabled = true; profilEl.style.color = "#bbb"; profilEl.style.background = "#f7f7f7"; profilEl.style.cursor = "not-allowed";
   }
+  updateFieldGreying();
+}
+
+function onEtatPdlChange() {
+  updateFieldGreying();
+}
+
+function onSegmentChange() {
+  updateFieldGreying();
+}
+
+/**
+ * Grise les champs du formulaire selon les règles :
+ * - Première MES → griser "Fournisseur actuel"
+ * - Élec + C5 → griser "Marge globale" et "Commission estimée"
+ */
+function updateFieldGreying() {
+  const etat = document.getElementById("etat_pdl")?.value || "";
+  const energie = document.getElementById("energie")?.value || "";
+  const segment = document.getElementById("segment")?.value || "";
+
+  // --- Fournisseur actuel : grisé si première MES ---
+  const fournisseurActuelEl = document.getElementById("fournisseur_actuel");
+  if (fournisseurActuelEl) {
+    if (etat === "premiere_mes") {
+      fournisseurActuelEl.disabled = true;
+      fournisseurActuelEl.style.color = "#bbb";
+      fournisseurActuelEl.style.background = "#f7f7f7";
+      fournisseurActuelEl.style.cursor = "not-allowed";
+      fournisseurActuelEl.value = "";
+    } else {
+      fournisseurActuelEl.disabled = false;
+      fournisseurActuelEl.style.color = "";
+      fournisseurActuelEl.style.background = "";
+      fournisseurActuelEl.style.cursor = "";
+    }
+  }
+
+  // --- Marge + Commission : grisé si Élec + C5 ---
+  const margeEl = document.getElementById("marge_globale");
+  const commEl = document.getElementById("commission_estimee");
+  const isElecC5 = (energie === "elec" && segment === "C5");
+
+  if (margeEl) {
+    if (isElecC5) {
+      margeEl.disabled = true;
+      margeEl.style.color = "#bbb";
+      margeEl.style.background = "#f7f7f7";
+      margeEl.style.cursor = "not-allowed";
+      margeEl.value = "";
+    } else {
+      margeEl.disabled = false;
+      margeEl.style.color = "";
+      margeEl.style.background = "";
+      margeEl.style.cursor = "";
+    }
+  }
+  if (commEl) {
+    if (isElecC5) {
+      commEl.style.color = "#bbb";
+      commEl.style.background = "#f7f7f7";
+      commEl.value = "";
+    } else {
+      commEl.style.color = "var(--principal)";
+      commEl.style.background = "#F3F3F3";
+    }
+  }
 }
 
 function autoFormatDate(input) {
@@ -1428,9 +1495,20 @@ function classifierFournisseur(f, params) {
       if (moisAvantDDF > 24) { condOk = false; condDetail += " ⚠️ DDF > M+24 — UPFRONT non applicable."; }
     }
     if (upUpper.includes("2025/2026")) {
-      const todayY = new Date().getFullYear();
-      if (todayY > 2026) { condOk = false; condDetail += " ⚠️ UPFRONT limité 2025/2026 — dépassé."; }
-      else { condWarn = true; condDetail += " À confirmer pour l'année en cours."; }
+      // Vattenfall GC règle spéciale : vérifier DFF ≤ N+1
+      if (f.toUpperCase().includes("VATTENFALL") && f.toUpperCase().includes("GC")) {
+        const currentYear = new Date().getFullYear();
+        const maxYear = currentYear + 1;
+        if (dff && dff.getFullYear() <= maxYear) {
+          // DFF ≤ N+1 → vert
+        } else {
+          condWarn = true; condDetail += ` DFF ${dff ? dff.getFullYear() : '?'} > N+1 (${maxYear}) — UPFRONT incertain.`;
+        }
+      } else {
+        const todayY = new Date().getFullYear();
+        if (todayY > 2026) { condOk = false; condDetail += " ⚠️ UPFRONT limité 2025/2026 — dépassé."; }
+        else { condWarn = true; condDetail += " À confirmer pour l'année en cours."; }
+      }
     }
     if (upUpper.includes("DDF = MOIS DE SIGNATURE")) { condWarn = true; condDetail = "UPFRONT uniquement si DDF = mois de signature."; }
 
@@ -1454,8 +1532,34 @@ function classifierFournisseur(f, params) {
     } else if (mes1 === "OUI") {
       criteres.push({ label: "1ère MES", statut: "ok", detail: "1ère MES supportée." });
     } else if (mes1.startsWith("OUI")) {
-      criteres.push({ label: "1ère MES", statut: "warn", detail: `1ère MES avec condition : ${mes1_raw}.` });
-      doutes++;
+      // Vérifier condition d'énergie
+      const condMatch = mes1_raw.match(/\(([^)]+)\)/i);
+      if (condMatch) {
+        const cond = condMatch[1].toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+        const isGazCond = cond.includes("GAZ");
+        const isElecCond = cond.includes("ELEC") || cond.includes("ELECTRICITE");
+        if (isGazCond && !isElecCond) {
+          if (energie === "gaz") {
+            criteres.push({ label: "1ère MES", statut: "ok", detail: `1ère MES supportée (${mes1_raw}) — énergie gaz correspond.` });
+          } else {
+            criteres.push({ label: "1ère MES", statut: "ko", detail: `1ère MES uniquement gaz (${mes1_raw}) — énergie du dossier : élec.` });
+            redhibitoires++;
+          }
+        } else if (isElecCond && !isGazCond) {
+          if (energie === "elec") {
+            criteres.push({ label: "1ère MES", statut: "ok", detail: `1ère MES supportée (${mes1_raw}) — énergie élec correspond.` });
+          } else {
+            criteres.push({ label: "1ère MES", statut: "ko", detail: `1ère MES uniquement élec (${mes1_raw}) — énergie du dossier : gaz.` });
+            redhibitoires++;
+          }
+        } else {
+          criteres.push({ label: "1ère MES", statut: "warn", detail: `1ère MES avec condition : ${mes1_raw}.` });
+          doutes++;
+        }
+      } else {
+        criteres.push({ label: "1ère MES", statut: "warn", detail: `1ère MES avec condition : ${mes1_raw}.` });
+        doutes++;
+      }
     } else {
       criteres.push({ label: "1ère MES", statut: "neutral", detail: `Situation 1ère MES : ${mes1_raw}.` });
     }
@@ -1467,8 +1571,34 @@ function classifierFournisseur(f, params) {
     } else if (remes === "OUI") {
       criteres.push({ label: "re-MES", statut: "ok", detail: "Re-MES supportée." });
     } else if (remes.startsWith("OUI") || remes.startsWith("NON (SAUF")) {
-      criteres.push({ label: "re-MES", statut: "warn", detail: `Re-MES conditionnelle : ${remes_raw}.` });
-      doutes++;
+      // Vérifier condition d'énergie
+      const condMatch = remes_raw.match(/\(([^)]+)\)/i);
+      if (condMatch) {
+        const cond = condMatch[1].toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+        const isGazCond = cond.includes("GAZ");
+        const isElecCond = cond.includes("ELEC") || cond.includes("ELECTRICITE");
+        if (isElecCond && !isGazCond) {
+          if (energie === "elec") {
+            criteres.push({ label: "re-MES", statut: "ok", detail: `Re-MES supportée (${remes_raw}) — énergie élec correspond.` });
+          } else {
+            criteres.push({ label: "re-MES", statut: "ko", detail: `Re-MES uniquement élec (${remes_raw}) — énergie du dossier : gaz.` });
+            redhibitoires++;
+          }
+        } else if (isGazCond && !isElecCond) {
+          if (energie === "gaz") {
+            criteres.push({ label: "re-MES", statut: "ok", detail: `Re-MES supportée (${remes_raw}) — énergie gaz correspond.` });
+          } else {
+            criteres.push({ label: "re-MES", statut: "ko", detail: `Re-MES uniquement gaz (${remes_raw}) — énergie du dossier : élec.` });
+            redhibitoires++;
+          }
+        } else {
+          criteres.push({ label: "re-MES", statut: "warn", detail: `Re-MES conditionnelle : ${remes_raw}.` });
+          doutes++;
+        }
+      } else {
+        criteres.push({ label: "re-MES", statut: "warn", detail: `Re-MES conditionnelle : ${remes_raw}.` });
+        doutes++;
+      }
     }
   }
 
@@ -1524,6 +1654,9 @@ function classifierFournisseur(f, params) {
   });
   // Appliquer bonus/malus prix (max ±10 pts)
   score = Math.round(Math.min(Math.max(score + prixScore, 0), 100));
+
+  // Si au moins 1 critère KO → forcer score à 0
+  if (redhibitoires > 0) score = 0;
 
   // ---- COULEUR FINALE ----
   let couleur;
@@ -2016,10 +2149,10 @@ function toggleClassifView(selected) {
 function reinitialiser() {
   ["energie","segment","note","volume","ddf","dff","etat_pdl","syndic","nb_compteurs","fournisseur_actuel","marge_globale"].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.value = "";
+    if (el) { el.value = ""; el.disabled = false; el.style.color = ""; el.style.background = ""; el.style.cursor = ""; }
   });
   const commEl = document.getElementById("commission_estimee");
-  if (commEl) commEl.value = "";
+  if (commEl) { commEl.value = ""; commEl.style.color = "var(--principal)"; commEl.style.background = "#F3F3F3"; }
   const profilEl = document.getElementById("profil");
   profilEl.innerHTML = '<option value="" disabled selected>— Sélectionner —</option>';
   profilEl.disabled = true; profilEl.style.color = "#bbb"; profilEl.style.background = "#f7f7f7"; profilEl.style.cursor = "not-allowed";
