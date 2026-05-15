@@ -170,6 +170,14 @@ textarea::placeholder { color: #b0b0b0; }
 .upfront-cond { color: var(--orange); background: var(--orange-bg); padding: 2px 7px; border-radius: 5px; font-size: 11px; font-weight: 700; white-space: nowrap; }
 .upfront-no { color: var(--rouge); background: var(--rouge-bg); padding: 2px 7px; border-radius: 5px; font-size: 11px; font-weight: 700; white-space: nowrap; }
 
+/* TRANSMIS checkbox */
+.transmis-checkbox-wrap { display:inline-flex; align-items:center; justify-content:center; cursor:pointer; position:relative; width:24px; height:24px; }
+.transmis-checkbox-wrap input.transmis-cb { position:absolute; opacity:0; width:0; height:0; cursor:pointer; }
+.transmis-checkmark { width:22px; height:22px; border:2px solid #ccc; border-radius:6px; background:#fff; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
+.transmis-checkbox-wrap input.transmis-cb:checked + .transmis-checkmark { background:var(--vert); border-color:var(--vert); }
+.transmis-checkbox-wrap input.transmis-cb:checked + .transmis-checkmark::after { content:"✓"; color:white; font-size:14px; font-weight:900; line-height:1; }
+.transmis-checkbox-wrap:hover .transmis-checkmark { border-color:var(--principal); box-shadow:0 0 0 3px rgba(80,32,234,0.1); }
+
 @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 .classif-section { animation: fadeUp 0.35s ease both; }
 .classif-section:nth-child(1) { animation-delay: 0.05s; }
@@ -1828,7 +1836,7 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
 
   function renderSelectionRows(list, options = {}) {
     if (!list.length) {
-      return `<tr><td colspan="6" style="text-align:center;color:#aaa;padding:18px;font-size:13px;">Aucun fournisseur disponible pour ce profil.</td></tr>`;
+      return `<tr><td colspan="7" style="text-align:center;color:#aaa;padding:18px;font-size:13px;">Aucun fournisseur disponible pour ce profil.</td></tr>`;
     }
 
     return list.map((r, index) => {
@@ -1880,6 +1888,7 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
         </div>`;
       }
 
+      const supplierSlug = escapeAttr(r.supplier).replace(/[^a-zA-Z0-9]/g, '_');
       return `<tr class="${rowClass}">
         <td>
           <div class="supplier-main-cell">
@@ -1897,6 +1906,12 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
         <td>${scoreDisplay !== null ? `<span class="score-pill ${isEligible ? (isTop5 ? 'vert' : 'orange') : 'rouge'}">${scoreDisplay}/10</span>` : `<span style="color:#bbb;font-size:11px;">—</span>`}</td>
         <td>${prixHtml}</td>
         <td class="justif-cell">${renderEvaluationLines(r.evaluations)}</td>
+        <td style="text-align:center;vertical-align:middle;">
+          <label class="transmis-checkbox-wrap">
+            <input type="checkbox" class="transmis-cb" data-supplier="${escapeAttr(r.supplier)}" onchange="onTransmisChange(this)">
+            <span class="transmis-checkmark"></span>
+          </label>
+        </td>
       </tr>`;
     }).join("");
   }
@@ -1924,7 +1939,7 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
         </div>
         <div class="classif-table-wrap">
           <table class="classif-table">
-            <thead><tr><th>Fournisseur</th><th>Panel</th><th>Éligibilité</th><th>Scoring</th><th style="min-width:140px">Prix (30j)</th><th>Analyse</th></tr></thead>
+            <thead><tr><th>Fournisseur</th><th>Panel</th><th>Éligibilité</th><th>Scoring</th><th style="min-width:140px">Prix (30j)</th><th>Analyse</th><th style="width:70px;text-align:center;">Transmis</th></tr></thead>
             <tbody>${renderSelectionRows([partnerSupplier])}</tbody>
           </table>
         </div>
@@ -1962,7 +1977,7 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
       <div id="classif-view-top5">
         <div class="classif-table-wrap" style="border-top:none;border-radius:0 0 12px 12px;">
           <table class="classif-table">
-            <thead><tr><th>Fournisseur</th><th>Panel</th><th>Éligibilité</th><th>Scoring</th><th style="min-width:140px">Prix (30j)</th><th>Analyse</th></tr></thead>
+            <thead><tr><th>Fournisseur</th><th>Panel</th><th>Éligibilité</th><th>Scoring</th><th style="min-width:140px">Prix (30j)</th><th>Analyse</th><th style="width:70px;text-align:center;">Transmis</th></tr></thead>
             <tbody>${renderSelectionRows(topFournisseurs)}</tbody>
           </table>
         </div>
@@ -1970,7 +1985,7 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
       <div id="classif-view-alternatif" style="display:none;">
         <div class="classif-table-wrap" style="border-top:none;border-radius:0 0 12px 12px;">
           <table class="classif-table">
-            <thead><tr><th>Fournisseur</th><th>Panel</th><th>Éligibilité</th><th>Scoring</th><th style="min-width:140px">Prix (30j)</th><th>Analyse</th></tr></thead>
+            <thead><tr><th>Fournisseur</th><th>Panel</th><th>Éligibilité</th><th>Scoring</th><th style="min-width:140px">Prix (30j)</th><th>Analyse</th><th style="width:70px;text-align:center;">Transmis</th></tr></thead>
             <tbody>${renderSelectionRows(allSuppliers.filter(r => r.eligible && !topSupplierNames.has(r.supplier)))}</tbody>
           </table>
         </div>
@@ -1978,7 +1993,7 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
       <div id="classif-view-horscible" style="display:none;">
         <div class="classif-table-wrap" style="border-top:none;border-radius:0 0 12px 12px;">
           <table class="classif-table">
-            <thead><tr><th>Fournisseur</th><th>Panel</th><th>Éligibilité</th><th>Scoring</th><th style="min-width:140px">Prix (30j)</th><th>Analyse</th></tr></thead>
+            <thead><tr><th>Fournisseur</th><th>Panel</th><th>Éligibilité</th><th>Scoring</th><th style="min-width:140px">Prix (30j)</th><th>Analyse</th><th style="width:70px;text-align:center;">Transmis</th></tr></thead>
             <tbody>${renderSelectionRows(allSuppliers.filter(r => !r.eligible))}</tbody>
           </table>
         </div>
@@ -2099,6 +2114,7 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
       <span class="selection-rank-badge top5">Top Fournisseur (9-10/10)</span>
       <span class="selection-rank-badge ineligible">Hors cible</span>
       <span class="selection-rank-badge standard">Choix alternatif</span>
+      <span id="transmis-counter" style="margin-left:auto;font-size:12px;font-weight:700;color:var(--vert);background:var(--vert-bg);border:1px solid var(--vert-border);padding:4px 12px;border-radius:8px;display:inline-block;"></span>
     </div>
 
     ${allSuppliersHtml}
@@ -2146,6 +2162,35 @@ function toggleClassifView(selected) {
   }
 }
 
+// ============ TRANSMIS TRACKING ============
+let TRANSMIS_SUPPLIERS = new Set();
+
+function onTransmisChange(cb) {
+  const supplier = cb.getAttribute("data-supplier");
+  if (!supplier) return;
+  if (cb.checked) {
+    TRANSMIS_SUPPLIERS.add(supplier);
+  } else {
+    TRANSMIS_SUPPLIERS.delete(supplier);
+  }
+  // Synchroniser toutes les checkboxes du même fournisseur (présent dans plusieurs vues)
+  document.querySelectorAll(`.transmis-cb[data-supplier="${CSS.escape(supplier)}"]`).forEach(el => {
+    if (el !== cb) el.checked = cb.checked;
+  });
+  updateTransmisCounter();
+}
+
+function updateTransmisCounter() {
+  const counterEl = document.getElementById("transmis-counter");
+  if (counterEl) {
+    counterEl.textContent = TRANSMIS_SUPPLIERS.size > 0 ? `${TRANSMIS_SUPPLIERS.size} fournisseur(s) transmis` : "";
+  }
+}
+
+function getTransmisList() {
+  return Array.from(TRANSMIS_SUPPLIERS);
+}
+
 function reinitialiser() {
   ["energie","segment","note","volume","ddf","dff","etat_pdl","syndic","nb_compteurs","fournisseur_actuel","marge_globale"].forEach(id => {
     const el = document.getElementById(id);
@@ -2158,6 +2203,7 @@ function reinitialiser() {
   profilEl.disabled = true; profilEl.style.color = "#bbb"; profilEl.style.background = "#f7f7f7"; profilEl.style.cursor = "not-allowed";
   const resultsDiv = document.getElementById("results");
   resultsDiv.style.display = "none"; resultsDiv.innerHTML = "";
+  TRANSMIS_SUPPLIERS = new Set();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
