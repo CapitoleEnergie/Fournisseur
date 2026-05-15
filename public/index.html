@@ -103,6 +103,7 @@ textarea::placeholder { color: #b0b0b0; }
 .classif-section-title.rouge-title { background: var(--rouge-bg); color: var(--rouge); border: 1.5px solid var(--rouge-border); border-bottom: none; }
 .color-badge { font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 12px; margin-left: 6px; }
 .vert-badge-small { background: var(--vert); color: white; }
+.rouge-badge-small { background: var(--rouge); color: white; }
 .orange-badge-small { background: var(--orange); color: white; }
 .rouge-badge-small { background: var(--rouge); color: white; }
 
@@ -139,7 +140,7 @@ textarea::placeholder { color: #b0b0b0; }
 .supplier-logo-wrap { width:40px; height:40px; border-radius:12px; background:#fff; border:1px solid #ece9ff; display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden; }
 .supplier-logo { width:30px; height:30px; object-fit:contain; display:block; }
 .supplier-name-stack { display:flex; flex-direction:column; gap:6px; min-width:0; }
-.supplier-name-text { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:260px; }
+.supplier-name-text { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:260px; font-size:17px; font-weight:800; }
 .selection-partner-card-note { margin-left:auto;font-size:11px;font-weight:400;opacity:0.75; }
 
 .classif-table td { padding: 10px 14px; vertical-align: middle; line-height: 1.45; }
@@ -169,14 +170,57 @@ textarea::placeholder { color: #b0b0b0; }
 .upfront-cond { color: var(--orange); background: var(--orange-bg); padding: 2px 7px; border-radius: 5px; font-size: 11px; font-weight: 700; white-space: nowrap; }
 .upfront-no { color: var(--rouge); background: var(--rouge-bg); padding: 2px 7px; border-radius: 5px; font-size: 11px; font-weight: 700; white-space: nowrap; }
 
+/* TRANSMIS checkbox */
+.transmis-checkbox-wrap { display:inline-flex; align-items:center; justify-content:center; cursor:pointer; position:relative; width:24px; height:24px; }
+.transmis-checkbox-wrap input.transmis-cb { position:absolute; opacity:0; width:0; height:0; cursor:pointer; }
+.transmis-checkmark { width:22px; height:22px; border:2px solid #ccc; border-radius:6px; background:#fff; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
+.transmis-checkbox-wrap input.transmis-cb:checked + .transmis-checkmark { background:var(--vert); border-color:var(--vert); }
+.transmis-checkbox-wrap input.transmis-cb:checked + .transmis-checkmark::after { content:"✓"; color:white; font-size:14px; font-weight:900; line-height:1; }
+.transmis-checkbox-wrap:hover .transmis-checkmark { border-color:var(--principal); box-shadow:0 0 0 3px rgba(80,32,234,0.1); }
+
 @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 .classif-section { animation: fadeUp 0.35s ease both; }
 .classif-section:nth-child(1) { animation-delay: 0.05s; }
 .classif-section:nth-child(2) { animation-delay: 0.15s; }
 .classif-section:nth-child(3) { animation-delay: 0.25s; }
 
-/* ===================== RÉSUMÉ TAB ===================== */
+/* ===== CLASSIF TOGGLES ===== */
+.classif-toggle-bar { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:0; }
+.classif-toggle-btn { display:inline-flex; align-items:center; gap:7px; padding:6px 14px; border-radius:20px; border:2px solid #ddd; background:#fff; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.15s; user-select:none; }
+.classif-toggle-btn.top5 { border-color:var(--vert-border); color:var(--vert); }
+.classif-toggle-btn.top5.active { background:var(--vert-bg); }
+.classif-toggle-btn.alternatif { border-color:var(--principal); color:var(--principal); }
+.classif-toggle-btn.alternatif.active { background:#F0EBFF; }
+.classif-toggle-btn.horscible { border-color:var(--rouge-border); color:var(--rouge); }
+.classif-toggle-btn.horscible.active { background:var(--rouge-bg); }
+.classif-toggle-icon { width:18px; height:18px; border-radius:4px; border:2px solid currentColor; display:inline-flex; align-items:center; justify-content:center; font-size:12px; flex-shrink:0; }
+.classif-toggle-btn.active .classif-toggle-icon::after { content:"✓"; font-weight:900; }
+
+/* ===== MODAL SCORING ===== */
+.scoring-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:999; align-items:center; justify-content:center; }
+.scoring-modal-overlay.open { display:flex; }
+.scoring-modal { background:#fff; border-radius:16px; padding:28px 30px; max-width:620px; width:90%; max-height:80vh; overflow-y:auto; box-shadow:0 20px 60px rgba(80,32,234,0.15); position:relative; }
+.scoring-modal h2 { font-family:'Bricolage Grotesque',sans-serif; font-size:18px; color:var(--noir); margin-bottom:4px; }
+.scoring-modal .modal-subtitle { font-size:12px; color:#888; margin-bottom:20px; }
+.scoring-modal-close { position:absolute; top:16px; right:18px; background:none; border:none; font-size:20px; cursor:pointer; color:#aaa; line-height:1; }
+.scoring-rule-row { display:flex; align-items:center; gap:12px; padding:9px 0; border-bottom:1px solid #F0F0F0; }
+.scoring-rule-row:last-child { border-bottom:none; }
+.scoring-rule-label { font-size:13px; font-weight:700; color:var(--noir); flex:1; }
+.scoring-rule-desc { font-size:12px; color:#555; flex:2; }
+.scoring-rule-impact { font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px; white-space:nowrap; }
+.scoring-rule-impact.exclusion { background:var(--rouge-bg); color:var(--rouge); border:1px solid var(--rouge-border); }
+.scoring-rule-impact.warn { background:var(--orange-bg); color:var(--orange); border:1px solid var(--orange-border); }
+.scoring-rule-impact.ok { background:var(--vert-bg); color:var(--vert); border:1px solid var(--vert-border); }
 #tab-resume main { max-width: 1280px; padding-top: 36px; }
+
+/* ===================== PANEL TAB ===================== */
+#tab-panel main { max-width: 860px; padding-top: 36px; }
+.panel-badge { display: inline-flex; align-items: center; justify-content: center; padding: 3px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.panel-badge.gold-premium { background: #FFF8E1; color: #B8860B; border: 1px solid #FFD700; }
+.panel-badge.gold { background: #FFFDE7; color: #DAA520; border: 1px solid #FFD700; }
+.panel-badge.silver { background: #F5F5F5; color: #555; border: 1px solid #BDBDBD; }
+.panel-badge.bronze { background: #FBE9E7; color: #BF6A3C; border: 1px solid #FFAB91; }
+.panel-badge.empty { background: #FAFAFA; color: #999; border: 1px solid #E0E0E0; }
 .resume-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
 .resume-header h1 { font-size: 32px; }
 .resume-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
@@ -529,6 +573,10 @@ textarea::placeholder { color: #b0b0b0; }
 <svg fill="currentColor" height="14" viewbox="0 0 24 24" width="14"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"></path></svg>
       Résumé Fournisseurs
     </button>
+<button class="tab-btn" id="btn-panel" onclick="switchTab('panel')">
+<svg fill="currentColor" height="14" viewbox="0 0 24 24" width="14"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"></path></svg>
+      Fournisseurs Panel
+    </button>
 <div style="flex:1"></div>
 <div style="display:flex;align-items:center;border-left:1px solid var(--gris);margin-left:8px;padding-left:8px;">
 <button class="tab-btn tab-btn-news" id="btn-news" onclick="switchTab('news')" title="News Fournisseurs">
@@ -551,15 +599,17 @@ textarea::placeholder { color: #b0b0b0; }
 <p class="subtitle">Renseignez le profil du client pour obtenir la classification complète de tous les fournisseurs éligibles.</p>
 <div class="form-grid">
 <div class="form-group"><label>Type d'énergie</label><select id="energie" onchange="onEnergieChange()"><option disabled="" selected="" value="">— Sélectionner —</option><option value="gaz">Gaz</option><option value="elec">Électricité</option></select></div>
-<div class="form-group"><label>Segment</label><select id="segment"><option disabled="" selected="" value="">— Sélectionner —</option></select></div>
+<div class="form-group"><label>Segment</label><select id="segment" onchange="onSegmentChange()"><option disabled="" selected="" value="">— Sélectionner —</option></select></div>
 <div class="form-group"><label>Note de crédit (/10 Ellipro)</label><input id="note" max="10" min="0" placeholder="ex: 6" step="1" type="number" value="0"/></div>
-<div class="form-group"><label>Volume (MWh/an)</label><input id="volume" min="0" placeholder="ex: 0" type="number" value="0"/></div>
-<div class="form-group"><label>DDF souhaitée (Date début fourniture)</label><input id="ddf" oninput="autoFormatDate(this)" pattern="\d{2}/\d{2}/\d{4}" placeholder="JJ/MM/AAAA" type="text" value="01/01/2028"/></div>
-<div class="form-group"><label>Date de fin de fourniture souhaitée</label><input id="dff" oninput="autoFormatDate(this)" pattern="\d{2}/\d{2}/\d{4}" placeholder="JJ/MM/AAAA" type="text" value="31/12/2030"/></div>
+<div class="form-group"><label>Volume (MWh/an)</label><input id="volume" min="0" oninput="updateCommission()" placeholder="ex: 0" type="number" value="0"/></div>
+<div class="form-group"><label>DDF souhaitée (Date début fourniture)</label><input id="ddf" oninput="autoFormatDate(this); updateCommission();" pattern="\d{2}/\d{2}/\d{4}" placeholder="JJ/MM/AAAA" type="text" value="01/01/2028"/></div>
+<div class="form-group"><label>Date de fin de fourniture souhaitée</label><input id="dff" oninput="autoFormatDate(this); updateCommission();" pattern="\d{2}/\d{2}/\d{4}" placeholder="JJ/MM/AAAA" type="text" value="31/12/2030"/></div>
 <div class="form-group"><label>Profil <span id="profil-gaz-only" style="font-size:10px;color:#aaa;font-weight:400;text-transform:none;letter-spacing:0;">(Gaz uniquement)</span></label><select disabled="" id="profil" style="color:#bbb;background:#f7f7f7;cursor:not-allowed;"><option selected="" value="">— Sélectionner —</option></select></div>
-<div class="form-group"><label>État PDL / PCE</label><select id="etat_pdl"><option disabled="" selected="" value="">— Sélectionner —</option><option value="premiere_mes">Première mise en service</option><option value="mes">Mise en service</option><option value="en_service">En service</option><option value="ferme">Fermé</option></select></div>
+<div class="form-group"><label>État PDL / PCE</label><select id="etat_pdl" onchange="onEtatPdlChange()"><option disabled="" selected="" value="">— Sélectionner —</option><option value="premiere_mes">Première mise en service</option><option value="mes">Mise en service</option><option value="en_service">En service</option><option value="ferme">Fermé</option></select></div>
 <div class="form-group"><label>Syndic ?</label><select id="syndic"><option disabled="" selected="" value="">— Sélectionner —</option><option value="oui">Oui</option><option value="non">Non</option></select></div>
-<div class="form-group"><label>Fournisseur actuel</label><select id="fournisseur_actuel"><option disabled="" selected="" value="">— Sélectionner —</option><option value="ALTERNA">ALTERNA</option><option value="DYNEFF">DYNEFF</option><option value="EKWATEUR">EKWATEUR</option><option value="ENDESA">ENDESA</option><option value="ENERGEM">ENERGEM</option><option value="ENERGIE D'ICI">ENERGIE D'ICI</option><option value="ENGIE">ENGIE</option><option value="ENOVOS">ENOVOS</option><option value="GAZ DE BORDEAUX">GAZ DE BORDEAUX</option><option value="GEDIA">GEDIA</option><option value="GEG">GEG</option><option value="HELLIO">HELLIO</option><option value="ILEK">ILEK</option><option value="LA BELLENERGIE">LA BELLENERGIE</option><option value="MET">MET</option><option value="MINT Energie">MINT Energie</option><option value="NATGAS">NATGAS</option><option value="OHM">OHM</option><option value="PICOTY">PICOTY</option><option value="PRIMEO">PRIMEO</option><option value="SAVE">SAVE</option><option value="SEFE">SEFE</option><option value="SYNELVA">SYNELVA</option><option value="TOTALENERGIES">TOTALENERGIES</option><option value="VATTENFALL">VATTENFALL</option><option value="AUTRE">— AUTRE (hors partenaires)</option></select></div>
+<div class="form-group"><label>Fournisseur actuel</label><select id="fournisseur_actuel"><option disabled="" selected="" value="">— Sélectionner —</option><option value="ALTERNA">ALTERNA</option><option value="DYNEFF">DYNEFF</option><option value="EKWATEUR">EKWATEUR</option><option value="ENDESA">ENDESA</option><option value="ENERGEM">ENERGEM</option><option value="ENERGIE D'ICI">ENERGIE D'ICI</option><option value="ENGIE">ENGIE</option><option value="ENOVOS">ENOVOS</option><option value="GAZ DE BORDEAUX">GAZ DE BORDEAUX</option><option value="GEDIA">GEDIA</option><option value="GEG">GEG</option><option value="HELLIO">HELLIO</option><option value="ILEK">ILEK</option><option value="LA BELLENERGIE">LA BELLENERGIE</option><option value="MET">MET</option><option value="MINT Energie">MINT Energie</option><option value="NATGAS">NATGAS</option><option value="OHM (mid)">OHM (mid)</option><option value="OHM (GC)">OHM (GC)</option><option value="PICOTY">PICOTY</option><option value="PRIMEO">PRIMEO</option><option value="SAVE">SAVE</option><option value="SEFE">SEFE</option><option value="SYNELVA">SYNELVA</option><option value="TOTALENERGIES">TOTALENERGIES</option><option value="VATTENFALL (C5)">VATTENFALL (C5)</option><option value="VATTENFALL (GC)">VATTENFALL (GC)</option><option value="AUTRE">— AUTRE (hors partenaires)</option></select></div>
+<div class="form-group"><label>Marge globale (€/MWh)</label><input id="marge_globale" min="0" oninput="updateCommission()" placeholder="ex: 20" step="0.1" type="number"/></div>
+<div class="form-group"><label>Commission estimée <span style="font-size:10px;color:#aaa;font-weight:400;text-transform:none;letter-spacing:0;">Vol × (mois/12) × (Marge/2)</span></label><input id="commission_estimee" readonly style="background:#F3F3F3;color:var(--principal);font-weight:700;cursor:default;" type="text" placeholder="—"/></div>
 
 </div>
 <div style="display:flex; align-items:center; flex-wrap:wrap; gap:8px;">
@@ -592,6 +642,35 @@ textarea::placeholder { color: #b0b0b0; }
 <table class="resume-table" id="resume-table">
 <thead id="resume-thead"></thead>
 <tbody id="resume-tbody"></tbody>
+</table>
+</div>
+</main>
+</div>
+<!-- ============ TAB FOURNISSEURS PANEL ============ -->
+<div class="tab-content" id="tab-panel">
+<main>
+<div class="resume-header">
+<div>
+<h1>Fournisseurs Panel</h1>
+<p class="subtitle" style="margin-bottom:0">Classement panel des fournisseurs partenaires — Gold Premium, Gold, Silver, Bronze.</p>
+</div>
+<div class="resume-controls">
+<input class="search-input" id="search-panel" oninput="filterPanelTable()" placeholder="🔍 Rechercher un fournisseur..."/>
+</div>
+</div>
+<div id="panel-loading-banner" style="display:none;background:var(--rouge-bg);border:1px solid var(--rouge-border);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--rouge);"></div>
+<div class="table-wrapper">
+<table class="resume-table" id="panel-table" style="min-width:400px;">
+<thead>
+<tr>
+<th class="criteria-col" style="min-width:220px;">Fournisseur</th>
+<th>Panel</th>
+</tr>
+</thead>
+<tbody id="panel-tbody">
+<tr><td colspan="2" style="text-align:center;color:#aaa;padding:24px;font-size:13px;">
+<div class="loading-spinner" style="margin:0 auto 10px;"></div>Chargement…</td></tr>
+</tbody>
 </table>
 </div>
 </main>
@@ -1006,6 +1085,7 @@ function switchTab(tab) {
   document.getElementById("tab-" + tab).classList.add("active");
   document.getElementById("btn-" + tab).classList.add("active");
   if (tab === "resume") buildResumeTable();
+  if (tab === "panel") buildPanelTable();
   if (tab === "news") {
     markTabAsSeen("news", NEWS_ALL_TASKS);
     loadNews();
@@ -1112,6 +1192,73 @@ function onEnergieChange() {
     ELEC_SEGMENTS.forEach(s => { const o = document.createElement("option"); o.value = s; o.textContent = s; segEl.appendChild(o); });
     profilEl.innerHTML = '<option value="">— Non applicable (Élec) —</option>';
     profilEl.disabled = true; profilEl.style.color = "#bbb"; profilEl.style.background = "#f7f7f7"; profilEl.style.cursor = "not-allowed";
+  }
+  updateFieldGreying();
+}
+
+function onEtatPdlChange() {
+  updateFieldGreying();
+}
+
+function onSegmentChange() {
+  updateFieldGreying();
+}
+
+/**
+ * Grise les champs du formulaire selon les règles :
+ * - Première MES → griser "Fournisseur actuel"
+ * - Élec + C5 → griser "Marge globale" et "Commission estimée"
+ */
+function updateFieldGreying() {
+  const etat = document.getElementById("etat_pdl")?.value || "";
+  const energie = document.getElementById("energie")?.value || "";
+  const segment = document.getElementById("segment")?.value || "";
+
+  // --- Fournisseur actuel : grisé si première MES ---
+  const fournisseurActuelEl = document.getElementById("fournisseur_actuel");
+  if (fournisseurActuelEl) {
+    if (etat === "premiere_mes") {
+      fournisseurActuelEl.disabled = true;
+      fournisseurActuelEl.style.color = "#bbb";
+      fournisseurActuelEl.style.background = "#f7f7f7";
+      fournisseurActuelEl.style.cursor = "not-allowed";
+      fournisseurActuelEl.value = "";
+    } else {
+      fournisseurActuelEl.disabled = false;
+      fournisseurActuelEl.style.color = "";
+      fournisseurActuelEl.style.background = "";
+      fournisseurActuelEl.style.cursor = "";
+    }
+  }
+
+  // --- Marge + Commission : grisé si Élec + C5 ---
+  const margeEl = document.getElementById("marge_globale");
+  const commEl = document.getElementById("commission_estimee");
+  const isElecC5 = (energie === "elec" && segment === "C5");
+
+  if (margeEl) {
+    if (isElecC5) {
+      margeEl.disabled = true;
+      margeEl.style.color = "#bbb";
+      margeEl.style.background = "#f7f7f7";
+      margeEl.style.cursor = "not-allowed";
+      margeEl.value = "";
+    } else {
+      margeEl.disabled = false;
+      margeEl.style.color = "";
+      margeEl.style.background = "";
+      margeEl.style.cursor = "";
+    }
+  }
+  if (commEl) {
+    if (isElecC5) {
+      commEl.style.color = "#bbb";
+      commEl.style.background = "#f7f7f7";
+      commEl.value = "";
+    } else {
+      commEl.style.color = "var(--principal)";
+      commEl.style.background = "#F3F3F3";
+    }
   }
 }
 
@@ -1231,6 +1378,12 @@ function classifierFournisseur(f, params) {
   let redhibitoires = 0;
   let doutes = 0;
 
+  // ---- 0. GAZ EUROPÉEN : uniquement Syndic ----
+  if (f.toUpperCase().includes("GAZ EUROP") && params.syndic !== "oui") {
+    criteres.push({ label: "Syndic obligatoire", statut: "ko", detail: "Gaz Européen fait uniquement du Syndic — hors cible si Syndic = Non." });
+    redhibitoires++;
+  }
+
   // ---- 1. SEGMENT COUVERT ----
   if (!segVal || segVal === "—" || segVal === "NON") {
     criteres.push({ label: `Segment ${segment}`, statut: "ko", detail: `Segment ${segment} non couvert par ce fournisseur.` });
@@ -1293,17 +1446,14 @@ function classifierFournisseur(f, params) {
   if (isFournisseurActuel) {
     criteres.push({ label: "Note crédit", statut: "ok", detail: `Fournisseur actuel du client — note Ellipro non applicable pour ce renouvellement.` });
   } else {
-    const noteMinMatch = scoring_raw.match(/(\d+)\/10/);
+    const noteMinMatch = scoring_raw.match(/(\d+)/);
     const noteMin = noteMinMatch ? parseInt(noteMinMatch[1]) : null;
     if (noteMin !== null) {
-      if (note < noteMin) {
-        criteres.push({ label: "Note crédit", statut: "ko", detail: `Note client ${note}/10 < minimum requis ${noteMin}/10 — non éligible.` });
-        redhibitoires++;
-      } else if (note === noteMin) {
-        criteres.push({ label: "Note crédit", statut: "warn", detail: `Note client ${note}/10 = minimum requis — limite, à surveiller.` });
-        doutes++;
+      if (note >= noteMin) {
+        criteres.push({ label: "Note crédit", statut: "ok", detail: `Note client ${note} ≥ minimum requis ${noteMin} — OK.` });
       } else {
-        criteres.push({ label: "Note crédit", statut: "ok", detail: `Note client ${note}/10 ≥ minimum ${noteMin}/10 — OK.` });
+        criteres.push({ label: "Note crédit", statut: "warn", detail: `Note client ${note} < minimum requis ${noteMin} — à surveiller.` });
+        doutes++;
       }
     } else {
       criteres.push({ label: "Note crédit", statut: "neutral", detail: `Scoring minimum non standardisé : ${scoring_raw}.` });
@@ -1353,9 +1503,20 @@ function classifierFournisseur(f, params) {
       if (moisAvantDDF > 24) { condOk = false; condDetail += " ⚠️ DDF > M+24 — UPFRONT non applicable."; }
     }
     if (upUpper.includes("2025/2026")) {
-      const todayY = new Date().getFullYear();
-      if (todayY > 2026) { condOk = false; condDetail += " ⚠️ UPFRONT limité 2025/2026 — dépassé."; }
-      else { condWarn = true; condDetail += " À confirmer pour l'année en cours."; }
+      // Vattenfall GC règle spéciale : vérifier DFF ≤ N+1
+      if (f.toUpperCase().includes("VATTENFALL") && f.toUpperCase().includes("GC")) {
+        const currentYear = new Date().getFullYear();
+        const maxYear = currentYear + 1;
+        if (dff && dff.getFullYear() <= maxYear) {
+          // DFF ≤ N+1 → vert
+        } else {
+          condWarn = true; condDetail += ` DFF ${dff ? dff.getFullYear() : '?'} > N+1 (${maxYear}) — UPFRONT incertain.`;
+        }
+      } else {
+        const todayY = new Date().getFullYear();
+        if (todayY > 2026) { condOk = false; condDetail += " ⚠️ UPFRONT limité 2025/2026 — dépassé."; }
+        else { condWarn = true; condDetail += " À confirmer pour l'année en cours."; }
+      }
     }
     if (upUpper.includes("DDF = MOIS DE SIGNATURE")) { condWarn = true; condDetail = "UPFRONT uniquement si DDF = mois de signature."; }
 
@@ -1379,8 +1540,34 @@ function classifierFournisseur(f, params) {
     } else if (mes1 === "OUI") {
       criteres.push({ label: "1ère MES", statut: "ok", detail: "1ère MES supportée." });
     } else if (mes1.startsWith("OUI")) {
-      criteres.push({ label: "1ère MES", statut: "warn", detail: `1ère MES avec condition : ${mes1_raw}.` });
-      doutes++;
+      // Vérifier condition d'énergie
+      const condMatch = mes1_raw.match(/\(([^)]+)\)/i);
+      if (condMatch) {
+        const cond = condMatch[1].toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+        const isGazCond = cond.includes("GAZ");
+        const isElecCond = cond.includes("ELEC") || cond.includes("ELECTRICITE");
+        if (isGazCond && !isElecCond) {
+          if (energie === "gaz") {
+            criteres.push({ label: "1ère MES", statut: "ok", detail: `1ère MES supportée (${mes1_raw}) — énergie gaz correspond.` });
+          } else {
+            criteres.push({ label: "1ère MES", statut: "ko", detail: `1ère MES uniquement gaz (${mes1_raw}) — énergie du dossier : élec.` });
+            redhibitoires++;
+          }
+        } else if (isElecCond && !isGazCond) {
+          if (energie === "elec") {
+            criteres.push({ label: "1ère MES", statut: "ok", detail: `1ère MES supportée (${mes1_raw}) — énergie élec correspond.` });
+          } else {
+            criteres.push({ label: "1ère MES", statut: "ko", detail: `1ère MES uniquement élec (${mes1_raw}) — énergie du dossier : gaz.` });
+            redhibitoires++;
+          }
+        } else {
+          criteres.push({ label: "1ère MES", statut: "warn", detail: `1ère MES avec condition : ${mes1_raw}.` });
+          doutes++;
+        }
+      } else {
+        criteres.push({ label: "1ère MES", statut: "warn", detail: `1ère MES avec condition : ${mes1_raw}.` });
+        doutes++;
+      }
     } else {
       criteres.push({ label: "1ère MES", statut: "neutral", detail: `Situation 1ère MES : ${mes1_raw}.` });
     }
@@ -1392,8 +1579,34 @@ function classifierFournisseur(f, params) {
     } else if (remes === "OUI") {
       criteres.push({ label: "re-MES", statut: "ok", detail: "Re-MES supportée." });
     } else if (remes.startsWith("OUI") || remes.startsWith("NON (SAUF")) {
-      criteres.push({ label: "re-MES", statut: "warn", detail: `Re-MES conditionnelle : ${remes_raw}.` });
-      doutes++;
+      // Vérifier condition d'énergie
+      const condMatch = remes_raw.match(/\(([^)]+)\)/i);
+      if (condMatch) {
+        const cond = condMatch[1].toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+        const isGazCond = cond.includes("GAZ");
+        const isElecCond = cond.includes("ELEC") || cond.includes("ELECTRICITE");
+        if (isElecCond && !isGazCond) {
+          if (energie === "elec") {
+            criteres.push({ label: "re-MES", statut: "ok", detail: `Re-MES supportée (${remes_raw}) — énergie élec correspond.` });
+          } else {
+            criteres.push({ label: "re-MES", statut: "ko", detail: `Re-MES uniquement élec (${remes_raw}) — énergie du dossier : gaz.` });
+            redhibitoires++;
+          }
+        } else if (isGazCond && !isElecCond) {
+          if (energie === "gaz") {
+            criteres.push({ label: "re-MES", statut: "ok", detail: `Re-MES supportée (${remes_raw}) — énergie gaz correspond.` });
+          } else {
+            criteres.push({ label: "re-MES", statut: "ko", detail: `Re-MES uniquement gaz (${remes_raw}) — énergie du dossier : élec.` });
+            redhibitoires++;
+          }
+        } else {
+          criteres.push({ label: "re-MES", statut: "warn", detail: `Re-MES conditionnelle : ${remes_raw}.` });
+          doutes++;
+        }
+      } else {
+        criteres.push({ label: "re-MES", statut: "warn", detail: `Re-MES conditionnelle : ${remes_raw}.` });
+        doutes++;
+      }
     }
   }
 
@@ -1449,6 +1662,9 @@ function classifierFournisseur(f, params) {
   });
   // Appliquer bonus/malus prix (max ±10 pts)
   score = Math.round(Math.min(Math.max(score + prixScore, 0), 100));
+
+  // Si au moins 1 critère KO → forcer score à 0
+  if (redhibitoires > 0) score = 0;
 
   // ---- COULEUR FINALE ----
   let couleur;
@@ -1516,6 +1732,8 @@ async function analyser() {
 
   let selectionData = null;
   try {
+    const commRaw = (document.getElementById("commission_estimee")?.value || "").replace(/[^\d.,]/g, "").replace(",", ".");
+    const margeRaw = (document.getElementById("marge_globale")?.value || "").replace(",", ".");
     const query = new URLSearchParams({
       energie,
       segment,
@@ -1524,7 +1742,10 @@ async function analyser() {
       volume: String(volume),
       ddf: document.getElementById("ddf").value,
       dff: document.getElementById("dff").value,
-      fournisseur_actuel
+      fournisseur_actuel,
+      commission_estimee: commRaw || "",
+      etat_pdl: document.getElementById("etat_pdl")?.value || "",
+      marge_globale: margeRaw || ""
     });
     selectionData = await apiFetch(`/api/fournisseur-selection?${query.toString()}`);
   } catch (e) {
@@ -1557,7 +1778,6 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
     ...(Array.isArray(selectionData?.topSuppliers) ? selectionData.topSuppliers : [])
   ];
 
-  const topSupplierNames = new Set(topSuppliers.map((item) => item?.supplier).filter(Boolean));
   const partnerSupplierName = partnerSupplier?.supplier || null;
 
   const dedupedAllSuppliers = [];
@@ -1572,10 +1792,6 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
   const allSuppliers = dedupedAllSuppliers
     .filter((item) => item?.supplier !== partnerSupplierName)
     .sort((a, b) => {
-      const aTop = topSupplierNames.has(a?.supplier) ? 1 : 0;
-      const bTop = topSupplierNames.has(b?.supplier) ? 1 : 0;
-      if (aTop !== bTop) return bTop - aTop;
-
       const aEligible = a?.eligible ? 1 : 0;
       const bEligible = b?.eligible ? 1 : 0;
       if (aEligible !== bEligible) return bEligible - aEligible;
@@ -1588,6 +1804,10 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
 
       return (a._originalIndex || 0) - (b._originalIndex || 0);
     });
+
+  // Top Fournisseurs = scoreMetier 9 ou 10
+  const topFournisseurs = allSuppliers.filter(r => r.eligible && (r.scoreMetier >= 9));
+  const topSupplierNames = new Set(topFournisseurs.map((item) => item?.supplier).filter(Boolean));
 
   function getPanelBadge(panel = "") {
     const panelText = String(panel || "").trim();
@@ -1616,7 +1836,7 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
 
   function renderSelectionRows(list, options = {}) {
     if (!list.length) {
-      return `<tr><td colspan="6" style="text-align:center;color:#aaa;padding:18px;font-size:13px;">Aucun fournisseur disponible pour ce profil.</td></tr>`;
+      return `<tr><td colspan="7" style="text-align:center;color:#aaa;padding:18px;font-size:13px;">Aucun fournisseur disponible pour ce profil.</td></tr>`;
     }
 
     return list.map((r, index) => {
@@ -1625,11 +1845,11 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
       const isPartner = partnerSupplierName && r.supplier === partnerSupplierName;
       const isEligible = Boolean(r.eligible);
       const rowClass = isPartner ? 'selection-partner' : isTop5 ? 'selection-top5' : !isEligible ? 'selection-ineligible' : '';
-      const scoreValue = Number.isFinite(Number(r?.score ?? r?.scoring ?? r?.eligibilityScore)) ? Number(r?.score ?? r?.scoring ?? r?.eligibilityScore) : null;
-      let rankingBadge = `<span class="selection-rank-badge standard">Classé</span>`;
+      const scoreDisplay = Number.isFinite(r?.scoreMetier) ? r.scoreMetier : null;
+      let rankingBadge = `<span class="selection-rank-badge standard">Choix alternatif</span>`;
       if (isPartner) rankingBadge = `<span class="selection-rank-badge partner">Fournisseur Actuel</span>`;
-      else if (isTop5) rankingBadge = `<span class="selection-rank-badge top5">Top 5 sélectionné</span>`;
-      else if (!isEligible) rankingBadge = `<span class="selection-rank-badge ineligible">Non éligible</span>`;
+      else if (isTop5) rankingBadge = `<span class="selection-rank-badge top5">Top Fournisseur</span>`;
+      else if (!isEligible) rankingBadge = `<span class="selection-rank-badge ineligible">Hors cible</span>`;
 
       let prixHtml = '<span style="color:#bbb;font-size:11px;">—</span>';
       if (prixEval) {
@@ -1661,13 +1881,14 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
         const volHtml = prixEval.vol !== null ? `<div style="font-size:12px;color:#666;font-weight:600;line-height:1.35;margin-top:7px;">Vol. moy: ${prixEval.vol.toFixed(0)} MWh</div>` : "";
         const nbHtml = prixEval.nb !== null ? `<div style="font-size:12px;color:#555;font-weight:700;line-height:1.35;margin-top:2px;">${prixEval.nb} appel${prixEval.nb > 1 ? "s" : ""} d'offres</div>` : "";
         prixHtml = `<div style="display:flex;flex-direction:column;gap:6px;min-width:150px;">
-          <div style="font-size:22px;font-weight:800;color:var(--noir);line-height:1.1;">${prixEval.prix.toFixed(2)} €/MWh</div>
+          <div style="font-size:14px;font-weight:800;color:var(--noir);line-height:1.1;">${prixEval.prix.toFixed(2)} €/MWh</div>
           ${ecartHtml}
           ${volHtml}
           ${nbHtml}
         </div>`;
       }
 
+      const supplierSlug = escapeAttr(r.supplier).replace(/[^a-zA-Z0-9]/g, '_');
       return `<tr class="${rowClass}">
         <td>
           <div class="supplier-main-cell">
@@ -1675,16 +1896,22 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
               <img src="${escapeAttr(getSupplierLogo(r.supplier))}" alt="${escapeAttr(r.supplier)}" class="supplier-logo" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=&quot;font-size:11px;color:#999;font-weight:700;&quot;>Logo</span>';">
             </div>
             <div class="supplier-name-stack">
-              <strong class="supplier-name-text">${index + 1}. ${escapeHtml(r.supplier)}</strong>
+              <strong class="supplier-name-text">${escapeHtml(r.supplier)}</strong>
               <div>${rankingBadge}</div>
             </div>
           </div>
         </td>
         <td>${getPanelBadge(r.panel)}</td>
         <td>${getEligibilityBadge(r.eligible)}</td>
-        <td>${scoreValue !== null ? `<span class="score-pill ${isEligible ? (isTop5 ? 'vert' : 'orange') : 'rouge'}">${scoreValue}/100</span>` : `<span style="color:#bbb;font-size:11px;">—</span>`}</td>
+        <td>${scoreDisplay !== null ? `<span class="score-pill ${isEligible ? (isTop5 ? 'vert' : 'orange') : 'rouge'}">${scoreDisplay}/10</span>` : `<span style="color:#bbb;font-size:11px;">—</span>`}</td>
         <td>${prixHtml}</td>
         <td class="justif-cell">${renderEvaluationLines(r.evaluations)}</td>
+        <td style="text-align:center;vertical-align:middle;">
+          <label class="transmis-checkbox-wrap">
+            <input type="checkbox" class="transmis-cb" data-supplier="${escapeAttr(r.supplier)}" onchange="onTransmisChange(this)">
+            <span class="transmis-checkmark"></span>
+          </label>
+        </td>
       </tr>`;
     }).join("");
   }
@@ -1707,32 +1934,159 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
   const partnerHtml = partnerSupplier
     ? `<div class="classif-section" style="margin-top:20px;">
         <div class="classif-section-title orange-title">
-          ⭐ FOURNISSEUR PARTENAIRE
+          ⭐ FOURNISSEUR ACTUEL
           <span class="selection-partner-card-note">Toujours affiché séparément lorsqu’il correspond au fournisseur actuel</span>
         </div>
         <div class="classif-table-wrap">
           <table class="classif-table">
-            <thead><tr><th>Fournisseur</th><th>Panel</th><th>Éligibilité</th><th>Scoring</th><th style="min-width:140px">Prix (30j)</th><th>Analyse</th></tr></thead>
+            <thead><tr><th>Fournisseur</th><th>Panel</th><th>Éligibilité</th><th>Scoring</th><th style="min-width:140px">Prix (30j)</th><th>Analyse</th><th style="width:70px;text-align:center;">Transmis</th></tr></thead>
             <tbody>${renderSelectionRows([partnerSupplier])}</tbody>
           </table>
         </div>
       </div>`
     : "";
 
-  const allSuppliersHtml = `
+  const top5Html = `
     <div class="classif-section">
-      <div class="classif-section-title vert-title">
-        ✅ Classement complet des fournisseurs
-        <span class="color-badge vert-badge-small">${topSuppliers.length} Top sélectionné(s)</span>
-        <span style="margin-left:auto;font-size:11px;font-weight:400;opacity:0.75;">Tous les fournisseurs affichés, non éligibles inclus en bas de tableau</span>
+      <div class="classif-section-title vert-title" id="classif-main-title" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <span id="classif-title-icon">✅</span>
+        <span id="classif-title-text">Top Fournisseurs</span>
+        <span class="color-badge vert-badge-small" id="classif-title-badge"
+          data-count-top5="${topFournisseurs.length}"
+          data-count-alternatif="${allSuppliers.filter(r => r.eligible && !topSupplierNames.has(r.supplier)).length}"
+          data-count-horscible="${allSuppliers.filter(r => !r.eligible).length}"
+        >${topFournisseurs.length} fournisseur(s)</span>
+        <div class="classif-toggle-bar" style="margin-left:auto;">
+          <button type="button" class="classif-toggle-btn top5 active" id="toggle-top5" onclick="toggleClassifView('top5')">
+            <span class="classif-toggle-icon"></span> Top Fournisseurs
+          </button>
+          <button type="button" class="classif-toggle-btn alternatif" id="toggle-alternatif" onclick="toggleClassifView('alternatif')">
+            <span class="classif-toggle-icon"></span> Choix Alternatif
+          </button>
+          <button type="button" class="classif-toggle-btn horscible" id="toggle-horscible" onclick="toggleClassifView('horscible')">
+            <span class="classif-toggle-icon"></span> Hors Cible
+          </button>
+        </div>
       </div>
-      <div class="classif-table-wrap">
-        <table class="classif-table">
-          <thead><tr><th>Fournisseur</th><th>Panel</th><th>Éligibilité</th><th>Scoring</th><th style="min-width:140px">Prix (30j)</th><th>Analyse</th></tr></thead>
-          <tbody>${renderSelectionRows(allSuppliers)}</tbody>
-        </table>
+      <div style="padding:8px 16px 10px;background:#FAFAFA;border:1.5px solid var(--vert-border);border-top:none;border-bottom:none;display:flex;align-items:center;gap:10px;">
+        <button type="button" onclick="document.getElementById('scoring-modal').classList.add('open')" style="display:inline-flex;align-items:center;gap:6px;background:var(--bleu-clair);color:var(--principal);border:none;border-radius:8px;padding:5px 13px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">
+          ℹ️ Informations scoring
+        </button>
+        <span style="font-size:11px;color:#aaa;">Score 9 ou 10/10 = Top Fournisseur pour ce dossier</span>
+      </div>
+      <div id="classif-view-top5">
+        <div class="classif-table-wrap" style="border-top:none;border-radius:0 0 12px 12px;">
+          <table class="classif-table">
+            <thead><tr><th>Fournisseur</th><th>Panel</th><th>Éligibilité</th><th>Scoring</th><th style="min-width:140px">Prix (30j)</th><th>Analyse</th><th style="width:70px;text-align:center;">Transmis</th></tr></thead>
+            <tbody>${renderSelectionRows(topFournisseurs)}</tbody>
+          </table>
+        </div>
+      </div>
+      <div id="classif-view-alternatif" style="display:none;">
+        <div class="classif-table-wrap" style="border-top:none;border-radius:0 0 12px 12px;">
+          <table class="classif-table">
+            <thead><tr><th>Fournisseur</th><th>Panel</th><th>Éligibilité</th><th>Scoring</th><th style="min-width:140px">Prix (30j)</th><th>Analyse</th><th style="width:70px;text-align:center;">Transmis</th></tr></thead>
+            <tbody>${renderSelectionRows(allSuppliers.filter(r => r.eligible && !topSupplierNames.has(r.supplier)))}</tbody>
+          </table>
+        </div>
+      </div>
+      <div id="classif-view-horscible" style="display:none;">
+        <div class="classif-table-wrap" style="border-top:none;border-radius:0 0 12px 12px;">
+          <table class="classif-table">
+            <thead><tr><th>Fournisseur</th><th>Panel</th><th>Éligibilité</th><th>Scoring</th><th style="min-width:140px">Prix (30j)</th><th>Analyse</th><th style="width:70px;text-align:center;">Transmis</th></tr></thead>
+            <tbody>${renderSelectionRows(allSuppliers.filter(r => !r.eligible))}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL SCORING -->
+    <div class="scoring-modal-overlay" id="scoring-modal" onclick="if(event.target===this)this.classList.remove('open')">
+      <div class="scoring-modal">
+        <button type="button" class="scoring-modal-close" onclick="document.getElementById('scoring-modal').classList.remove('open')">✕</button>
+        <h2>ℹ️ Comprendre le scoring</h2>
+        <p class="modal-subtitle">Le score est sur <strong>10 points</strong>. Il évalue si le fournisseur <strong>convient à ce dossier précis</strong> (conditions UPFRONT, marge, horizon, scoring). En cas d'égalité, le nombre d'alertes ⚠️ départage.</p>
+
+        <div class="scoring-rule-row" style="background:#F8F8FF;border-radius:8px;padding:10px 12px;margin-bottom:8px;border:none;">
+          <span class="scoring-rule-label" style="color:var(--principal);">PAIEMENT UPFRONT</span>
+          <span class="scoring-rule-desc">OUI sans condition : <strong>3 pts</strong> — OUI conditions toutes respectées : <strong>3 pts</strong> — 1 condition sur 2 : <strong>2 pts</strong> — Aucune : <strong>0 pt</strong></span>
+          <span class="scoring-rule-impact ok">max 3 pts</span>
+        </div>
+        <div class="scoring-rule-row" style="background:#F8F8FF;border-radius:8px;padding:10px 12px;margin-bottom:8px;border:none;">
+          <span class="scoring-rule-label" style="color:var(--principal);">MARGE</span>
+          <span class="scoring-rule-desc">Marge du dossier ≤ seuil fournisseur : <strong>2 pts</strong> — Marge &gt; seuil : <strong>0 pt</strong> — Pas de contrainte : <strong>2 pts</strong></span>
+          <span class="scoring-rule-impact ok">max 2 pts</span>
+        </div>
+        <div class="scoring-rule-row" style="background:#F8F8FF;border-radius:8px;padding:10px 12px;margin-bottom:8px;border:none;">
+          <span class="scoring-rule-label" style="color:var(--principal);">HORIZON</span>
+          <span class="scoring-rule-desc">Horizon ≥ année fin fourniture du dossier : <strong>2 pts</strong> — Horizon &lt; fin fourniture : <strong>0 pt</strong></span>
+          <span class="scoring-rule-impact ok">max 2 pts</span>
+        </div>
+        <div class="scoring-rule-row" style="background:#F8F8FF;border-radius:8px;padding:10px 12px;margin-bottom:8px;border:none;">
+          <span class="scoring-rule-label" style="color:var(--principal);">SCORING MINIMUM</span>
+          <span class="scoring-rule-desc">Note du dossier ≥ minimum fournisseur : <strong>2 pts</strong> — Note &lt; minimum : <strong>0 pt</strong></span>
+          <span class="scoring-rule-impact ok">max 2 pts</span>
+        </div>
+        <div class="scoring-rule-row" style="background:#F8F8FF;border-radius:8px;padding:10px 12px;margin-bottom:12px;border:none;">
+          <span class="scoring-rule-label" style="color:var(--principal);">RÉGULARISATION</span>
+          <span class="scoring-rule-desc">Non : <strong>1 pt</strong> — Oui : <strong>0 pt</strong></span>
+          <span class="scoring-rule-impact ok">max 1 pt</span>
+        </div>
+
+        <div style="border-top:2px solid var(--principal);padding-top:12px;margin-top:4px;">
+          <div style="font-size:13px;font-weight:800;color:var(--principal);margin-bottom:10px;">Critères d'exclusion (sans impact sur le score)</div>
+          <div class="scoring-rule-row">
+            <span class="scoring-rule-label">Segment</span>
+            <span class="scoring-rule-desc">Le segment du dossier doit être couvert</span>
+            <span class="scoring-rule-impact exclusion">Exclusion</span>
+          </div>
+          <div class="scoring-rule-row">
+            <span class="scoring-rule-label">Syndic</span>
+            <span class="scoring-rule-desc">Si dossier Syndic, le fournisseur doit l'accepter</span>
+            <span class="scoring-rule-impact exclusion">Exclusion</span>
+          </div>
+          <div class="scoring-rule-row">
+            <span class="scoring-rule-label">1ère MES / re-MES</span>
+            <span class="scoring-rule-desc">Le fournisseur doit accepter la mise en service si NON</span>
+            <span class="scoring-rule-impact exclusion">Exclusion si NON</span>
+          </div>
+          <div style="font-size:13px;font-weight:800;color:#888;margin:10px 0 6px;">Alertes ⚠️ (départagent les égalités uniquement)</div>
+          <div class="scoring-rule-row">
+            <span class="scoring-rule-label">DDF Max</span>
+            <span class="scoring-rule-desc">La DDF doit être compatible avec la limite du fournisseur</span>
+            <span class="scoring-rule-impact warn">Alerte</span>
+          </div>
+          <div class="scoring-rule-row">
+            <span class="scoring-rule-label">Volume minimal</span>
+            <span class="scoring-rule-desc">Le volume doit respecter le minimum requis</span>
+            <span class="scoring-rule-impact warn">Alerte</span>
+          </div>
+          <div class="scoring-rule-row">
+            <span class="scoring-rule-label">Marge</span>
+            <span class="scoring-rule-desc">Marge saisie comparée au seuil fournisseur selon énergie/segment</span>
+            <span class="scoring-rule-impact warn">Alerte si dépassée</span>
+          </div>
+        </div>
+
+        <div style="border-top:2px solid var(--principal);padding-top:12px;margin-top:4px;">
+          <div style="font-size:13px;font-weight:800;color:var(--principal);margin-bottom:10px;">Catégories de classement</div>
+          <div class="scoring-rule-row" style="background:var(--vert-bg);border:1px solid var(--vert-border);border-radius:8px;padding:10px 12px;margin-bottom:6px;">
+            <span class="scoring-rule-label" style="color:var(--vert);">✅ Top Fournisseur</span>
+            <span class="scoring-rule-desc">Score <strong>9 ou 10/10</strong> — le fournisseur convient parfaitement à ce dossier</span>
+          </div>
+          <div class="scoring-rule-row" style="background:var(--orange-bg);border:1px solid var(--orange-border);border-radius:8px;padding:10px 12px;margin-bottom:6px;">
+            <span class="scoring-rule-label" style="color:var(--orange);">🔵 Choix Alternatif</span>
+            <span class="scoring-rule-desc">Score <strong>&lt; 9/10</strong> mais éligible — des conditions ne sont pas optimales</span>
+          </div>
+          <div class="scoring-rule-row" style="background:var(--rouge-bg);border:1px solid var(--rouge-border);border-radius:8px;padding:10px 12px;">
+            <span class="scoring-rule-label" style="color:var(--rouge);">🔴 Hors Cible</span>
+            <span class="scoring-rule-desc">Non éligible — au moins un critère d'exclusion bloquant</span>
+          </div>
+        </div>
       </div>
     </div>`;
+
+  const allSuppliersHtml = top5Html;
 
   div.innerHTML = `
     <div class="results-header">
@@ -1756,10 +2110,11 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
     ${partnerHtml}
 
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;">
-      <span class="selection-rank-badge partner">Fournisseur partenaire</span>
-      <span class="selection-rank-badge top5">Top 5 sélectionné par les règles</span>
-      <span class="selection-rank-badge ineligible">Non éligible</span>
-      <span class="selection-rank-badge standard">Autres fournisseurs classés</span>
+      <span class="selection-rank-badge partner">Fournisseur Actuel</span>
+      <span class="selection-rank-badge top5">Top Fournisseur (9-10/10)</span>
+      <span class="selection-rank-badge ineligible">Hors cible</span>
+      <span class="selection-rank-badge standard">Choix alternatif</span>
+      <span id="transmis-counter" style="margin-left:auto;font-size:12px;font-weight:700;color:var(--vert);background:var(--vert-bg);border:1px solid var(--vert-border);padding:4px 12px;border-radius:8px;display:inline-block;"></span>
     </div>
 
     ${allSuppliersHtml}
@@ -1768,17 +2123,123 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
   div.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-function reinitialiser() {
-  ["energie","segment","note","volume","ddf","dff","etat_pdl","syndic","nb_compteurs","fournisseur_actuel"].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = "";
+function toggleClassifView(selected) {
+  const views = { top5: 'classif-view-top5', alternatif: 'classif-view-alternatif', horscible: 'classif-view-horscible' };
+  const toggles = { top5: 'toggle-top5', alternatif: 'toggle-alternatif', horscible: 'toggle-horscible' };
+  const titles = {
+    top5:       { icon: '✅', text: 'Top Fournisseurs',          cls: 'vert-title' },
+    alternatif: { icon: '🔵', text: 'Choix Alternatif',        cls: 'vert-title' },
+    horscible:  { icon: '🔴', text: 'Fournisseurs Hors Cible', cls: 'rouge-title' }
+  };
+
+  Object.keys(views).forEach(k => {
+    const view = document.getElementById(views[k]);
+    const btn = document.getElementById(toggles[k]);
+    if (view) view.style.display = k === selected ? 'block' : 'none';
+    if (btn) btn.classList.toggle('active', k === selected);
   });
+
+  // Titre dynamique
+  const titleEl = document.getElementById('classif-main-title');
+  const iconEl = document.getElementById('classif-title-icon');
+  const textEl = document.getElementById('classif-title-text');
+  if (titleEl && iconEl && textEl && titles[selected]) {
+    const t = titles[selected];
+    iconEl.textContent = t.icon;
+    textEl.textContent = t.text;
+    titleEl.className = `classif-section-title ${t.cls}`;
+    titleEl.style.display = 'flex';
+    titleEl.style.alignItems = 'center';
+    titleEl.style.gap = '10px';
+    titleEl.style.flexWrap = 'wrap';
+  }
+  // Badge compteur dynamique
+  const badge = document.getElementById('classif-title-badge');
+  if (badge) {
+    const count = badge.getAttribute(`data-count-${selected}`) || '0';
+    badge.textContent = `${count} fournisseur(s)`;
+    badge.className = 'color-badge ' + (selected === 'horscible' ? 'rouge-badge-small' : 'vert-badge-small');
+  }
+}
+
+// ============ TRANSMIS TRACKING ============
+let TRANSMIS_SUPPLIERS = new Set();
+
+function onTransmisChange(cb) {
+  const supplier = cb.getAttribute("data-supplier");
+  if (!supplier) return;
+  if (cb.checked) {
+    TRANSMIS_SUPPLIERS.add(supplier);
+  } else {
+    TRANSMIS_SUPPLIERS.delete(supplier);
+  }
+  // Synchroniser toutes les checkboxes du même fournisseur (présent dans plusieurs vues)
+  document.querySelectorAll(`.transmis-cb[data-supplier="${CSS.escape(supplier)}"]`).forEach(el => {
+    if (el !== cb) el.checked = cb.checked;
+  });
+  updateTransmisCounter();
+}
+
+function updateTransmisCounter() {
+  const counterEl = document.getElementById("transmis-counter");
+  if (counterEl) {
+    counterEl.textContent = TRANSMIS_SUPPLIERS.size > 0 ? `${TRANSMIS_SUPPLIERS.size} fournisseur(s) transmis` : "";
+  }
+}
+
+function getTransmisList() {
+  return Array.from(TRANSMIS_SUPPLIERS);
+}
+
+function reinitialiser() {
+  ["energie","segment","note","volume","ddf","dff","etat_pdl","syndic","nb_compteurs","fournisseur_actuel","marge_globale"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.value = ""; el.disabled = false; el.style.color = ""; el.style.background = ""; el.style.cursor = ""; }
+  });
+  const commEl = document.getElementById("commission_estimee");
+  if (commEl) { commEl.value = ""; commEl.style.color = "var(--principal)"; commEl.style.background = "#F3F3F3"; }
   const profilEl = document.getElementById("profil");
   profilEl.innerHTML = '<option value="" disabled selected>— Sélectionner —</option>';
   profilEl.disabled = true; profilEl.style.color = "#bbb"; profilEl.style.background = "#f7f7f7"; profilEl.style.cursor = "not-allowed";
   const resultsDiv = document.getElementById("results");
   resultsDiv.style.display = "none"; resultsDiv.innerHTML = "";
+  TRANSMIS_SUPPLIERS = new Set();
   window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// ============ COMMISSION ESTIMÉE ============
+function updateCommission() {
+  const commEl = document.getElementById("commission_estimee");
+  if (!commEl) return;
+
+  const volume = parseFloat(document.getElementById("volume")?.value);
+  const marge = parseFloat(document.getElementById("marge_globale")?.value);
+  const ddfStr = document.getElementById("ddf")?.value;
+  const dffStr = document.getElementById("dff")?.value;
+
+  // Réinitialiser si données incomplètes
+  if (!volume || !marge || !ddfStr || !dffStr ||
+      !/^\d{2}\/\d{2}\/\d{4}$/.test(ddfStr) || !/^\d{2}\/\d{2}\/\d{4}$/.test(dffStr)) {
+    commEl.value = "";
+    return;
+  }
+
+  // Parser les dates JJ/MM/AAAA
+  const [dj, dm, dy] = ddfStr.split("/").map(Number);
+  const [fj, fm, fy] = dffStr.split("/").map(Number);
+  const ddfDate = new Date(dy, dm - 1, dj);
+  const dffDate = new Date(fy, fm - 1, fj);
+
+  if (dffDate <= ddfDate) { commEl.value = ""; return; }
+
+  // Différence en mois (DFF - DDF)
+  const nbMois = (fy - dy) * 12 + (fm - dm) + (fj - dj) / 30;
+
+  // Commission = Volume × (nbMois / 12) × (Marge / 2)
+  const commission = volume * (nbMois / 12) * (marge / 2);
+
+  // Formatage avec séparateur de milliers
+  commEl.value = commission.toLocaleString("fr-FR", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + " €";
 }
 
 // ============ SALESFORCE MAPPER ============
@@ -2657,10 +3118,67 @@ function escapeAttr(s) {
 }
 
 
+// ============ PANEL FOURNISSEURS ============
+let PANEL_DATA = [];
+
+async function loadPanelData() {
+  try {
+    const data = await apiFetch('/api/fournisseur-panel');
+    PANEL_DATA = (data && Array.isArray(data.suppliers)) ? data.suppliers : [];
+    if (document.getElementById('tab-panel')?.classList.contains('active')) {
+      buildPanelTable();
+    }
+  } catch (e) {
+    const banner = document.getElementById('panel-loading-banner');
+    if (banner) {
+      banner.style.display = 'block';
+      banner.textContent = '⚠️ Impossible de charger les données panel : ' + (e.message || 'Erreur réseau');
+    }
+    console.warn('Impossible de charger les données panel :', e.message || e);
+  }
+}
+
+function buildPanelTable() {
+  const tbody = document.getElementById('panel-tbody');
+  if (!tbody) return;
+
+  const search = (document.getElementById('search-panel')?.value || '').toLowerCase().trim();
+  const filtered = PANEL_DATA.filter(s =>
+    !search ||
+    (s.supplier || '').toLowerCase().includes(search) ||
+    (s.panel || '').toLowerCase().includes(search)
+  );
+
+  function getPanelBadgeClass(panel) {
+    const p = (panel || '').toLowerCase().trim();
+    if (p === 'gold premium') return 'gold-premium';
+    if (p === 'gold') return 'gold';
+    if (p === 'silver') return 'silver';
+    if (p === 'bronze') return 'bronze';
+    return 'empty';
+  }
+
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="2" style="text-align:center;color:#aaa;padding:24px;font-size:13px;">Aucun résultat.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(s => {
+    const badgeClass = getPanelBadgeClass(s.panel);
+    const badge = s.panel
+      ? `<span class="panel-badge ${badgeClass}">${escapeHtml(s.panel)}</span>`
+      : `<span style="color:#bbb;font-size:12px;">—</span>`;
+    return `<tr><td style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:13.5px;">${escapeHtml(s.supplier)}</td><td>${badge}</td></tr>`;
+  }).join('');
+}
+
+function filterPanelTable() { buildPanelTable(); }
+
 document.addEventListener("DOMContentLoaded", async () => {
   recomputeFournisseurLists();
   buildResumeTable();
   await loadFournisseurRules();
+  loadPanelData();
   await Promise.allSettled([loadNews(), loadChallenges()]);
 
   const noteInput = document.getElementById("note");

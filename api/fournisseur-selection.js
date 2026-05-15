@@ -127,10 +127,10 @@ function normalizeSupplierName(raw = "") {
     ["enovos luxembourg s a", "ENOVOS"],
     ["primeo", "PRIMEO"],
     ["primeo energie france", "PRIMEO"],
-    ["ohm", "OHM"],
-    ["ohm energie", "OHM"],
-    ["ohm gc", "OHM"],
-    ["ohm mid", "OHM"],
+    ["ohm", "OHM (mid)"],
+    ["ohm energie", "OHM (mid)"],
+    ["ohm gc", "OHM (GC)"],
+    ["ohm mid", "OHM (mid)"],
     ["dyneff", "DYNEFF"],
     ["dyneff s a s", "DYNEFF"],
     ["bcm energy", "BCM ENERGY"],
@@ -145,9 +145,9 @@ function normalizeSupplierName(raw = "") {
     ["gaz europeen", "GAZ Européen"],
     ["gaz de bordeaux", "GAZ DE BORDEAUX"],
     ["energie d ici", "ENERGIE D'ICI"],
-    ["vattenfall c5", "VATTENFALL"],
-    ["vattenfall gc", "VATTENFALL"],
-    ["vattenfall", "VATTENFALL"],
+    ["vattenfall c5", "VATTENFALL (C5)"],
+    ["vattenfall gc", "VATTENFALL (GC)"],
+    ["vattenfall", "VATTENFALL (C5)"],
     ["picoty", "PICOTY"],
     ["natgas", "NATGAS"],
     ["elmy", "ELMY"],
@@ -198,9 +198,17 @@ function evaluateSegmentRule(ruleValue) {
   return { eligible: true, status: "warn", reason: value };
 }
 
-function evaluateSyndicRule(ruleValue, syndic) {
+function evaluateSyndicRule(ruleValue, syndic, energie, supplierName) {
   const value = normalizeText(ruleValue);
   const upper = value.toUpperCase();
+
+  // GAZ Européen fait UNIQUEMENT du Syndic → vert si syndic = oui, ko si non
+  if (supplierName && slugify(supplierName).includes("gaz europeen")) {
+    if (syndic === "oui") {
+      return { eligible: true, status: "ok", reason: "Gaz Européen — spécialiste Syndic/SDC" };
+    }
+    // Le check "gaz europeen syndic obligatoire" est déjà géré séparément, ici on renvoie juste ok si pas demandé
+  }
 
   if (syndic !== "oui") {
     return { eligible: true, status: "ok", reason: "Critere syndic non demande" };
@@ -209,6 +217,32 @@ function evaluateSyndicRule(ruleValue, syndic) {
   if (!value) return { eligible: true, status: "warn", reason: "Regle syndic non renseignee" };
   if (upper === "NON") return { eligible: false, status: "ko", reason: "Syndic non accepte" };
   if (upper === "OUI") return { eligible: true, status: "ok", reason: "Syndic accepte" };
+
+  // Vérifier condition d'énergie : "OUI (élec uniquement)", "OUI (seulement gaz si SIRET)"
+  if (upper.startsWith("OUI") && energie) {
+    const parenthesisMatch = value.match(/\(([^)]+)\)/i);
+    if (parenthesisMatch) {
+      const condition = normalizeText(parenthesisMatch[1]).toUpperCase();
+      const isGazCondition = condition.includes("GAZ") || condition.includes("SEULEMENT GAZ");
+      const isElecCondition = condition.includes("ELEC") || condition.includes("ELECTRICITE");
+
+      if (isElecCondition && !isGazCondition) {
+        if (energie === "elec") {
+          return { eligible: true, status: "ok", reason: `${value} — énergie élec correspond` };
+        } else {
+          return { eligible: false, status: "ko", reason: `${value} — uniquement élec, énergie du dossier : gaz` };
+        }
+      }
+      if (isGazCondition && !isElecCondition) {
+        if (energie === "gaz") {
+          return { eligible: true, status: "ok", reason: `${value} — énergie gaz correspond` };
+        } else {
+          return { eligible: false, status: "ko", reason: `${value} — uniquement gaz, énergie du dossier : élec` };
+        }
+      }
+    }
+  }
+
   if (upper.includes("CAS PAR CAS") || upper.startsWith("OUI")) {
     return { eligible: true, status: "warn", reason: value };
   }
@@ -221,48 +255,367 @@ function evaluateScoringRule(ruleValue, note) {
     return { eligible: true, status: "neutral", reason: value || "Scoring non renseigne" };
   }
 
-  const match = value.match(/(\d+)\s*\/\s*10/);
+  // Nouveau format : juste un nombre (ex: "4", "5", "6") ou ancien format "X/10"
+  const match = value.match(/(\d+)(?:\s*\/\s*10)?/);
   if (!match) return { eligible: true, status: "neutral", reason: value };
 
   const minimum = Number(match[1]);
   if (!Number.isFinite(minimum)) return { eligible: true, status: "neutral", reason: value };
 
-  if (note < minimum) {
-    return { eligible: false, status: "ko", reason: `Note ${note}/10 < minimum ${minimum}/10` };
+  if (note >= minimum) {
+    return { eligible: true, status: "ok", reason: `Note ${note} ≥ minimum ${minimum}` };
   }
-  if (note === minimum) {
-    return { eligible: true, status: "warn", reason: `Note ${note}/10 au minimum requis` };
-  }
-  return { eligible: true, status: "ok", reason: `Note ${note}/10 ≥ minimum ${minimum}/10` };
+  // note < minimum → alerte orange mais pas rédhibitoire
+  return { eligible: true, status: "warn", reason: `Note ${note} < minimum ${minimum}` };
 }
 
 function evaluateVolumeRule(ruleValue, volume) {
+  const normalized = normalizeText(ruleValue);
+
+  // "Aucun" ou "aucun" → pas de volume minimal → vert ok
+  if (slugify(normalized) === "aucun") {
+    return { eligible: true, status: "ok", reason: "Aucun volume minimal requis" };
+  }
+
   const minVolume = extractMinVolume(ruleValue);
   if (minVolume === null || volume === null || volume === undefined) {
-    return { eligible: true, status: "neutral", reason: normalizeText(ruleValue) || "Pas de volume minimum exploitable" };
+    return { eligible: true, status: "neutral", reason: normalized || "Pas de volume minimum exploitable" };
   }
 
   if (volume < minVolume) {
-    return { eligible: false, status: "ko", reason: `Volume ${volume} MWh < minimum ${minVolume} MWh` };
+    return { eligible: true, status: "warn", reason: `Volume ${volume} MWh < minimum ${minVolume} MWh` };
   }
   return { eligible: true, status: "ok", reason: `Volume ${volume} MWh ≥ minimum ${minVolume} MWh` };
 }
 
-function evaluateUpfrontPaymentRule(ruleValue) {
+function evaluateUpfrontPaymentRule(ruleValue, commissionEstimee, ddfDate, supplierName, dffDate) {
   const value = normalizeText(ruleValue);
+  const upper = value.toUpperCase();
 
   if (!value) {
+    return { eligible: true, status: "neutral", reason: "Paiement UPFRONT non renseigné" };
+  }
+
+  if (upper === "NON") {
+    return { eligible: true, status: "warn", reason: "Paiement UPFRONT non proposé" };
+  }
+
+  // --- Vattenfall GC règle spéciale : "OUI sur 2025/2026" → vérifier DFF ≤ N+1 ---
+  if (supplierName && slugify(supplierName).includes("vattenfall") && slugify(supplierName).includes("gc")) {
+    if (upper.includes("2025/2026") || upper.startsWith("OUI")) {
+      const currentYear = new Date().getFullYear();
+      const maxYear = currentYear + 1; // N+1
+      if (dffDate) {
+        const dffYear = dffDate.getFullYear();
+        if (dffYear <= maxYear) {
+          return { eligible: true, status: "ok", reason: `${value} — DFF ${dffYear} ≤ N+1 (${maxYear}), UPFRONT validé` };
+        } else {
+          return { eligible: true, status: "warn", reason: `${value} — DFF ${dffYear} > N+1 (${maxYear}), UPFRONT incertain` };
+        }
+      }
+      return { eligible: true, status: "warn", reason: `${value} — DFF non renseignée, impossible de vérifier` };
+    }
+  }
+
+  if (upper.startsWith("OUI")) {
+    // --- Vérification seuil commission ---
+    // Supporte les formats : "< 50K", "< 50k", "< 10 000 €", "< 10000€", "< 2,5 GWh"
+    let threshold = null;
+
+    // Format "< XK" ou "< X k"
+    const kMatches = [...upper.matchAll(/[<≤]\s*(\d+(?:[.,]\d+)?)\s*K/gi)];
+    if (kMatches.length > 0) {
+      const lastK = kMatches[kMatches.length - 1];
+      threshold = parseFloat(lastK[1].replace(",", ".")) * 1000;
+    }
+
+    // Format "< X XXX €" ou "< XXXXX €" (nombre avec espaces + symbole €)
+    if (threshold === null) {
+      const euroMatches = [...normalizeText(ruleValue).toUpperCase().matchAll(/[<≤]\s*([\d\s]+(?:[.,]\d+)?)\s*€/gi)];
+      if (euroMatches.length > 0) {
+        const lastEuro = euroMatches[euroMatches.length - 1];
+        const cleaned = lastEuro[1].replace(/\s/g, "").replace(",", ".");
+        const val = parseFloat(cleaned);
+        if (Number.isFinite(val)) threshold = val;
+      }
+    }
+
+    let commOk = true;
+    let commReason = "";
+    if (threshold !== null) {
+      if (commissionEstimee === null || commissionEstimee === undefined) {
+        commOk = false;
+        commReason = `commission estimée non renseignée (seuil ${threshold.toLocaleString("fr-FR")} €)`;
+      } else if (commissionEstimee <= threshold) {
+        commReason = `commission ${commissionEstimee.toLocaleString("fr-FR")} € ≤ seuil ${threshold.toLocaleString("fr-FR")} €`;
+      } else {
+        commOk = false;
+        commReason = `commission ${commissionEstimee.toLocaleString("fr-FR")} € > seuil ${threshold.toLocaleString("fr-FR")} €`;
+      }
+    }
+
+    // --- Vérification DDF M+X ou N+X dans la règle upfront ---
+    const moisMatch = upper.match(/DDF\s*[<≤]\s*M\s*\+\s*(\d+)/i);
+    const anneesMatch = upper.match(/DDF\s*[<≤]\s*N\s*\+\s*(\d+)/i);
+    let ddfOk = true;
+    let ddfReason = "";
+
+    if (moisMatch || anneesMatch) {
+      if (!ddfDate) {
+        ddfOk = false;
+        ddfReason = "DDF non renseignée";
+      } else {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const dateMax = new Date(today);
+        if (moisMatch) {
+          dateMax.setMonth(dateMax.getMonth() + parseInt(moisMatch[1], 10));
+        } else {
+          dateMax.setFullYear(dateMax.getFullYear() + parseInt(anneesMatch[1], 10));
+        }
+        const label = dateMax.toLocaleDateString("fr-FR");
+        if (dateMax >= ddfDate) {
+          ddfReason = `DDF compatible (limite ${label})`;
+        } else {
+          ddfOk = false;
+          ddfReason = `DDF ${ddfDate.toLocaleDateString("fr-FR")} > limite ${label}`;
+        }
+      }
+    }
+
+    // --- Résultat combiné ---
+    const hasDdfCondition = !!(moisMatch || anneesMatch);
+    const hasCommCondition = threshold !== null;
+
+    if (!hasCommCondition && !hasDdfCondition) {
+      return { eligible: true, status: "ok", reason: value };
+    }
+
+    const parts = [commReason, ddfReason].filter(Boolean);
+    const allOk = commOk && ddfOk;
     return {
       eligible: true,
-      status: "neutral",
-      reason: "Paiement UPFRONT non renseigne"
+      status: allOk ? "ok" : "warn",
+      reason: `${value} — ${parts.join(" | ")}`
+    };
+  }
+
+  return { eligible: true, status: "warn", reason: value };
+}
+
+function evaluateRegularisationCommissionsRule(ruleValue) {
+  const value = normalizeText(ruleValue);
+  const upper = value.toUpperCase();
+
+  if (!value) return { eligible: true, status: "neutral", reason: "Régularisation commissions non renseignée" };
+  if (upper === "OUI") return { eligible: true, status: "warn", reason: "Oui" };
+  if (upper === "NON") return { eligible: true, status: "ok", reason: "Non" };
+  return { eligible: true, status: "warn", reason: value };
+}
+
+function evaluateMesRule(ruleValue, mesType, energie) {
+  // mesType = "premiere" | "remise" | null
+  // Si non pertinent (En service, Fermé, non renseigné) → neutral sans impact
+  if (!mesType) {
+    return null; // null = ne pas afficher la règle
+  }
+
+  const value = normalizeText(ruleValue);
+  const upper = value.toUpperCase();
+
+  if (!value) {
+    return { eligible: true, status: "neutral", reason: "Règle MES non renseignée" };
+  }
+
+  // "NON" → exclusion rouge
+  if (upper === "NON") {
+    return { eligible: false, status: "ko", reason: `Non accepté` };
+  }
+
+  // "OUI" strict → vert
+  if (upper === "OUI") {
+    return { eligible: true, status: "ok", reason: "Accepté" };
+  }
+
+  // "OUI (...)" → vérifier si la condition porte sur l'énergie ou le segment
+  if (upper.startsWith("OUI")) {
+    // Détecter condition d'énergie : "OUI (gaz)", "OUI (élec)", "OUI (elec)", "OUI (gaz et C5)"
+    const parenthesisMatch = value.match(/\(([^)]+)\)/i);
+    if (parenthesisMatch && energie) {
+      const condition = normalizeText(parenthesisMatch[1]).toUpperCase();
+      const isGazCondition = condition.includes("GAZ");
+      const isElecCondition = condition.includes("ELEC") || condition.includes("ELECTRICITE");
+      const isC5Condition = condition.includes("C5");
+
+      // Si la condition mentionne une énergie spécifique
+      if (isGazCondition && !isElecCondition) {
+        // Condition "gaz" uniquement
+        if (energie === "gaz") {
+          return { eligible: true, status: "ok", reason: `${value} — énergie gaz correspond` };
+        } else {
+          return { eligible: false, status: "ko", reason: `${value} — uniquement gaz, énergie du dossier : élec` };
+        }
+      }
+      if (isElecCondition && !isGazCondition) {
+        // Condition "élec" uniquement
+        if (energie === "elec") {
+          return { eligible: true, status: "ok", reason: `${value} — énergie élec correspond` };
+        } else {
+          return { eligible: false, status: "ko", reason: `${value} — uniquement élec, énergie du dossier : gaz` };
+        }
+      }
+      // Condition segment uniquement ex: "OUI (C5 uniquement)"
+      if (isC5Condition && !isGazCondition && !isElecCondition) {
+        return { eligible: true, status: "warn", reason: value };
+      }
+    }
+
+    return { eligible: true, status: "warn", reason: value };
+  }
+
+  return { eligible: true, status: "warn", reason: value };
+}
+
+function evaluateMargeRule(ruleValue, energie, segment, volume, margeGlobale) {
+  const raw = normalizeText(ruleValue);
+  if (!raw) return { eligible: true, status: "neutral", reason: "Marge non renseignée", margeImpact: 0 };
+
+  // Cas neutres immédiats
+  const neutralKeywords = ["grille", "pas de limite", "pas de marge maximum", "cas par cas", "prm", "marge integree", "marge dans l abonnement"];
+  const rawSlug = slugify(raw);
+  if (neutralKeywords.some(k => rawSlug.includes(slugify(k)))) {
+    return { eligible: true, status: "ok", reason: raw, margeImpact: 0 };
+  }
+
+  // Découper le texte en blocs par énergie
+  // On cherche le bloc correspondant à l'énergie saisie
+  function extractEnergyBlock(text, eng) {
+    const norm = normalizeText(text);
+    // Identifier les blocs "Electricite= ..." et "Gaz= ..."
+    const elecPattern = /Electricite\s*(?:et\s*Gaz\s*)?=\s*/i;
+    const gazPattern = /Gaz\s*(?:et\s*Electricite\s*)?=\s*/i;
+    const bothPattern = /Electricite\s*et\s*Gaz\s*=\s*/i;
+
+    // Tester "Electricité et Gaz" d'abord (s'applique aux deux)
+    if (/electricite\s*(?:ou\s*)?(?:et\s*)?gaz\s*=/i.test(norm)) {
+      return norm.replace(/electricite\s*(?:ou\s*)?(?:et\s*)?gaz\s*=\s*/i, "").trim();
+    }
+
+    const elecIdx = norm.search(/electricite\s*=/i);
+    const gazIdx = norm.search(/gaz\s*=/i);
+
+    if (eng === "elec") {
+      if (elecIdx >= 0) {
+        const end = gazIdx > elecIdx ? gazIdx : norm.length;
+        return norm.slice(elecIdx).replace(/electricite\s*=\s*/i, "").slice(0, end - elecIdx).trim();
+      }
+      return null;
+    }
+
+    if (eng === "gaz") {
+      if (gazIdx >= 0) {
+        const end = elecIdx > gazIdx ? elecIdx : norm.length;
+        return norm.slice(gazIdx).replace(/gaz\s*=\s*/i, "").slice(0, end - gazIdx).trim();
+      }
+      return null;
+    }
+
+    return norm;
+  }
+
+  const block = extractEnergyBlock(raw, energie) || raw;
+
+  // Cas neutre dans le bloc extrait
+  const blockSlug = slugify(block);
+  if (neutralKeywords.some(k => blockSlug.includes(slugify(k)))) {
+    return { eligible: true, status: "ok", reason: block, margeImpact: 0 };
+  }
+
+  // Si marge non saisie → informatif
+  if (margeGlobale === null || margeGlobale === undefined) {
+    return { eligible: true, status: "neutral", reason: `Marge non saisie — règle : ${block}`, margeImpact: 0 };
+  }
+
+  // Chercher la ligne du segment dans le bloc
+  function findSegmentLine(text, seg) {
+    const lines = text.split(/\n/);
+    for (const line of lines) {
+      if (line.toUpperCase().includes(seg)) return line.trim();
+    }
+    return null;
+  }
+
+  // Chercher la ligne selon le volume (CAR)
+  function findVolumeLine(text, vol) {
+    if (vol === null || vol === undefined) return null;
+    const lines = text.split(/\n/);
+    const volMwh = vol;
+
+    for (const line of lines) {
+      const normLine = normalizeText(line);
+      const rangeMatch = normLine.match(/(\d+(?:[.,]\d+)?)\s*(MWh|GWh)\s*<\s*(?:CAR)?\s*<\s*(\d+(?:[.,]\d+)?)\s*(MWh|GWh)/i);
+      if (rangeMatch) {
+        const lo = safeNumber(rangeMatch[1]) * (rangeMatch[2].toLowerCase() === "gwh" ? 1000 : 1);
+        const hi = safeNumber(rangeMatch[3]) * (rangeMatch[4].toLowerCase() === "gwh" ? 1000 : 1);
+        if (lo !== null && hi !== null && volMwh > lo && volMwh <= hi) return line.trim();
+        continue;
+      }
+      const ltMatch = normLine.match(/[<≤]\s*(\d+(?:[.,]\d+)?)\s*(MWh|GWh)/i);
+      if (ltMatch) {
+        const limit = safeNumber(ltMatch[1]) * (ltMatch[2].toLowerCase() === "gwh" ? 1000 : 1);
+        if (limit !== null && volMwh <= limit) return line.trim();
+        continue;
+      }
+      const gtMatch = normLine.match(/[>≥]\s*(\d+(?:[.,]\d+)?)\s*(MWh|GWh)/i);
+      if (gtMatch) {
+        const limit = safeNumber(gtMatch[1]) * (gtMatch[2].toLowerCase() === "gwh" ? 1000 : 1);
+        if (limit !== null && volMwh > limit) return line.trim();
+        continue;
+      }
+    }
+    return null;
+  }
+
+  // Trouver la ligne pertinente
+  let targetLine = null;
+
+  // 1. Chercher segment d'abord
+  if (segment) targetLine = findSegmentLine(block, segment);
+
+  // 2. Si pas trouvé et bloc contient CAR ou seuils de volume → chercher par volume
+  if (!targetLine && /CAR|MWh|GWh/i.test(block) && volume !== null) {
+    targetLine = findVolumeLine(block, volume);
+  }
+
+  // 3. Fallback : prendre le bloc entier
+  if (!targetLine) targetLine = block;
+
+  // Extraire le seuil €/MWh de la ligne cible
+  const seuilMatch = normalizeText(targetLine).match(/(\d+(?:[.,]\d+)?)\s*€\s*\/\s*MWh/i);
+  if (!seuilMatch) {
+    // Pas de seuil extractible → neutre
+    return { eligible: true, status: "ok", reason: targetLine, margeImpact: 0 };
+  }
+
+  const seuil = safeNumber(seuilMatch[1]);
+  if (seuil === null) {
+    return { eligible: true, status: "neutral", reason: targetLine, margeImpact: 0 };
+  }
+
+  if (margeGlobale <= seuil) {
+    return {
+      eligible: true,
+      status: "ok",
+      reason: `Marge ${margeGlobale} €/MWh ≤ seuil ${seuil} €/MWh`,
+      margeImpact: 5
     };
   }
 
   return {
     eligible: true,
-    status: "neutral",
-    reason: value
+    status: "warn",
+    reason: `Marge ${margeGlobale} €/MWh > seuil ${seuil} €/MWh`,
+    margeImpact: -5
   };
 }
 
@@ -278,8 +631,36 @@ function evaluateDdfRule(ruleValue, ddfDate) {
     return { eligible: true, status: "neutral", reason: value };
   }
 
-  if (/\bM\s*\+\s*\d+\b/i.test(upper) || /\bN\s*\+\s*\d+\b/i.test(upper)) {
-    return { eligible: true, status: "warn", reason: value };
+  // M+X (mois) ou N+X (années) → calculer la date limite depuis aujourd'hui
+  const moisMatch = upper.match(/\bM\s*\+\s*(\d+)\b/i);
+  const anneesMatch = upper.match(/\bN\s*\+\s*(\d+)\b/i);
+
+  if (moisMatch || anneesMatch) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dateMax = new Date(today);
+
+    if (moisMatch) {
+      dateMax.setMonth(dateMax.getMonth() + parseInt(moisMatch[1], 10));
+    } else {
+      dateMax.setFullYear(dateMax.getFullYear() + parseInt(anneesMatch[1], 10));
+    }
+
+    const label = dateMax.toLocaleDateString("fr-FR");
+
+    if (dateMax >= ddfDate) {
+      return {
+        eligible: true,
+        status: "ok",
+        reason: `${value} — limite le ${label}, compatible avec la DDF`
+      };
+    }
+
+    return {
+      eligible: true,
+      status: "warn",
+      reason: `${value} — limite le ${label}, DDF ${ddfDate.toLocaleDateString("fr-FR")} trop lointaine`
+    };
   }
 
   if (slugify(value) === "pas de limite") {
@@ -293,8 +674,8 @@ function evaluateDdfRule(ruleValue, ddfDate) {
 
   if (ddfDate > maxDate) {
     return {
-      eligible: false,
-      status: "ko",
+      eligible: true,
+      status: "warn",
       reason: `DDF ${ddfDate.toLocaleDateString("fr-FR")} > DDF max ${maxDate.toLocaleDateString("fr-FR")}`
     };
   }
@@ -314,10 +695,10 @@ function evaluateHorizonRule(ruleValue, dffDate) {
 
   const dffYear = dffDate.getFullYear();
   if (year < dffYear) {
-    return { eligible: false, status: "ko", reason: `Horizon ${year} < fin fourniture ${dffYear}` };
+    return { eligible: true, status: "warn", reason: `Horizon ${year} < fin fourniture ${dffYear}` };
   }
   if (year === dffYear) {
-    return { eligible: true, status: "warn", reason: `Horizon ${year} = fin fourniture` };
+    return { eligible: true, status: "ok", reason: `Horizon ${year} couvre la fin de fourniture ${dffYear}` };
   }
   return { eligible: true, status: "ok", reason: `Horizon ${year} couvre la periode` };
 }
@@ -465,8 +846,18 @@ function evaluateSupplier(input) {
   const segmentEval = evaluateSegmentRule(rules[getSegmentRuleKey(params.segment)]);
   evaluations.push({ criterion: `Segment ${params.segment}`, ...segmentEval });
 
-  const syndicEval = evaluateSyndicRule(rules["SYNDIC ?"], params.syndic);
+  const syndicEval = evaluateSyndicRule(rules["SYNDIC ?"], params.syndic, params.energie, supplier);
   evaluations.push({ criterion: "Syndic", ...syndicEval });
+
+  // Gaz Européen fait UNIQUEMENT du Syndic → hors cible si syndic ≠ oui
+  if (slugify(supplier).includes("gaz europeen") && params.syndic !== "oui") {
+    evaluations.push({
+      criterion: "Syndic obligatoire (Gaz Européen)",
+      eligible: false,
+      status: "ko",
+      reason: "Gaz Européen fait uniquement du Syndic — hors cible"
+    });
+  }
 
   const horizonEval = evaluateHorizonRule(rules[getHorizonRuleKey(params.energie)], params.dffDate);
   evaluations.push({ criterion: "Horizon", ...horizonEval });
@@ -481,13 +872,167 @@ function evaluateSupplier(input) {
   const volumeEval = evaluateVolumeRule(rules["VOLUME MINIMAL (CAR en MWh)"], params.volume);
   evaluations.push({ criterion: "Volume minimal", ...volumeEval });
 
-  const upfrontPaymentEval = evaluateUpfrontPaymentRule(rules["Paiement UPFRONT"]);
+  const upfrontPaymentEval = evaluateUpfrontPaymentRule(rules["Paiement UPFRONT"], params.commissionEstimee, params.ddfDate, supplier, params.dffDate);
   evaluations.push({ criterion: "Paiement UPFRONT", ...upfrontPaymentEval });
+
+  const regCommValue = getRuleValue(rules, [
+  "Régularisation sur consommation",
+  "Regularisation sur consommation",
+  "Régularisation des commissions",
+  "Regularisation des commissions"
+  ]);
+  const regCommEval = evaluateRegularisationCommissionsRule(regCommValue);
+  evaluations.push({ criterion: "Régularisation commissions", ...regCommEval });
+
+  // MES : uniquement si Première mise en service ou Mise en service
+  if (params.mesType) {
+    const mesRuleKey = params.mesType === "premiere" ? "1ère MES" : "re-MES";
+    const mesLabel = params.mesType === "premiere" ? "1ère mise en service" : "Remise en service";
+    const mesRuleValue = getRuleValue(rules, [mesRuleKey, mesRuleKey.replace("è", "e")]);
+    const mesEval = evaluateMesRule(mesRuleValue, params.mesType, params.energie);
+    if (mesEval !== null) {
+      evaluations.push({ criterion: mesLabel, ...mesEval });
+    }
+  }
+
+  // Marge
+  const margeRuleValue = getRuleValue(rules, ["Marge", "MARGE"]);
+  const margeEval = evaluateMargeRule(margeRuleValue, params.energie, params.segment, params.volume, params.margeGlobale);
+  evaluations.push({ criterion: "Marge", ...margeEval });
 
   const eligible = evaluations.every((e) => e.eligible !== false);
   const warnings = evaluations.filter((e) => e.status === "warn").length;
 
-  const score = (eligible ? 100 : 0) - warnings * 5 - ((panelInfo?.panelPriority ?? 99) * 2);
+  // ── SCORING MÉTIER (contextuel au dossier) ─────────────────────
+  // Chaque composante évalue si le fournisseur CONVIENT à CE dossier précis.
+
+  // 1. PAIEMENT UPFRONT (max 3 pts)
+  //    OUI sans condition → 3 pts
+  //    OUI avec conditions → on évalue vs le dossier :
+  //      toutes respectées → 3 pts | 1 sur 2 → 2 pts | aucune → 0 pts
+  //    NON → 0 pts
+  let scoreUpfront = 0;
+  const upfrontRaw = normalizeText(rules["Paiement UPFRONT"] || "").toUpperCase();
+  if (upfrontRaw.startsWith("OUI")) {
+    // Détecter les conditions — mêmes formats que evaluateUpfrontPaymentRule
+    let thresholdScore = null;
+
+    const kMatchesScore = [...upfrontRaw.matchAll(/[<≤]\s*(\d+(?:[.,]\d+)?)\s*K/gi)];
+    if (kMatchesScore.length > 0) {
+      const lastK = kMatchesScore[kMatchesScore.length - 1];
+      thresholdScore = parseFloat(lastK[1].replace(",", ".")) * 1000;
+    }
+    if (thresholdScore === null) {
+      const euroMatchesScore = [...normalizeText(rules["Paiement UPFRONT"] || "").toUpperCase().matchAll(/[<≤]\s*([\d\s]+(?:[.,]\d+)?)\s*€/gi)];
+      if (euroMatchesScore.length > 0) {
+        const lastEuro = euroMatchesScore[euroMatchesScore.length - 1];
+        const cleaned = lastEuro[1].replace(/\s/g, "").replace(",", ".");
+        const val = parseFloat(cleaned);
+        if (Number.isFinite(val)) thresholdScore = val;
+      }
+    }
+
+    const moisMatchUp = upfrontRaw.match(/DDF\s*[<≤]\s*M\s*\+\s*(\d+)/i);
+    const anneesMatchUp = upfrontRaw.match(/DDF\s*[<≤]\s*N\s*\+\s*(\d+)/i);
+
+    const hasCommCondition = thresholdScore !== null;
+    const hasDdfCondition = !!(moisMatchUp || anneesMatchUp);
+
+    if (!hasCommCondition && !hasDdfCondition) {
+      // OUI sans condition → 3 pts
+      scoreUpfront = 3;
+    } else {
+      // Évaluer chaque condition vs le dossier
+      let conditionsTotal = 0;
+      let conditionsOk = 0;
+
+      if (hasCommCondition) {
+        conditionsTotal++;
+        if (params.commissionEstimee !== null && params.commissionEstimee !== undefined && params.commissionEstimee <= thresholdScore) {
+          conditionsOk++;
+        }
+      }
+
+      if (hasDdfCondition && params.ddfDate) {
+        conditionsTotal++;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const dateMax = new Date(today);
+        if (moisMatchUp) {
+          dateMax.setMonth(dateMax.getMonth() + parseInt(moisMatchUp[1], 10));
+        } else {
+          dateMax.setFullYear(dateMax.getFullYear() + parseInt(anneesMatchUp[1], 10));
+        }
+        if (dateMax >= params.ddfDate) {
+          conditionsOk++;
+        }
+      }
+
+      if (conditionsTotal > 0 && conditionsOk === conditionsTotal) {
+        scoreUpfront = 3; // toutes les conditions respectées
+      } else if (conditionsTotal > 1 && conditionsOk >= 1) {
+        scoreUpfront = 2; // une condition sur deux respectée
+      } else {
+        scoreUpfront = 0; // aucune condition respectée
+      }
+    }
+  }
+
+  // 2. MARGE (max 2 pts) — contextuelle au dossier
+  //    Marge saisie ≤ seuil → 2 pts | Marge > seuil → 0 pts
+  //    Pas de seuil / grille / pas de limite → 2 pts (pas de contrainte = favorable)
+  //    Marge non saisie → 2 pts (pas d'info pour pénaliser)
+  let scoreMarge = 0;
+  if (margeEval.status === "ok") {
+    scoreMarge = 2;
+  } else if (margeEval.status === "warn") {
+    scoreMarge = 0;
+  } else {
+    // neutral = pas de contrainte ou non renseigné → favorable
+    scoreMarge = 2;
+  }
+
+  // 3. HORIZON (max 2 pts) — vs la DFF du dossier
+  //    Horizon ≥ année DFF → 2 pts | Horizon < DFF → 0 pts
+  let scoreHorizon = 0;
+  const horizonYear = getYearFromHorizon(rules[getHorizonRuleKey(params.energie)] || "");
+  if (horizonYear !== null && params.dffDate) {
+    const dffYear = params.dffDate.getFullYear();
+    if (horizonYear >= dffYear) {
+      scoreHorizon = 2;
+    } else {
+      scoreHorizon = 0;
+    }
+  } else if (horizonYear !== null) {
+    // Pas de DFF saisie → on ne peut pas comparer, on reste neutre favorable
+    scoreHorizon = 2;
+  }
+
+  // 4. SCORING MINIMUM (max 2 pts) — vs la note du dossier
+  //    Note dossier ≥ minimum fournisseur → 2 pts | Note < minimum → 0 pts
+  //    Pas de scoring renseigné → 2 pts (pas de contrainte)
+  let scoringMin = 0;
+  const scoringRawValue = normalizeText(rules["SCORING MINIMUM"] || "");
+  const scoringMinMatch = scoringRawValue.match(/(\d+)/);
+  const scoringMinVal = scoringMinMatch ? safeNumber(scoringMinMatch[1]) : null;
+  if (scoringMinVal !== null && params.note !== null && params.note !== undefined) {
+    scoringMin = params.note >= scoringMinVal ? 2 : 0;
+  } else {
+    scoringMin = 2; // pas de contrainte ou note non saisie → favorable
+  }
+
+  // 5. RÉGULARISATION (max 1 pt) : Non = 1 / Oui = 0
+  let scoreRegul = 0;
+  const regulRaw = normalizeText(regCommValue || "").toUpperCase();
+  if (regulRaw === "NON" || regulRaw.startsWith("NON")) scoreRegul = 1;
+
+  // Score métier total (max 10, min 0)
+  // Si non éligible (au moins 1 critère KO) → forcer à 0/10
+  const scoreMetier = eligible ? Math.min(Math.max(scoreUpfront + scoreMarge + scoreHorizon + scoringMin + scoreRegul, 0), 10) : 0;
+
+  // Score de tri : scoreMetier prioritaire, warnings comme départage (moins = mieux)
+  // Jamais négatif : non éligible = 0
+  const score = eligible ? Math.max(scoreMetier * 1000 - warnings, 0) : 0;
 
   return {
     supplier,
@@ -495,6 +1040,8 @@ function evaluateSupplier(input) {
     panel: panelInfo?.panel || "",
     panelPriority: panelInfo?.panelPriority ?? 99,
     score,
+    scoreMetier,
+    scoreDetail: { scoreUpfront, scoreMarge, scoreHorizon, scoringMin, scoreRegul },
     evaluations,
     rulesUsed: {
       segment: rules[getSegmentRuleKey(params.segment)] || "",
@@ -545,14 +1092,22 @@ module.exports = function handler(req, res) {
 
     const engine = loadSelectionEngine();
 
+    const etatPdl = normalizeText(query.etat_pdl || "").toLowerCase().replace(/\s+/g, "_");
+    const mesType = etatPdl === "premiere_mes" ? "premiere"
+      : etatPdl === "mes" ? "remise"
+      : null;
+
     const params = {
       energie: normalizedEnergy,
       segment: normalizedSegment,
       syndic: normalizedSyndic,
       note: safeNumber(query.note),
       volume: safeNumber(query.volume),
+      commissionEstimee: safeNumber(query.commission_estimee),
+      margeGlobale: safeNumber(query.marge_globale),
       ddfDate: parseFrenchDate(query.ddf),
-      dffDate: parseFrenchDate(query.dff)
+      dffDate: parseFrenchDate(query.dff),
+      mesType
     };
 
     const results = engine.fournisseurs.map((supplier) =>
@@ -566,12 +1121,7 @@ module.exports = function handler(req, res) {
 
     const eligibleResults = results
       .filter((r) => r.eligible)
-      .sort((a, b) => {
-        if (a.panelPriority !== b.panelPriority) {
-          return a.panelPriority - b.panelPriority;
-        }
-        return b.score - a.score;
-      });
+      .sort((a, b) => b.score - a.score);
 
     const topSuppliers = eligibleResults.slice(0, 5);
 
@@ -598,6 +1148,7 @@ module.exports = function handler(req, res) {
         syndic: normalizedSyndic,
         note: params.note,
         volume: params.volume,
+        commissionEstimee: params.commissionEstimee,
         ddf: query.ddf || "",
         dff: query.dff || "",
         fournisseur_actuel: currentSupplier || ""
@@ -607,12 +1158,14 @@ module.exports = function handler(req, res) {
       eligibleCount: eligibleResults.length,
       partnerSupplier: partnerSupplier
         ? {
-            label: "FOURNISSEUR PARTENAIRE",
+            label: "FOURNISSEUR ACTUEL",
             supplier: partnerSupplier.supplier,
             eligible: partnerSupplier.eligible,
             panel: partnerSupplier.panel || "",
             evaluations: partnerSupplier.evaluations,
-            score: partnerSupplier.score
+            score: partnerSupplier.score,
+            scoreMetier: partnerSupplier.scoreMetier,
+            scoreDetail: partnerSupplier.scoreDetail
           }
         : null
     });
