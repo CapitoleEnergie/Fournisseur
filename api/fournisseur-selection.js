@@ -198,9 +198,17 @@ function evaluateSegmentRule(ruleValue) {
   return { eligible: true, status: "warn", reason: value };
 }
 
-function evaluateSyndicRule(ruleValue, syndic) {
+function evaluateSyndicRule(ruleValue, syndic, energie, supplierName) {
   const value = normalizeText(ruleValue);
   const upper = value.toUpperCase();
+
+  // GAZ Européen fait UNIQUEMENT du Syndic → vert si syndic = oui, ko si non
+  if (supplierName && slugify(supplierName).includes("gaz europeen")) {
+    if (syndic === "oui") {
+      return { eligible: true, status: "ok", reason: "Gaz Européen — spécialiste Syndic/SDC" };
+    }
+    // Le check "gaz europeen syndic obligatoire" est déjà géré séparément, ici on renvoie juste ok si pas demandé
+  }
 
   if (syndic !== "oui") {
     return { eligible: true, status: "ok", reason: "Critere syndic non demande" };
@@ -209,6 +217,32 @@ function evaluateSyndicRule(ruleValue, syndic) {
   if (!value) return { eligible: true, status: "warn", reason: "Regle syndic non renseignee" };
   if (upper === "NON") return { eligible: false, status: "ko", reason: "Syndic non accepte" };
   if (upper === "OUI") return { eligible: true, status: "ok", reason: "Syndic accepte" };
+
+  // Vérifier condition d'énergie : "OUI (élec uniquement)", "OUI (seulement gaz si SIRET)"
+  if (upper.startsWith("OUI") && energie) {
+    const parenthesisMatch = value.match(/\(([^)]+)\)/i);
+    if (parenthesisMatch) {
+      const condition = normalizeText(parenthesisMatch[1]).toUpperCase();
+      const isGazCondition = condition.includes("GAZ") || condition.includes("SEULEMENT GAZ");
+      const isElecCondition = condition.includes("ELEC") || condition.includes("ELECTRICITE");
+
+      if (isElecCondition && !isGazCondition) {
+        if (energie === "elec") {
+          return { eligible: true, status: "ok", reason: `${value} — énergie élec correspond` };
+        } else {
+          return { eligible: false, status: "ko", reason: `${value} — uniquement élec, énergie du dossier : gaz` };
+        }
+      }
+      if (isGazCondition && !isElecCondition) {
+        if (energie === "gaz") {
+          return { eligible: true, status: "ok", reason: `${value} — énergie gaz correspond` };
+        } else {
+          return { eligible: false, status: "ko", reason: `${value} — uniquement gaz, énergie du dossier : élec` };
+        }
+      }
+    }
+  }
+
   if (upper.includes("CAS PAR CAS") || upper.startsWith("OUI")) {
     return { eligible: true, status: "warn", reason: value };
   }
@@ -254,7 +288,7 @@ function evaluateVolumeRule(ruleValue, volume) {
   return { eligible: true, status: "ok", reason: `Volume ${volume} MWh ≥ minimum ${minVolume} MWh` };
 }
 
-function evaluateUpfrontPaymentRule(ruleValue, commissionEstimee, ddfDate) {
+function evaluateUpfrontPaymentRule(ruleValue, commissionEstimee, ddfDate, supplierName, dffDate) {
   const value = normalizeText(ruleValue);
   const upper = value.toUpperCase();
 
@@ -264,6 +298,23 @@ function evaluateUpfrontPaymentRule(ruleValue, commissionEstimee, ddfDate) {
 
   if (upper === "NON") {
     return { eligible: true, status: "warn", reason: "Paiement UPFRONT non proposé" };
+  }
+
+  // --- Vattenfall GC règle spéciale : "OUI sur 2025/2026" → vérifier DFF ≤ N+1 ---
+  if (supplierName && slugify(supplierName).includes("vattenfall") && slugify(supplierName).includes("gc")) {
+    if (upper.includes("2025/2026") || upper.startsWith("OUI")) {
+      const currentYear = new Date().getFullYear();
+      const maxYear = currentYear + 1; // N+1
+      if (dffDate) {
+        const dffYear = dffDate.getFullYear();
+        if (dffYear <= maxYear) {
+          return { eligible: true, status: "ok", reason: `${value} — DFF ${dffYear} ≤ N+1 (${maxYear}), UPFRONT validé` };
+        } else {
+          return { eligible: true, status: "warn", reason: `${value} — DFF ${dffYear} > N+1 (${maxYear}), UPFRONT incertain` };
+        }
+      }
+      return { eligible: true, status: "warn", reason: `${value} — DFF non renseignée, impossible de vérifier` };
+    }
   }
 
   if (upper.startsWith("OUI")) {
@@ -362,7 +413,7 @@ function evaluateRegularisationCommissionsRule(ruleValue) {
   return { eligible: true, status: "warn", reason: value };
 }
 
-function evaluateMesRule(ruleValue, mesType) {
+function evaluateMesRule(ruleValue, mesType, energie) {
   // mesType = "premiere" | "remise" | null
   // Si non pertinent (En service, Fermé, non renseigné) → neutral sans impact
   if (!mesType) {
@@ -386,8 +437,39 @@ function evaluateMesRule(ruleValue, mesType) {
     return { eligible: true, status: "ok", reason: "Accepté" };
   }
 
-  // "OUI (...)" ou "OUI avec conditions" ou toute variante → jaune warn
+  // "OUI (...)" → vérifier si la condition porte sur l'énergie ou le segment
   if (upper.startsWith("OUI")) {
+    // Détecter condition d'énergie : "OUI (gaz)", "OUI (élec)", "OUI (elec)", "OUI (gaz et C5)"
+    const parenthesisMatch = value.match(/\(([^)]+)\)/i);
+    if (parenthesisMatch && energie) {
+      const condition = normalizeText(parenthesisMatch[1]).toUpperCase();
+      const isGazCondition = condition.includes("GAZ");
+      const isElecCondition = condition.includes("ELEC") || condition.includes("ELECTRICITE");
+      const isC5Condition = condition.includes("C5");
+
+      // Si la condition mentionne une énergie spécifique
+      if (isGazCondition && !isElecCondition) {
+        // Condition "gaz" uniquement
+        if (energie === "gaz") {
+          return { eligible: true, status: "ok", reason: `${value} — énergie gaz correspond` };
+        } else {
+          return { eligible: false, status: "ko", reason: `${value} — uniquement gaz, énergie du dossier : élec` };
+        }
+      }
+      if (isElecCondition && !isGazCondition) {
+        // Condition "élec" uniquement
+        if (energie === "elec") {
+          return { eligible: true, status: "ok", reason: `${value} — énergie élec correspond` };
+        } else {
+          return { eligible: false, status: "ko", reason: `${value} — uniquement élec, énergie du dossier : gaz` };
+        }
+      }
+      // Condition segment uniquement ex: "OUI (C5 uniquement)"
+      if (isC5Condition && !isGazCondition && !isElecCondition) {
+        return { eligible: true, status: "warn", reason: value };
+      }
+    }
+
     return { eligible: true, status: "warn", reason: value };
   }
 
@@ -764,7 +846,7 @@ function evaluateSupplier(input) {
   const segmentEval = evaluateSegmentRule(rules[getSegmentRuleKey(params.segment)]);
   evaluations.push({ criterion: `Segment ${params.segment}`, ...segmentEval });
 
-  const syndicEval = evaluateSyndicRule(rules["SYNDIC ?"], params.syndic);
+  const syndicEval = evaluateSyndicRule(rules["SYNDIC ?"], params.syndic, params.energie, supplier);
   evaluations.push({ criterion: "Syndic", ...syndicEval });
 
   // Gaz Européen fait UNIQUEMENT du Syndic → hors cible si syndic ≠ oui
@@ -790,7 +872,7 @@ function evaluateSupplier(input) {
   const volumeEval = evaluateVolumeRule(rules["VOLUME MINIMAL (CAR en MWh)"], params.volume);
   evaluations.push({ criterion: "Volume minimal", ...volumeEval });
 
-  const upfrontPaymentEval = evaluateUpfrontPaymentRule(rules["Paiement UPFRONT"], params.commissionEstimee, params.ddfDate);
+  const upfrontPaymentEval = evaluateUpfrontPaymentRule(rules["Paiement UPFRONT"], params.commissionEstimee, params.ddfDate, supplier, params.dffDate);
   evaluations.push({ criterion: "Paiement UPFRONT", ...upfrontPaymentEval });
 
   const regCommValue = getRuleValue(rules, [
@@ -807,7 +889,7 @@ function evaluateSupplier(input) {
     const mesRuleKey = params.mesType === "premiere" ? "1ère MES" : "re-MES";
     const mesLabel = params.mesType === "premiere" ? "1ère mise en service" : "Remise en service";
     const mesRuleValue = getRuleValue(rules, [mesRuleKey, mesRuleKey.replace("è", "e")]);
-    const mesEval = evaluateMesRule(mesRuleValue, params.mesType);
+    const mesEval = evaluateMesRule(mesRuleValue, params.mesType, params.energie);
     if (mesEval !== null) {
       evaluations.push({ criterion: mesLabel, ...mesEval });
     }
@@ -945,7 +1027,8 @@ function evaluateSupplier(input) {
   if (regulRaw === "NON" || regulRaw.startsWith("NON")) scoreRegul = 1;
 
   // Score métier total (max 10, min 0)
-  const scoreMetier = Math.min(Math.max(scoreUpfront + scoreMarge + scoreHorizon + scoringMin + scoreRegul, 0), 10);
+  // Si non éligible (au moins 1 critère KO) → forcer à 0/10
+  const scoreMetier = eligible ? Math.min(Math.max(scoreUpfront + scoreMarge + scoreHorizon + scoringMin + scoreRegul, 0), 10) : 0;
 
   // Score de tri : scoreMetier prioritaire, warnings comme départage (moins = mieux)
   // Jamais négatif : non éligible = 0
