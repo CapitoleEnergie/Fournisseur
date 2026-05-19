@@ -1774,6 +1774,9 @@ async function analyser() {
 
 
 function renderClassification(selectionData, params, pricingLoadError = "") {
+  // Reset transmission à chaque nouvelle recherche
+  TRANSMIS_SUPPLIERS = new Set();
+
   const div = document.getElementById("results");
   div.style.display = "block";
 
@@ -2124,16 +2127,47 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
 
     ${partnerHtml}
 
-    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;">
-      <span class="selection-rank-badge partner">Fournisseur Actuel</span>
-      <span class="selection-rank-badge top5">Top Fournisseur (9-10/10)</span>
-      <span class="selection-rank-badge ineligible">Hors cible</span>
-      <span class="selection-rank-badge standard">Choix alternatif</span>
-      <span id="transmis-counter" style="margin-left:auto;font-size:12px;font-weight:700;color:var(--vert);background:var(--vert-bg);border:1px solid var(--vert-border);padding:4px 12px;border-radius:8px;display:inline-block;"></span>
-      <button type="button" id="btn-enregistrer-transmis" onclick="enregistrerTransmission()" style="display:inline-flex;align-items:center;gap:6px;background:var(--principal);color:#fff;border:none;border-radius:8px;padding:7px 18px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.15s;box-shadow:0 2px 8px rgba(80,32,234,0.15);" onmouseenter="this.style.background='#3A1AB8'" onmouseleave="this.style.background='var(--principal)'">
-        <svg fill="white" height="14" width="14" viewBox="0 0 24 24"><path d="M17 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
-        Enregistrer la transmission
-      </button>
+    <div style="background:white;border:1.5px solid var(--bleu-clair);border-radius:12px;padding:14px 18px;margin-bottom:14px;">
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
+        <span class="selection-rank-badge partner">Fournisseur Actuel</span>
+        <span class="selection-rank-badge top5">Top Fournisseur (9-10/10)</span>
+        <span class="selection-rank-badge ineligible">Hors cible</span>
+        <span class="selection-rank-badge standard">Choix alternatif</span>
+        <span id="transmis-counter" style="margin-left:auto;font-size:12px;font-weight:700;color:var(--vert);background:var(--vert-bg);border:1px solid var(--vert-border);padding:4px 12px;border-radius:8px;display:inline-block;"></span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+        <div class="transmis-input-group">
+          <label for="transmis-ref-dossier">Référence / Nom du dossier</label>
+          <input type="text" id="transmis-ref-dossier" placeholder="ex: Résidence Les Pins — EKWATEUR" style="font-family:'Poppins',sans-serif;font-size:13px;padding:9px 12px;border:1.5px solid var(--gris);border-radius:8px;outline:none;" onfocus="this.style.borderColor='var(--principal)'" onblur="this.style.borderColor='var(--gris)'"/>
+        </div>
+        <div class="transmis-input-group">
+          <label for="transmis-commentaire">Commentaire <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#aaa;">(optionnel)</span></label>
+          <input type="text" id="transmis-commentaire" placeholder="ex: Priorité haute, relancer lundi" style="font-family:'Poppins',sans-serif;font-size:13px;padding:9px 12px;border:1.5px solid var(--gris);border-radius:8px;outline:none;" onfocus="this.style.borderColor='var(--principal)'" onblur="this.style.borderColor='var(--gris)'"/>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;">
+        <button type="button" id="btn-enregistrer-transmis" onclick="enregistrerTransmission()" style="display:inline-flex;align-items:center;gap:6px;background:var(--principal);color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.15s;box-shadow:0 2px 8px rgba(80,32,234,0.15);" onmouseenter="this.style.background='#3A1AB8'" onmouseleave="this.style.background='var(--principal)'">
+          <svg fill="white" height="14" width="14" viewBox="0 0 24 24"><path d="M17 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
+          Préparer la transmission
+        </button>
+      </div>
+    </div>
+
+    <!-- MODAL CONFIRMATION TRANSMISSION -->
+    <div class="transmis-modal-overlay" id="transmis-modal" onclick="if(event.target===this)fermerModalTransmission()">
+      <div class="transmis-modal">
+        <button type="button" class="transmis-modal-close" onclick="fermerModalTransmission()">✕</button>
+        <h2>📋 Récapitulatif de la transmission</h2>
+        <p class="modal-subtitle">Vérifiez les informations avant de confirmer l'enregistrement.</p>
+        <div id="transmis-modal-body"></div>
+        <div class="transmis-modal-actions">
+          <button type="button" class="btn-secondary" onclick="fermerModalTransmission()" style="margin-left:0;">Annuler</button>
+          <button type="button" id="btn-confirmer-transmis" onclick="confirmerTransmission()" style="display:inline-flex;align-items:center;gap:6px;background:var(--vert);color:#fff;border:none;border-radius:8px;padding:9px 22px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.15s;box-shadow:0 2px 8px rgba(26,158,110,0.2);">
+            <svg fill="white" height="14" width="14" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+            Confirmer la transmission
+          </button>
+        </div>
+      </div>
     </div>
 
     ${allSuppliersHtml}
@@ -2211,61 +2245,136 @@ function getTransmisList() {
 }
 
 
-async function enregistrerTransmission() {
-  const btn = document.getElementById("btn-enregistrer-transmis");
+function enregistrerTransmission() {
   const list = getTransmisList();
   if (!list.length) {
     alert("Aucun fournisseur coché. Coche au moins un fournisseur avant d'enregistrer.");
     return;
   }
 
-  // Récupérer l'email depuis la session auth-guard
-  let email = "";
-  try {
-    const raw = sessionStorage.getItem("cap_auth_fournisseur");
-    if (raw) email = JSON.parse(raw).email || "";
-  } catch (e) {}
-  if (!email) {
-    alert("Session expirée. Retourne sur le hub pour te reconnecter.");
-    return;
-  }
-
-  // Récupérer les paramètres de recherche en cours
   const searchParams = {
     energie: document.getElementById("energie")?.value || "",
     segment: document.getElementById("segment")?.value || "",
     note: document.getElementById("note")?.value || "",
     volume: document.getElementById("volume")?.value || "",
     syndic: document.getElementById("syndic")?.value || "",
-    fournisseur_actuel: document.getElementById("fournisseur_actuel")?.value || ""
+    fournisseur_actuel: document.getElementById("fournisseur_actuel")?.value || "",
+    ddf: document.getElementById("ddf")?.value || "",
+    dff: document.getElementById("dff")?.value || ""
   };
 
-  btn.disabled = true;
-  const originalHtml = btn.innerHTML;
-  btn.innerHTML = '<span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.6s linear infinite"></span> Envoi…';
+  const ref = document.getElementById("transmis-ref-dossier")?.value?.trim() || "";
+  const commentaire = document.getElementById("transmis-commentaire")?.value?.trim() || "";
+
+  // Construire le récapitulatif dans la modal
+  const body = document.getElementById("transmis-modal-body");
+  if (body) {
+    const paramsLabels = [
+      searchParams.energie ? `⚡ ${searchParams.energie.toUpperCase()}` : null,
+      searchParams.segment ? `Segment ${searchParams.segment}` : null,
+      searchParams.note ? `Note ${searchParams.note}/10` : null,
+      searchParams.volume ? `${searchParams.volume} MWh/an` : null,
+      searchParams.ddf ? `DDF ${searchParams.ddf}` : null,
+      searchParams.dff ? `→ ${searchParams.dff}` : null,
+      searchParams.fournisseur_actuel ? `Actuel : ${searchParams.fournisseur_actuel}` : null
+    ].filter(Boolean);
+
+    body.innerHTML = `
+      ${ref
+        ? `<div class="transmis-recap-section">Référence dossier</div>
+           <div style="background:var(--bleu-clair);border-radius:8px;padding:10px 14px;font-size:13px;font-weight:700;color:var(--principal);margin-bottom:4px;">📁 ${escapeHtml(ref)}</div>`
+        : `<div style="background:var(--orange-bg);border:1px solid var(--orange-border);border-radius:8px;padding:8px 14px;font-size:12px;color:var(--orange);margin-bottom:8px;">⚠️ Aucune référence renseignée — vous pouvez quand même confirmer.</div>`
+      }
+      <div class="transmis-recap-section">Fournisseurs à transmettre (${list.length})</div>
+      <div class="transmis-recap-list">
+        ${list.map(f => `<div class="transmis-recap-item">
+          <img src="${escapeAttr(getSupplierLogo(f))}" alt="" style="width:22px;height:22px;object-fit:contain;border-radius:4px;" onerror="this.style.display='none'">
+          ${escapeHtml(f)}
+        </div>`).join("")}
+      </div>
+      <div class="transmis-recap-section">Paramètres de recherche</div>
+      <div class="transmis-recap-params">${paramsLabels.map(p => `<span class="transmis-recap-param">${escapeHtml(p)}</span>`).join("")}</div>
+      ${commentaire
+        ? `<div class="transmis-recap-section">Commentaire</div>
+           <div style="background:#F8F7FF;border:1px solid var(--bleu-clair);border-radius:8px;padding:10px 14px;font-size:13px;color:#444;line-height:1.6;">${escapeHtml(commentaire)}</div>`
+        : ""
+      }
+    `;
+  }
+
+  // Stocker les données pour la confirmation
+  window._transmisPayloadPending = { list, searchParams, ref, commentaire };
+
+  // Ouvrir la modal
+  document.getElementById("transmis-modal")?.classList.add("open");
+}
+
+function fermerModalTransmission() {
+  document.getElementById("transmis-modal")?.classList.remove("open");
+}
+
+async function confirmerTransmission() {
+  const payload = window._transmisPayloadPending;
+  if (!payload) return;
+
+  const { list, searchParams, ref, commentaire } = payload;
+
+  let email = "";
+  try {
+    const raw = sessionStorage.getItem("cap_auth_fournisseur");
+    if (raw) email = JSON.parse(raw).email || "";
+  } catch (e) {}
+  if (!email) {
+    fermerModalTransmission();
+    alert("Session expirée. Retourne sur le hub pour te reconnecter.");
+    return;
+  }
+
+  const btnConfirm = document.getElementById("btn-confirmer-transmis");
+  const originalHtml = btnConfirm?.innerHTML || "";
+  if (btnConfirm) {
+    btnConfirm.disabled = true;
+    btnConfirm.innerHTML = '<span style="display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.6s linear infinite"></span> Envoi…';
+  }
 
   try {
     const HUB_URL = window.__CAP_HUB_URL__ || "https://hub-capitole.vercel.app";
     const res = await fetch(HUB_URL + "/api/log-transmis", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, fournisseurs: list, params: searchParams })
+      body: JSON.stringify({ email, fournisseurs: list, params: searchParams, ref_dossier: ref, commentaire })
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || "Erreur serveur");
 
-    btn.style.background = "var(--vert)";
-    btn.innerHTML = '<svg fill="white" height="14" width="14" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Transmission enregistrée';
-    setTimeout(() => {
-      btn.style.background = "var(--principal)";
-      btn.innerHTML = originalHtml;
-      btn.disabled = false;
-    }, 3000);
+    fermerModalTransmission();
+
+    // Feedback visuel sur le bouton principal
+    const btnMain = document.getElementById("btn-enregistrer-transmis");
+    if (btnMain) {
+      const mainOriginal = btnMain.innerHTML;
+      btnMain.style.background = "var(--vert)";
+      btnMain.innerHTML = '<svg fill="white" height="14" width="14" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Transmission enregistrée ✓';
+      setTimeout(() => {
+        btnMain.style.background = "var(--principal)";
+        btnMain.innerHTML = mainOriginal;
+      }, 4000);
+    }
+
+    // Vider les champs après succès
+    const refEl = document.getElementById("transmis-ref-dossier");
+    const commEl = document.getElementById("transmis-commentaire");
+    if (refEl) refEl.value = "";
+    if (commEl) commEl.value = "";
+
+    window._transmisPayloadPending = null;
+
   } catch (err) {
+    if (btnConfirm) {
+      btnConfirm.disabled = false;
+      btnConfirm.innerHTML = originalHtml;
+    }
     alert("Erreur lors de l'enregistrement : " + err.message);
-    btn.style.background = "var(--principal)";
-    btn.innerHTML = originalHtml;
-    btn.disabled = false;
   }
 }
   
@@ -2282,6 +2391,7 @@ function reinitialiser() {
   const resultsDiv = document.getElementById("results");
   resultsDiv.style.display = "none"; resultsDiv.innerHTML = "";
   TRANSMIS_SUPPLIERS = new Set();
+  window._transmisPayloadPending = null;
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
