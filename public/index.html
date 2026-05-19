@@ -555,6 +555,21 @@ textarea::placeholder { color: #b0b0b0; }
   }
 }
 
+  /* ===== MODAL TRANSMISSION ===== */
+.transmis-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:500; align-items:center; justify-content:center; padding:24px; }
+.transmis-modal-overlay.open { display:flex; }
+.transmis-modal { background:#fff; border-radius:18px; padding:28px 30px; max-width:560px; width:100%; max-height:85vh; overflow-y:auto; box-shadow:0 20px 60px rgba(80,32,234,0.18); position:relative; }
+.transmis-modal h2 { font-family:'Bricolage Grotesque',sans-serif; font-size:20px; color:var(--noir); margin-bottom:4px; }
+.transmis-modal .modal-subtitle { font-size:12px; color:#888; margin-bottom:20px; }
+.transmis-modal-close { position:absolute; top:16px; right:18px; background:none; border:none; font-size:20px; cursor:pointer; color:#aaa; line-height:1; }
+.transmis-recap-list { display:flex; flex-direction:column; gap:6px; margin-bottom:20px; }
+.transmis-recap-item { display:flex; align-items:center; gap:10px; background:var(--vert-bg); border:1px solid var(--vert-border); border-radius:8px; padding:8px 12px; font-size:13px; font-weight:700; color:var(--vert); }
+.transmis-recap-section { font-size:11px; font-weight:700; color:var(--principal); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px; margin-top:14px; }
+.transmis-recap-params { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+.transmis-recap-param { background:var(--bleu-clair); color:var(--principal); border-radius:6px; padding:3px 10px; font-size:11px; font-weight:600; }
+.transmis-modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:20px; flex-wrap:wrap; }
+.transmis-input-group { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+.transmis-input-group label { font-size:11px; font-weight:700; color:var(--principal); text-transform:uppercase; letter-spacing:0.06em; }
 
 </style>
 </head>
