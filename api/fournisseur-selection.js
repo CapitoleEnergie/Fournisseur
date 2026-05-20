@@ -1,19 +1,58 @@
-const fs = require("fs");
-const path = require("path");
 const xlsx = require("xlsx");
 
-const EXCEL_FILE = path.join(process.cwd(), "data", "regles_panel_fournisseurs.xlsx");
-const RULES_SHEET = "Fournisseurs Export";
-const PANEL_SHEET = "Fournisseurs Panel";
+// ============ SHAREPOINT CONFIG ============
+const TENANT_ID     = process.env.MICROSOFT_TENANT_ID;
+const CLIENT_ID     = process.env.MICROSOFT_CLIENT_ID;
+const CLIENT_SECRET = process.env.MICROSOFT_CLIENT_SECRET;
+const DRIVE_ID      = process.env.SP_DRIVE_ID;
+const FOLDER_PATH   = process.env.SP_FOLDER_PATH || "PARTAGE/Team/3. Fournisseurs/Data Fournisseurs";
+const FILE_NAME     = "regles_panel_fournisseurs.xlsx";
+const RULES_SHEET   = "Fournisseurs Export";
+const PANEL_SHEET   = "Fournisseurs Panel";
 
-const PANEL_PRIORITY = {
-  "gold premium": 1,
-  "gold": 2,
-  "silver": 3,
-  "bronze": 4,
-  "": 99,
-  "non classe": 99
-};
+// ============ CACHE MÉMOIRE (5 minutes) ============
+let _cache = null;
+let _cacheAt = 0;
+const CACHE_TTL_MS = 5 * 60 * 1000;
+
+// ============ TOKEN MICROSOFT ============
+async function getMsToken() {
+  const res = await fetch(
+    `https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/token`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type:    "client_credentials",
+        client_id:     CLIENT_ID,
+        client_secret: CLIENT_SECRET,
+        scope:         "https://graph.microsoft.com/.default"
+      })
+    }
+  );
+  const data = await res.json();
+  if (!data.access_token) throw new Error("Impossible d'obtenir le token Microsoft Graph");
+  return data.access_token;
+}
+
+// ============ TÉLÉCHARGEMENT EXCEL DEPUIS SHAREPOINT ============
+async function downloadExcelFromSharePoint() {
+  const token = await getMsToken();
+
+  const fileRes = await fetch(
+    `https://graph.microsoft.com/v1.0/drives/${DRIVE_ID}/root:/${FOLDER_PATH}/${FILE_NAME}`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  const fileMeta = await fileRes.json();
+
+  if (!fileMeta["@microsoft.graph.downloadUrl"]) {
+    throw new Error(`Fichier SharePoint introuvable : ${FILE_NAME}`);
+  }
+
+  const dlRes = await fetch(fileMeta["@microsoft.graph.downloadUrl"]);
+  const arrayBuffer = await dlRes.arrayBuffer();
+  return Buffer.from(arrayBuffer);
+}
 
 function normalizeText(value = "") {
   return String(value ?? "")
@@ -1056,22 +1095,28 @@ function evaluateSupplier(input) {
 }
 
 function loadSelectionEngine() {
-  if (!fs.existsSync(EXCEL_FILE)) {
-    throw new Error(`Fichier introuvable: ${EXCEL_FILE}`);
-  }
 
-  const workbook = xlsx.readFile(EXCEL_FILE, { cellDates: false });
+// ============ CHARGEMENT AVEC CACHE ============
+async function loadSelectionEngine() {
+  const now = Date.now();
+  if (_cache && now - _cacheAt < CACHE_TTL_MS) return _cache;
+
+  const buffer = await downloadExcelFromSharePoint();
+  const workbook = xlsx.read(buffer, { type: "buffer", cellDates: false });
   const rulesData = parseRulesSheet(workbook);
   const panelData = parsePanelSheet(workbook);
 
-  return {
+  _cache = {
     fournisseurs: rulesData.fournisseurs,
     rulesBySupplier: rulesData.rulesBySupplier,
     panelBySupplier: panelData
   };
+  _cacheAt = now;
+  return _cache;
 }
 
-module.exports = function handler(req, res) {
+// ============ HANDLER ============
+module.exports = async function handler(req, res) {
   if (req.method !== "GET") {
     return res.status(405).json({ message: "Méthode non autorisée" });
   }
@@ -1079,10 +1124,10 @@ module.exports = function handler(req, res) {
   try {
     const query = req.query || {};
 
-    const normalizedEnergy = normalizeEnergy(query.energie || "");
+    const normalizedEnergy  = normalizeEnergy(query.energie || "");
     const normalizedSegment = normalizeSegment(query.segment || "");
-    const normalizedSyndic = normalizeOuiNon(query.syndic || "");
-    const currentSupplier = normalizeSupplierName(query.fournisseur_actuel || "");
+    const normalizedSyndic  = normalizeOuiNon(query.syndic || "");
+    const currentSupplier   = normalizeSupplierName(query.fournisseur_actuel || "");
 
     if (!normalizedEnergy || !normalizedSegment) {
       return res.status(400).json({
@@ -1090,7 +1135,7 @@ module.exports = function handler(req, res) {
       });
     }
 
-    const engine = loadSelectionEngine();
+    const engine = await loadSelectionEngine();
 
     const etatPdl = normalizeText(query.etat_pdl || "").toLowerCase().replace(/\s+/g, "_");
     const mesType = etatPdl === "premiere_mes" ? "premiere"
@@ -1098,29 +1143,29 @@ module.exports = function handler(req, res) {
       : null;
 
     const params = {
-      energie: normalizedEnergy,
-      segment: normalizedSegment,
-      syndic: normalizedSyndic,
-      note: safeNumber(query.note),
-      volume: safeNumber(query.volume),
+      energie:           normalizedEnergy,
+      segment:           normalizedSegment,
+      syndic:            normalizedSyndic,
+      note:              safeNumber(query.note),
+      volume:            safeNumber(query.volume),
       commissionEstimee: safeNumber(query.commission_estimee),
-      margeGlobale: safeNumber(query.marge_globale),
-      ddfDate: parseFrenchDate(query.ddf),
-      dffDate: parseFrenchDate(query.dff),
+      margeGlobale:      safeNumber(query.marge_globale),
+      ddfDate:           parseFrenchDate(query.ddf),
+      dffDate:           parseFrenchDate(query.dff),
       mesType
     };
 
     const results = engine.fournisseurs.map((supplier) =>
       evaluateSupplier({
         supplier,
-        rules: engine.rulesBySupplier[supplier] || {},
+        rules:     engine.rulesBySupplier[supplier] || {},
         panelInfo: engine.panelBySupplier[supplier] || null,
         params
       })
     );
 
     const eligibleResults = results
-      .filter((r) => r.eligible)
+      .filter(r => r.eligible)
       .sort((a, b) => b.score - a.score);
 
     const topSuppliers = eligibleResults.slice(0, 5);
@@ -1128,8 +1173,8 @@ module.exports = function handler(req, res) {
     const partnerSupplier =
       currentSupplier && engine.rulesBySupplier[currentSupplier]
         ? evaluateSupplier({
-            supplier: currentSupplier,
-            rules: engine.rulesBySupplier[currentSupplier] || {},
+            supplier:  currentSupplier,
+            rules:     engine.rulesBySupplier[currentSupplier] || {},
             panelInfo: engine.panelBySupplier[currentSupplier] || null,
             params
           })
@@ -1137,38 +1182,39 @@ module.exports = function handler(req, res) {
 
     return res.status(200).json({
       meta: {
-        fileName: path.basename(EXCEL_FILE),
-        rulesSheet: RULES_SHEET,
-        panelSheet: PANEL_SHEET,
+        fileName:       FILE_NAME,
+        rulesSheet:     RULES_SHEET,
+        panelSheet:     PANEL_SHEET,
         totalSuppliers: engine.fournisseurs.length
       },
       input: {
-        energie: normalizedEnergy,
-        segment: normalizedSegment,
-        syndic: normalizedSyndic,
-        note: params.note,
-        volume: params.volume,
+        energie:           normalizedEnergy,
+        segment:           normalizedSegment,
+        syndic:            normalizedSyndic,
+        note:              params.note,
+        volume:            params.volume,
         commissionEstimee: params.commissionEstimee,
-        ddf: query.ddf || "",
-        dff: query.dff || "",
+        ddf:               query.ddf || "",
+        dff:               query.dff || "",
         fournisseur_actuel: currentSupplier || ""
       },
-      allSuppliers: results,
+      allSuppliers:   results,
       topSuppliers,
-      eligibleCount: eligibleResults.length,
+      eligibleCount:  eligibleResults.length,
       partnerSupplier: partnerSupplier
         ? {
-            label: "FOURNISSEUR ACTUEL",
-            supplier: partnerSupplier.supplier,
-            eligible: partnerSupplier.eligible,
-            panel: partnerSupplier.panel || "",
+            label:       "FOURNISSEUR ACTUEL",
+            supplier:    partnerSupplier.supplier,
+            eligible:    partnerSupplier.eligible,
+            panel:       partnerSupplier.panel || "",
             evaluations: partnerSupplier.evaluations,
-            score: partnerSupplier.score,
+            score:       partnerSupplier.score,
             scoreMetier: partnerSupplier.scoreMetier,
             scoreDetail: partnerSupplier.scoreDetail
           }
         : null
     });
+
   } catch (error) {
     console.error("fournisseur-selection error:", error);
     return res.status(500).json({
