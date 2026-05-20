@@ -1094,8 +1094,6 @@ function evaluateSupplier(input) {
   };
 }
 
-function loadSelectionEngine() {
-
 // ============ CHARGEMENT AVEC CACHE ============
 async function loadSelectionEngine() {
   const now = Date.now();
@@ -1107,7 +1105,7 @@ async function loadSelectionEngine() {
   const panelData = parsePanelSheet(workbook);
 
   _cache = {
-    fournisseurs: rulesData.fournisseurs,
+    fournisseurs:    rulesData.fournisseurs,
     rulesBySupplier: rulesData.rulesBySupplier,
     panelBySupplier: panelData
   };
@@ -1188,19 +1186,19 @@ module.exports = async function handler(req, res) {
         totalSuppliers: engine.fournisseurs.length
       },
       input: {
-        energie:           normalizedEnergy,
-        segment:           normalizedSegment,
-        syndic:            normalizedSyndic,
-        note:              params.note,
-        volume:            params.volume,
-        commissionEstimee: params.commissionEstimee,
-        ddf:               query.ddf || "",
-        dff:               query.dff || "",
+        energie:            normalizedEnergy,
+        segment:            normalizedSegment,
+        syndic:             normalizedSyndic,
+        note:               params.note,
+        volume:             params.volume,
+        commissionEstimee:  params.commissionEstimee,
+        ddf:                query.ddf || "",
+        dff:                query.dff || "",
         fournisseur_actuel: currentSupplier || ""
       },
-      allSuppliers:   results,
+      allSuppliers:  results,
       topSuppliers,
-      eligibleCount:  eligibleResults.length,
+      eligibleCount: eligibleResults.length,
       partnerSupplier: partnerSupplier
         ? {
             label:       "FOURNISSEUR ACTUEL",
@@ -1218,7 +1216,8 @@ module.exports = async function handler(req, res) {
   } catch (error) {
     console.error("fournisseur-selection error:", error);
     return res.status(500).json({
-      message: error.message || "Erreur serveur"
+      message: error.message || "Erreur serveur",
+      detail:  String(error)
     });
   }
 };
