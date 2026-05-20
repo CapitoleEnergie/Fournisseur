@@ -10,6 +10,15 @@ const FILE_NAME     = "regles_panel_fournisseurs.xlsx";
 const RULES_SHEET   = "Fournisseurs Export";
 const PANEL_SHEET   = "Fournisseurs Panel";
 
+const PANEL_PRIORITY = {
+  "gold premium": 1,
+  "gold": 2,
+  "silver": 3,
+  "bronze": 4,
+  "": 99,
+  "non classe": 99
+};
+
 // ============ CACHE MÉMOIRE (5 minutes) ============
 let _cache = null;
 let _cacheAt = 0;
