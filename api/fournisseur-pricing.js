@@ -7,7 +7,7 @@ const CLIENT_SECRET = process.env.MICROSOFT_CLIENT_SECRET;
 const DRIVE_ID      = process.env.SP_DRIVE_ID;
 const FOLDER_PATH   = process.env.SP_FOLDER_PATH || "PARTAGE/Team/3. Fournisseurs/Data Fournisseurs";
 const FILE_NAME     = "Chiffres_fournisseurs.xlsx";
-const SHEET_NAME    = "1.Top fournisseurs C4";
+const SHEET_NAME    = "Selection fournisseurs";
 
 // ============ CACHE MÉMOIRE (5 minutes) ============
 let _cache = null;
