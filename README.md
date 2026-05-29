@@ -1,79 +1,191 @@
-# Sélection Fournisseurs — projet Vercel
+# Sélection Fournisseurs — Capitole Énergie
 
-🧭 Objectif
+Application Vercel de sélection, classification et suivi des fournisseurs d'énergie.
+
+---
+
+## 🧭 Objectif
+
 Cette application permet de :
 
-Visualiser les règles d’attribution des fournisseurs
-Sélectionner dynamiquement un fournisseur selon des critères métier
-Gérer et suivre les demandes de modification via un questionnaire
-Centraliser les informations issues de Salesforce
+- Classifier dynamiquement tous les fournisseurs selon le profil d'un dossier client (énergie, segment, note, volume, DDF/DFF, syndic…)
+- Visualiser les règles d'octroi issues du fichier SharePoint en temps réel
+- Consulter le panel fournisseurs (Gold Premium, Gold, Silver, Bronze)
+- Suivre les news et challenges fournisseurs via ClickUp
+- Enregistrer les transmissions de dossiers avec référence et commentaire vers le Hub Capitole
 
-🚀 Nouveautés (dernière mise à jour)
+---
 
-🔗 1. Intégration API – Règles fournisseurs
+## 🏗️ Architecture
 
-Les données ne sont plus codées en dur dans le HTML.
+```
+Frontend (public/index.html)
+         │
+         ├── Auth Guard (public/auth-guard.js)
+         │         └── Hub Capitole (hub-capitole.vercel.app)
+         │                   └── /api/verify-app-token  ← vérifie le token
+         │                   └── /api/log-transmis      ← enregistre les transmissions
+         │
+         ├── /api/fournisseur-rules      ← règles d'octroi globales (SharePoint)
+         ├── /api/fournisseur-selection  ← moteur de sélection + panel (SharePoint)
+         ├── /api/fournisseur-pricing    ← données prix par segment (SharePoint)
+         └── /api/clickup               ← news & challenges (ClickUp)
+```
 
-Elles sont désormais récupérées dynamiquement via l’endpoint :
-/api/fournisseur-rules
+---
 
-✅ Comportement
-Chargement automatique au démarrage de l’application
-Stockage des règles dans une variable globale : FOURNISSEUR_RULES
-Gestion d’erreur si l’API ne répond pas
+## 🔐 Authentification (auth-guard)
 
-📊 2. Résumé Fournisseurs dynamique
+Fichier : `public/auth-guard.js`
 
-Le tableau "Résumé Fournisseurs" :est maintenant alimenté par l’API s’adapte automatiquement aux données retournées ne dépend plus de RESUME_DATA
+Chaque page vérifie un token à l'ouverture :
 
+1. L'utilisateur arrive avec un `?token=xxx` dans l'URL (généré par le Hub)
+2. Le token est vérifié via `POST https://hub-capitole.vercel.app/api/verify-app-token`
+3. En cas de succès, une session est sauvegardée en `sessionStorage` (validité 8h)
+4. En cas d'échec, redirection automatique vers le Hub
 
-🧠 3. Moteur de sélection fournisseur
+La session est stockée sous la clé `cap_auth_fournisseur` et contient l'email de l'utilisateur.
 
-La logique de sélection :utilise désormais les règles issues de l’API fonctionne en temps réel selon les critères utilisateur garantit une cohérence avec les règles métier centralisées
+---
 
+## 📊 Fichiers SharePoint — Source de vérité
 
-📝 4. Formulaire “Règles d’octroi” connecté
+Tous les fichiers sont lus via l'API **Microsoft Graph** (OAuth2 client credentials).
 
-Dans le questionnaire :la liste des fournisseurs est maintenant dynamique elle est alimentée automatiquement depuis l’API plus besoin de maintenir une liste statique côté front
+| Fichier | Onglet | Endpoint | Usage |
+|---|---|---|---|
+| `regles_all_fournisseurs.xlsx` | `Résumé global` | `/api/fournisseur-rules` | Règles d'octroi globales (résumé) |
+| `regles_panel_fournisseurs.xlsx` | `Fournisseurs Export` + `Fournisseurs Panel` | `/api/fournisseur-selection` | Règles détaillées par fournisseur + panel |
+| `Chiffres_fournisseurs.xlsx` | `1.Top fournisseurs C4` | `/api/fournisseur-pricing` | Prix marché par segment (30 derniers jours) |
 
+Chemin SharePoint : `PARTAGE/Team/3. Fournisseurs/Data Fournisseurs`
 
-📰 5. Correction – Onglet News
+Un **cache mémoire de 5 minutes** est appliqué sur chaque endpoint pour éviter de re-télécharger le fichier à chaque requête.
 
-Correction du filtre : le statut "En cours" fonctionne désormais correctement amélioration du filtrage des demandes
+---
 
-🏗️ Architecture simplifiée
-Frontend (HTML / JS)
-        ↓
-Fetch API (/api/fournisseur-rules)
-        ↓
-Backend (Vercel Serverless Function)
-        ↓
-Source de vérité (Salesforce / JSON / autre)
+## 🧠 Moteur de sélection fournisseur
 
-⚙️ Fonctionnement technique
+Fichier : `api/fournisseur-selection.js`
 
-Chargement des règles
-async function loadFournisseurRules() {
-  const response = await fetch('/api/fournisseur-rules');
-  const data = await response.json();
-  window.FOURNISSEUR_RULES = data;
-}
-Utilisation dans l’application
-Résumé fournisseurs → basé sur FOURNISSEUR_RULES
-Sélection fournisseur → moteur dynamique
-Formulaire → liste générée automatiquement
+À partir d'un profil dossier (énergie, segment, note, volume, DDF, DFF, syndic, 1ère MES…), chaque fournisseur reçoit :
 
-⚠️ Points d’attention
-L’API /api/fournisseur-rules doit être déployée et accessible
-En cas d’erreur API :
-affichage d’un message utilisateur
-aucune donnée ne sera chargée
-🔜 Prochaines évolutions possibles
-🔄 Connexion directe à Salesforce (API REST)
-📈 Historisation des règles fournisseurs
-🔔 Notifications en cas de modification
-👤 Gestion des droits utilisateurs
-📁 Fichiers clés
-index.html → interface principale
-/api/fournisseur-rules.js → récupération des règles
-questionnaire.js → gestion des demandes
+### Score métier /10
+
+| Critère | Points max |
+|---|---|
+| Paiement UPFRONT | 3 pts |
+| Marge (vs seuil fournisseur) | 2 pts |
+| Horizon (couverture de la DFF) | 2 pts |
+| Scoring minimum (note Ellipro) | 2 pts |
+| Régularisation | 1 pt |
+
+### Critères d'exclusion (hors score)
+
+Les critères suivants peuvent exclure un fournisseur indépendamment du score :
+- Segment non couvert
+- Syndic refusé
+- Volume sous le minimum
+- Note crédit insuffisante
+
+### Classification finale
+
+- **Vert** (éligible, top 5) — fournisseurs recommandés
+- **Orange** (éligible, hors top 5) — fournisseurs envisageables
+- **Rouge** (non éligible) — fournisseurs exclus
+
+---
+
+## 💰 Données prix
+
+Fichier : `api/fournisseur-pricing.js`
+
+Chargement à la demande par segment (ex : `C4`, `T2`). Pour chaque fournisseur :
+- Prix moyen sur 30 jours (€/MWh)
+- Moyenne de marché sur le segment
+- Écart en % vs la moyenne
+
+Les données prix s'affichent en colonne dans les résultats de sélection et entrent dans l'évaluation (bonus/malus sur le score).
+
+---
+
+## 🗂️ Onglets de l'application
+
+### Sélection Fournisseur
+Formulaire avec : énergie, segment, note, volume, DDF, DFF, profil, état PDL, syndic, 1ère MES, fournisseur actuel, marge, UPFRONT.
+Résultat : tableau classé avec score /10, prix, justification et case à cocher pour transmission.
+
+### Résumé Fournisseurs
+Vue tableau de tous les fournisseurs × tous les critères, alimentée dynamiquement via `/api/fournisseur-rules`.
+Filtres : Tous / Gaz / Élec + recherche textuelle.
+
+### Fournisseurs Panel
+Classement panel (Gold Premium → Bronze) issu de `regles_panel_fournisseurs.xlsx`, onglet `Fournisseurs Panel`.
+
+### News Fournisseurs
+Tâches ClickUp de la liste `CLICKUP_LIST_NEWS`.
+Filtres : statut (ouvert/fermé), mois de création, fournisseur.
+Affichage : pièces jointes, logos fournisseurs, badges de statut.
+
+### Challenges
+Tâches ClickUp de la liste `CLICKUP_LIST_CHALLENGES`.
+Affichage en cartes avec description, pièces jointes, logos fournisseurs.
+
+---
+
+## 📤 Système de transmission
+
+Depuis la vue résultats, l'utilisateur peut cocher des fournisseurs et enregistrer une transmission :
+
+1. Sélection des fournisseurs via cases à cocher
+2. Saisie d'une référence dossier et d'un commentaire (optionnel)
+3. Récapitulatif dans une modale de confirmation
+4. Envoi vers `POST https://hub-capitole.vercel.app/api/log-transmis` avec :
+   - Email de l'utilisateur (depuis la session auth)
+   - Liste des fournisseurs transmis
+   - Paramètres de recherche (énergie, segment, note, volume…)
+   - Référence dossier + commentaire
+
+---
+
+## ⚙️ Variables d'environnement requises
+
+```env
+# Microsoft Graph / SharePoint
+MICROSOFT_TENANT_ID=
+MICROSOFT_CLIENT_ID=
+MICROSOFT_CLIENT_SECRET=
+SP_DRIVE_ID=
+SP_FOLDER_PATH=PARTAGE/Team/3. Fournisseurs/Data Fournisseurs
+
+# ClickUp
+CLICKUP_TOKEN=
+CLICKUP_LIST_NEWS=
+CLICKUP_LIST_CHALLENGES=
+```
+
+---
+
+## 📁 Fichiers clés
+
+| Fichier | Rôle |
+|---|---|
+| `public/index.html` | Interface principale (SPA) |
+| `public/auth-guard.js` | Authentification par token (Hub Capitole) |
+| `api/fournisseur_rules.js` | Règles d'octroi globales depuis SharePoint |
+| `api/fournisseur-selection.js` | Moteur de scoring + panel depuis SharePoint |
+| `api/fournisseur-pricing.js` | Données prix par segment depuis SharePoint |
+| `api/_clickup.js` | Récupération des tâches ClickUp (News + Challenges) |
+| `vercel.json` | Configuration Vercel (routes, cleanUrls) |
+| `package.json` | Dépendances Node.js (xlsx) |
+
+---
+
+## ⚠️ Points d'attention
+
+- Les fichiers SharePoint doivent être accessibles et au bon chemin/format attendu
+- En cas d'erreur API SharePoint, les règles embarquées dans le HTML servent de fallback pour le résumé fournisseurs
+- En cas d'erreur pricing, la classification continue sans données prix
+- La session auth expire après 8h ; une reconnexion via le Hub est alors nécessaire
+- Toutes les variables d'environnement sont obligatoires pour le bon fonctionnement des endpoints
