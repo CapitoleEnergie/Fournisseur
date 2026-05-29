@@ -61,8 +61,10 @@ Tous les fichiers sont lus via l'API **Microsoft Graph** (OAuth2 client credenti
 
 Chemin SharePoint : `PARTAGE/Team/3. Fournisseurs/Data Fournisseurs`
 
-Un **cache mémoire de 5 minutes** est appliqué sur chaque endpoint pour éviter de re-télécharger le fichier à chaque requête.
-
+> 📁 **Accès direct au dossier SharePoint :**
+> [Ouvrir Data Fournisseurs](https://sascapitoleenergie.sharepoint.com/sites/PARTAGECAPITOLE-ENERGIE/Documents%20partages/Forms/AllItems.aspx?id=%2Fsites%2FPARTAGECAPITOLE%2DENERGIE%2FDocuments%20partages%2FPARTAGE%2FTeam%2F3%2E%20Fournisseurs%2FData%20Fournisseurs&viewid=11f04f50%2D66d5%2D4342%2D8695%2D7aade14ee934)
+>
+> C'est ici que vous devez déposer/modifier les fichiers pour que l'application les prenne en compte au prochain rechargement (cache 5 min).
 ---
 
 ## 🧠 Moteur de sélection fournisseur
