@@ -115,7 +115,8 @@ module.exports = async function handler(req, res) {
         Compteur__r.VolumeReel__c,
         Compteur__r.Voie__c,
         Compteur__r.CodePostal__c,
-        Compteur__r.Commune__c
+        Compteur__r.Commune__c,
+        Compteur__r.TECH_Date_Offre__c
       FROM Offre__c
       WHERE Opportunity__c = '${safeOpportunityId}'
       ORDER BY Compteur__r.Name
@@ -135,6 +136,7 @@ module.exports = async function handler(req, res) {
         segment: SEGMENT_MAP[norm(c.Segment__c)] || null,
         segment_raw: c.Segment__c || "",
         profil: c.ProfilCompteurGaz__c || "",
+        date_debut_fourniture: c.TECH_Date_Offre__c || null,
         fournisseur_actuel: c.Fournisseur_Actuel_Nom__c || "",
         etat_pdl: ETAT_PDL_MAP[norm(c.EtatPDL__c)] || null,
         etat_pdl_raw: c.EtatPDL__c || "",
@@ -165,6 +167,7 @@ module.exports = async function handler(req, res) {
       energie: energieMapped,
       energie_raw: opp.Energie__c || "",
       note_credit: safeNum(opp.NoteCredit__c),
+      reference_dossier: opp.Name || "",
       compteurs,
       warnings,
     });
