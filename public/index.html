@@ -2213,7 +2213,7 @@ function renderClassification(selectionData, params, pricingLoadError = "") {
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
         <div class="transmis-input-group">
           <label for="transmis-ref-dossier">Référence / Nom du dossier</label>
-          <input type="text" id="transmis-ref-dossier" placeholder="ex: Résidence Les Pins — EKWATEUR" style="font-family:'Poppins',sans-serif;font-size:13px;padding:9px 12px;border:1.5px solid var(--gris);border-radius:8px;outline:none;" onfocus="this.style.borderColor='var(--principal)'" onblur="this.style.borderColor='var(--gris)'"/>
+          <input type="text" id="transmis-ref-dossier" value="${escapeAttr(_sfReferenceDossier || '')}" placeholder="ex: Résidence Les Pins — EKWATEUR" style="font-family:'Poppins',sans-serif;font-size:13px;padding:9px 12px;border:1.5px solid var(--gris);border-radius:8px;outline:none;" onfocus="this.style.borderColor='var(--principal)'" onblur="this.style.borderColor='var(--gris)'"/>
         </div>
         <div class="transmis-input-group">
           <label for="transmis-commentaire">Commentaire <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#aaa;">(optionnel)</span></label>
@@ -2475,6 +2475,7 @@ function reinitialiser() {
 // ============ SALESFORCE AUTO-FILL ============
 
 let _sfData = null; // données SF en mémoire (pour sélection compteur)
+let _sfReferenceDossier = ""; // Opportunity.Name pour pré-remplir la référence dossier
 
 async function loadFromSalesforce() {
   const opportunityId = document.getElementById('sf-opportunity-id')?.value?.trim();
@@ -2642,7 +2643,21 @@ function applySalesforceData(data, compteur) {
     if (typeof onEtatPdlChange === 'function') onEtatPdlChange();
   }
 
-  // 8. Mise à jour du grisage
+  // 8. DDF souhaitée depuis Compteur.TECH_Date_Offre__c
+  if (compteur.date_debut_fourniture) {
+    const ddfValue = formatSfDateToFr(compteur.date_debut_fourniture);
+    if (ddfValue) {
+      setField('ddf', ddfValue);
+      if (typeof updateCommission === 'function') updateCommission();
+    }
+  }
+
+  // 9. Référence dossier depuis Opportunity.Name
+  if (data.reference_dossier || data.opportunityName) {
+    _sfReferenceDossier = data.reference_dossier || data.opportunityName || "";
+  }
+
+  // 10. Mise à jour du grisage
   if (typeof updateFieldGreying === 'function') updateFieldGreying();
 }
 
@@ -2653,12 +2668,39 @@ function buildFilledSummary(data, compteur) {
   if (compteur.segment)  parts.push('Segment');
   if (compteur.profil && data.energie === 'gaz') parts.push('Profil');
   if (compteur.etat_pdl) parts.push('État PDL');
+  if (compteur.date_debut_fourniture) parts.push('DDF souhaitée');
+  if (data.reference_dossier || data.opportunityName) parts.push('Référence dossier');
   if (compteur.fournisseur_actuel) parts.push('Fournisseur actuel');
   const vol = data.energie === 'gaz' ? compteur.volume_gaz : compteur.volume_elec;
   if (vol !== null && vol !== undefined) parts.push('Volume');
   return parts.length
     ? `Champs remplis : <strong>${parts.join(', ')}</strong>`
     : 'Aucun champ reconnu';
+}
+
+
+function formatSfDateToFr(value) {
+  if (!value) return "";
+
+  const s = String(value).trim();
+
+  // Format Salesforce standard : YYYY-MM-DD ou YYYY-MM-DDTHH:mm:ss...
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
+    const [y, m, d] = s.slice(0, 10).split("-");
+    return `${d}/${m}/${y}`;
+  }
+
+  // Si la date arrive déjà au format JJ/MM/AAAA
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
+    return s;
+  }
+
+  const date = new Date(s);
+  if (!isNaN(date.getTime())) {
+    return date.toLocaleDateString("fr-FR");
+  }
+
+  return "";
 }
 
 function showSfStatus(html, type) {
