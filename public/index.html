@@ -571,6 +571,28 @@ textarea::placeholder { color: #b0b0b0; }
 .transmis-input-group { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
 .transmis-input-group label { font-size:11px; font-weight:700; color:var(--principal); text-transform:uppercase; letter-spacing:0.06em; }
 
+
+
+<!-- ============================================================
+     SNIPPET 2 — CSS
+     À ajouter dans le bloc existant
+     ============================================================ -->
+.sf-compteur-card {
+  display:flex;align-items:center;gap:14px;padding:12px 16px;
+  border:1.5px solid var(--gris);border-radius:10px;background:#FAFAFA;
+  cursor:pointer;transition:all 0.15s;user-select:none;
+}
+.sf-compteur-card:hover { border-color:var(--principal);background:var(--bleu-clair); }
+.sf-compteur-card.selected { border-color:var(--principal);background:var(--bleu-clair);box-shadow:0 0 0 3px rgba(80,32,234,0.1); }
+.sf-compteur-radio { width:18px;height:18px;border-radius:50%;border:2px solid #ccc;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s; }
+.sf-compteur-card.selected .sf-compteur-radio { border-color:var(--principal);background:var(--principal); }
+.sf-compteur-card.selected .sf-compteur-radio::after { content:'';width:7px;height:7px;border-radius:50%;background:white; }
+.sf-compteur-info { flex:1;min-width:0; }
+.sf-compteur-prm { font-size:13px;font-weight:700;color:var(--noir);font-family:'Bricolage Grotesque',sans-serif; }
+.sf-compteur-meta { font-size:11px;color:#666;margin-top:3px;display:flex;gap:8px;flex-wrap:wrap; }
+.sf-compteur-tag { background:var(--blanc-bloc);border:1px solid var(--gris);border-radius:5px;padding:1px 7px;font-weight:600; }
+.sf-use-btn { font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;padding:7px 14px;border-radius:8px;border:none;background:var(--principal);color:white;cursor:pointer;white-space:nowrap;transition:background 0.15s;flex-shrink:0; }
+.sf-use-btn:hover { background:#3A1AB8; }
 </style>
 </head>
 <body>
@@ -612,6 +634,63 @@ textarea::placeholder { color: #b0b0b0; }
 <main>
 <h1>Sélection Fournisseur</h1>
 <p class="subtitle">Renseignez le profil du client pour obtenir la classification complète de tous les fournisseurs éligibles.</p>
+<!-- ============================================================
+     SNIPPET 1 — HTML
+     À insérer JUSTE AVANT <div class="form-grid">
+     ============================================================ -->
+
+<div id="sf-autofill-section" style="background:white;border:1.5px solid var(--bleu-clair);border-radius:14px;padding:16px 20px;margin-bottom:22px;">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--principal)"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+    <span style="font-size:13px;font-weight:700;color:var(--principal);">Pré-remplissage depuis Salesforce</span>
+    <span style="font-size:11px;color:#aaa;font-weight:400;">— les champs restants sont modifiables et complétables manuellement</span>
+  </div>
+
+  <div style="display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;">
+    <div style="flex:1;min-width:200px;">
+      <label for="sf-opportunity-id" style="font-size:11px;font-weight:700;color:var(--principal);text-transform:uppercase;letter-spacing:0.06em;display:block;margin-bottom:6px;">
+        ID Opportunité Salesforce
+      </label>
+      <input
+        id="sf-opportunity-id"
+        type="text"
+        placeholder="006Xx000001234ABC"
+        autocomplete="off"
+        spellcheck="false"
+        style="font-family:'Poppins',sans-serif;font-size:14px;padding:11px 14px;border:1.5px solid var(--gris);border-radius:10px;background:white;color:var(--noir);outline:none;width:100%;transition:border-color 0.2s,box-shadow 0.2s;box-sizing:border-box;"
+        onfocus="this.style.borderColor='var(--principal)';this.style.boxShadow='0 0 0 3px rgba(80,32,234,0.1)'"
+        onblur="this.style.borderColor='var(--gris)';this.style.boxShadow='none'"
+        onkeydown="if(event.key==='Enter'){loadFromSalesforce();}"
+      />
+    </div>
+    <div style="margin-top:22px;">
+      <button
+        type="button"
+        id="sf-autofill-btn"
+        onclick="loadFromSalesforce()"
+        style="display:inline-flex;align-items:center;gap:8px;background:var(--principal);color:white;border:none;border-radius:10px;padding:11px 22px;font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.15s;box-shadow:0 4px 14px rgba(80,32,234,0.22);white-space:nowrap;"
+        onmouseenter="this.style.background='#3A1AB8'"
+        onmouseleave="this.style.background='var(--principal)'"
+      >
+        <svg id="sf-btn-icon" width="15" height="15" viewBox="0 0 24 24" fill="white">
+          <path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+        </svg>
+        Pré-remplir
+      </button>
+    </div>
+  </div>
+
+  <!-- Statut -->
+  <div id="sf-autofill-status" style="display:none;margin-top:12px;padding:10px 14px;border-radius:8px;font-size:12.5px;line-height:1.55;"></div>
+
+  <!-- Sélecteur de compteur (multi-compteurs) -->
+  <div id="sf-compteur-picker" style="display:none;margin-top:16px;">
+    <div style="font-size:12px;font-weight:700;color:var(--principal);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">
+      Plusieurs compteurs trouvés — sélectionnez celui à utiliser :
+    </div>
+    <div id="sf-compteur-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+  </div>
+</div>
 <div class="form-grid">
 <div class="form-group"><label>Type d'énergie</label><select id="energie" onchange="onEnergieChange()"><option disabled="" selected="" value="">— Sélectionner —</option><option value="gaz">Gaz</option><option value="elec">Électricité</option></select></div>
 <div class="form-group"><label>Segment</label><select id="segment" onchange="onSegmentChange()"><option disabled="" selected="" value="">— Sélectionner —</option></select></div>
@@ -2393,6 +2472,233 @@ function reinitialiser() {
   TRANSMIS_SUPPLIERS = new Set();
   window._transmisPayloadPending = null;
   window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+
+
+<!-- ============================================================
+     SNIPPET 3 — JAVASCRIPT
+     À ajouter dans le existant, après reinitialiser()
+     ============================================================ -->
+// ============ SALESFORCE AUTO-FILL ============
+
+let _sfData = null; // données SF en mémoire (pour sélection compteur)
+
+async function loadFromSalesforce() {
+  const opportunityId = document.getElementById('sf-opportunity-id')?.value?.trim();
+  if (!opportunityId) {
+    showSfStatus('Veuillez saisir un ID d\'opportunité Salesforce.', 'warn');
+    return;
+  }
+
+  setSfBtnLoading(true);
+  hideSfCompteurPicker();
+  showSfStatus('Connexion à Salesforce…', 'loading');
+
+  try {
+    const res = await fetch(`/api/salesforce-opportunity?opportunityId=${encodeURIComponent(opportunityId)}`, {
+      headers: { 'Accept': 'application/json' }
+    });
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) throw new Error(data.message || `Erreur ${res.status}`);
+
+    _sfData = data;
+
+    if (!data.compteurs || data.compteurs.length === 0) {
+      showSfStatus('⚠️ Aucun compteur trouvé pour cette opportunité. Vérifiez que des offres sont bien associées.', 'warn');
+      return;
+    }
+
+    if (data.compteurs.length === 1) {
+      // Un seul compteur → remplissage direct
+      applySalesforceData(data, data.compteurs[0]);
+      const filled = buildFilledSummary(data, data.compteurs[0]);
+      const warnHtml = data.warnings?.length ? `<div style="margin-top:6px;color:var(--orange);">⚠️ ${data.warnings.join(' | ')}</div>` : '';
+      showSfStatus(`<strong>✅ ${data.opportunityName || data.opportunityId}</strong> — ${filled}${warnHtml}`, 'success');
+    } else {
+      // Plusieurs compteurs → afficher le sélecteur
+      showSfStatus(
+        `<strong>${data.opportunityName || data.opportunityId}</strong> — ${data.compteurs.length} compteurs trouvés. Sélectionnez celui à utiliser ci-dessous.`,
+        'loading'
+      );
+      renderSfCompteurPicker(data);
+    }
+
+  } catch (err) {
+    showSfStatus(`❌ ${err.message || 'Erreur inconnue'}`, 'error');
+  } finally {
+    setSfBtnLoading(false);
+  }
+}
+
+function renderSfCompteurPicker(data) {
+  const picker = document.getElementById('sf-compteur-picker');
+  const list   = document.getElementById('sf-compteur-list');
+  if (!picker || !list) return;
+
+  list.innerHTML = data.compteurs.map((c, i) => {
+    const vol = data.energie === 'gaz' ? c.volume_gaz : c.volume_elec;
+    const tags = [
+      c.segment_raw   ? `Segment ${c.segment_raw}` : null,
+      c.etat_pdl_raw  ? c.etat_pdl_raw : null,
+      vol !== null    ? `${Math.round(vol)} MWh/an` : null,
+    ].filter(Boolean);
+
+    return `
+      <div class="sf-compteur-card" id="sf-card-${i}" onclick="selectSfCompteur(${i})">
+        <div class="sf-compteur-radio"></div>
+        <div class="sf-compteur-info">
+          <div class="sf-compteur-prm">📍 ${escapeHtml(c.prm || `Compteur ${i + 1}`)}</div>
+          <div class="sf-compteur-meta">
+            ${tags.map(t => `<span class="sf-compteur-tag">${escapeHtml(t)}</span>`).join('')}
+            ${c.adresse ? `<span style="color:#999;">${escapeHtml(c.adresse)}</span>` : ''}
+          </div>
+        </div>
+        <button type="button" class="sf-use-btn" onclick="event.stopPropagation();selectSfCompteur(${i});applySelectedSfCompteur();">
+          Utiliser
+        </button>
+      </div>`;
+  }).join('');
+
+  picker.style.display = 'block';
+}
+
+let _selectedCompteurIndex = null;
+
+function selectSfCompteur(index) {
+  _selectedCompteurIndex = index;
+  document.querySelectorAll('.sf-compteur-card').forEach((card, i) => {
+    card.classList.toggle('selected', i === index);
+  });
+}
+
+function applySelectedSfCompteur() {
+  if (_selectedCompteurIndex === null || !_sfData) return;
+  const compteur = _sfData.compteurs[_selectedCompteurIndex];
+  if (!compteur) return;
+
+  applySalesforceData(_sfData, compteur);
+
+  const filled = buildFilledSummary(_sfData, compteur);
+  const warnHtml = _sfData.warnings?.length ? `<div style="margin-top:6px;color:var(--orange);">⚠️ ${_sfData.warnings.join(' | ')}</div>` : '';
+  showSfStatus(
+    `<strong>✅ ${_sfData.opportunityName} — ${escapeHtml(compteur.prm)}</strong> — ${filled}${warnHtml}`,
+    'success'
+  );
+  hideSfCompteurPicker();
+}
+
+function hideSfCompteurPicker() {
+  const picker = document.getElementById('sf-compteur-picker');
+  if (picker) picker.style.display = 'none';
+  _selectedCompteurIndex = null;
+}
+
+function applySalesforceData(data, compteur) {
+  function setField(id, value) {
+    const el = document.getElementById(id);
+    if (!el || value === null || value === undefined || value === '') return false;
+    el.value = String(value);
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+    el.dispatchEvent(new Event('input',  { bubbles: true }));
+    return true;
+  }
+
+  // 1. Énergie (en premier — conditionne les autres selects)
+  if (data.energie) {
+    setField('energie', data.energie);
+    if (typeof onEnergieChange === 'function') onEnergieChange();
+  }
+
+  // 2. Segment (après onEnergieChange qui a repeuplé le select)
+  if (compteur.segment) setField('segment', compteur.segment);
+
+  // 3. Profil gaz
+  if (compteur.profil && data.energie === 'gaz') setField('profil', compteur.profil);
+
+  // 4. Note de crédit
+  if (data.note_credit !== null && data.note_credit !== undefined) {
+    setField('note', Math.round(data.note_credit));
+  }
+
+  // 5. Volume selon énergie
+  const volume = data.energie === 'gaz' ? compteur.volume_gaz : compteur.volume_elec;
+  if (volume !== null && volume !== undefined) {
+    setField('volume', Math.round(volume));
+    if (typeof updateCommission === 'function') updateCommission();
+  }
+
+  // 6. Fournisseur actuel — matching souple sur le select
+  if (compteur.fournisseur_actuel) {
+    const sel = document.getElementById('fournisseur_actuel');
+    if (sel) {
+      const target = sfNorm(compteur.fournisseur_actuel);
+      for (const opt of sel.options) {
+        if (sfNorm(opt.value) === target || sfNorm(opt.text) === target) {
+          sel.value = opt.value;
+          sel.dispatchEvent(new Event('change', { bubbles: true }));
+          break;
+        }
+      }
+    }
+  }
+
+  // 7. État PDL
+  if (compteur.etat_pdl) {
+    setField('etat_pdl', compteur.etat_pdl);
+    if (typeof onEtatPdlChange === 'function') onEtatPdlChange();
+  }
+
+  // 8. Mise à jour du grisage
+  if (typeof updateFieldGreying === 'function') updateFieldGreying();
+}
+
+function buildFilledSummary(data, compteur) {
+  const parts = [];
+  if (data.energie)      parts.push('Énergie');
+  if (data.note_credit !== null && data.note_credit !== undefined) parts.push('Note crédit');
+  if (compteur.segment)  parts.push('Segment');
+  if (compteur.profil && data.energie === 'gaz') parts.push('Profil');
+  if (compteur.etat_pdl) parts.push('État PDL');
+  if (compteur.fournisseur_actuel) parts.push('Fournisseur actuel');
+  const vol = data.energie === 'gaz' ? compteur.volume_gaz : compteur.volume_elec;
+  if (vol !== null && vol !== undefined) parts.push('Volume');
+  return parts.length
+    ? `Champs remplis : <strong>${parts.join(', ')}</strong>`
+    : 'Aucun champ reconnu';
+}
+
+function showSfStatus(html, type) {
+  const el = document.getElementById('sf-autofill-status');
+  if (!el) return;
+  const styles = {
+    loading: 'background:#F8F7FF;border:1px solid var(--bleu-clair);color:#555;',
+    success: 'background:var(--vert-bg);border:1px solid var(--vert-border);color:#1A5C3A;',
+    error:   'background:var(--rouge-bg);border:1px solid var(--rouge-border);color:var(--rouge);',
+    warn:    'background:var(--orange-bg);border:1px solid var(--orange-border);color:var(--orange);',
+  };
+  el.style.cssText = `display:block;margin-top:12px;padding:10px 14px;border-radius:8px;font-size:12.5px;line-height:1.55;${styles[type] || styles.loading}`;
+  el.innerHTML = html;
+}
+
+function setSfBtnLoading(loading) {
+  const btn  = document.getElementById('sf-autofill-btn');
+  const icon = document.getElementById('sf-btn-icon');
+  if (!btn) return;
+  btn.disabled     = loading;
+  btn.style.opacity = loading ? '0.7' : '1';
+  if (icon) {
+    icon.innerHTML = loading
+      ? `<animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.8s" repeatCount="indefinite"/>
+         <path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>`
+      : `<path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>`;
+  }
+}
+
+function sfNorm(v) {
+  return String(v ?? '').trim().toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 }
 
 // ============ COMMISSION ESTIMÉE ============
