@@ -15,23 +15,17 @@ const SF_CONFIG = {
   securityToken: process.env.SF_SECURITY_TOKEN  || '',
 };
 
-// ── Normalisation des valeurs Salesforce → valeurs formulaire ─────────────
+// ── Normalisation ─────────────────────────────────────────────────────────
 
 const ENERGIE_MAP = {
-  'electricite':   'elec',
-  'électricité':   'elec',
-  'electricité':   'elec',
-  'electricity':   'elec',
-  'elec':          'elec',
-  'élec':          'elec',
-  'gaz':           'gaz',
-  'gas':           'gaz',
-  'gaz naturel':   'gaz',
+  'electricite': 'elec', 'électricité': 'elec', 'electricité': 'elec',
+  'electricity': 'elec', 'elec': 'elec', 'élec': 'elec',
+  'gaz': 'gaz', 'gas': 'gaz', 'gaz naturel': 'gaz',
 };
 
 const SEGMENT_MAP = {
-  'c1': 'C1', 'c2': 'C2', 'c3': 'C3', 'c4': 'C4', 'c5': 'C5',
-  't1': 'T1', 't2': 'T2', 't3': 'T3', 't4': 'T4', 'tp': 'TP',
+  'c1':'C1','c2':'C2','c3':'C3','c4':'C4','c5':'C5',
+  't1':'T1','t2':'T2','t3':'T3','t4':'T4','tp':'TP',
 };
 
 const ETAT_PDL_MAP = {
@@ -49,21 +43,24 @@ const ETAT_PDL_MAP = {
 };
 
 function norm(v) {
-  return String(v ?? '')
-    .trim()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '');
+  return String(v ?? '').trim().toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 }
 
-function mapEnergy(raw)   { return ENERGIE_MAP[norm(raw)]   || null; }
-function mapSegment(raw)  { return SEGMENT_MAP[norm(raw)]   || null; }
-function mapEtatPdl(raw)  { return ETAT_PDL_MAP[norm(raw)]  || null; }
+function mapEnergy(raw)  { return ENERGIE_MAP[norm(raw)]  || null; }
+function mapSegment(raw) { return SEGMENT_MAP[norm(raw)]  || null; }
+function mapEtatPdl(raw) { return ETAT_PDL_MAP[norm(raw)] || null; }
 
 function safeNum(v) {
   if (v === null || v === undefined || v === '') return null;
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
+}
+
+function buildAdresse(c) {
+  return [c.Voie__c, c.CodePostal__c, c.Commune__c]
+    .map(v => (v || '').replace(/[\r\n]+/g, ' ').trim())
+    .filter(Boolean).join(', ');
 }
 
 // ── Handler ───────────────────────────────────────────────────────────────
@@ -83,7 +80,7 @@ module.exports = async function handler(req, res) {
   try {
     await conn.login(SF_CONFIG.username, SF_CONFIG.password + SF_CONFIG.securityToken);
 
-    // 1. Opportunité — NoteCredit__c et Energie__c
+    // 1. Opportunité
     const oppRes = await conn.query(`
       SELECT Id, Name, NoteCredit__c, Energie__c
       FROM Opportunity
@@ -96,59 +93,64 @@ module.exports = async function handler(req, res) {
     }
 
     const opp = oppRes.records[0];
+    const energieMapped = mapEnergy(opp.Energie__c);
 
-    // 2. Premier Compteur via Offre__c (trié par nom de compteur)
+    // 2. Tous les compteurs via Offre__c (dédoublonnés par PRM)
     const offresRes = await conn.query(`
       SELECT
+        Compteur__r.Name,
         Compteur__r.Segment__c,
         Compteur__r.ProfilCompteurGaz__c,
         Compteur__r.Fournisseur_Actuel_Nom__c,
         Compteur__r.EtatPDL__c,
         Compteur__r.VolumeTotalAnnuel__c,
-        Compteur__r.VolumeReel__c
+        Compteur__r.VolumeReel__c,
+        Compteur__r.Voie__c,
+        Compteur__r.CodePostal__c,
+        Compteur__r.Commune__c
       FROM Offre__c
       WHERE Opportunity__c = '${opportunityId}'
       ORDER BY Compteur__r.Name
-      LIMIT 1
     `);
 
-    const compteur = offresRes.records.length > 0
-      ? offresRes.records[0].Compteur__r
-      : null;
-
-    // 3. Mapper les valeurs SF vers le format formulaire
-    const energieRaw  = opp.Energie__c || '';
-    const energieMapped = mapEnergy(energieRaw);
-
-    const payload = {
-      opportunityId:    opp.Id,
-      opportunityName:  opp.Name || '',
-
-      // Opportunité
-      energie:          energieMapped,
-      energie_raw:      energieRaw,
-      note_credit:      safeNum(opp.NoteCredit__c),
-
-      // Compteur
-      segment:          compteur ? mapSegment(compteur.Segment__c) : null,
-      segment_raw:      compteur?.Segment__c || '',
-      profil:           compteur?.ProfilCompteurGaz__c || '',
-      fournisseur_actuel: compteur?.Fournisseur_Actuel_Nom__c || '',
-      etat_pdl:         compteur ? mapEtatPdl(compteur.EtatPDL__c) : null,
-      etat_pdl_raw:     compteur?.EtatPDL__c || '',
-
-      // Volume selon énergie
-      volume_elec:      safeNum(compteur?.VolumeTotalAnnuel__c),
-      volume_gaz:       safeNum(compteur?.VolumeReel__c),
-    };
+    // Dédoublonner par PRM (Name du compteur)
+    const seen = new Set();
+    const compteurs = [];
+    for (const record of offresRes.records) {
+      const c = record.Compteur__r;
+      if (!c || seen.has(c.Name)) continue;
+      seen.add(c.Name);
+      compteurs.push({
+        prm:               c.Name || '',
+        segment:           mapSegment(c.Segment__c),
+        segment_raw:       c.Segment__c || '',
+        profil:            c.ProfilCompteurGaz__c || '',
+        fournisseur_actuel: c.Fournisseur_Actuel_Nom__c || '',
+        etat_pdl:          mapEtatPdl(c.EtatPDL__c),
+        etat_pdl_raw:      c.EtatPDL__c || '',
+        volume_elec:       safeNum(c.VolumeTotalAnnuel__c),
+        volume_gaz:        safeNum(c.VolumeReel__c),
+        adresse:           buildAdresse(c),
+      });
+    }
 
     // Warnings si valeurs non mappées
     const warnings = [];
-    if (energieRaw && !energieMapped)   warnings.push(`Énergie non reconnue : "${energieRaw}"`);
-    if (compteur?.Segment__c && !payload.segment) warnings.push(`Segment non reconnu : "${compteur.Segment__c}"`);
-    if (compteur?.EtatPDL__c && !payload.etat_pdl) warnings.push(`État PDL non reconnu : "${compteur.EtatPDL__c}"`);
+    if (opp.Energie__c && !energieMapped) warnings.push(`Énergie non reconnue : "${opp.Energie__c}"`);
+    compteurs.forEach(c => {
+      if (c.segment_raw && !c.segment)   warnings.push(`Segment non reconnu : "${c.segment_raw}" (${c.prm})`);
+      if (c.etat_pdl_raw && !c.etat_pdl) warnings.push(`État PDL non reconnu : "${c.etat_pdl_raw}" (${c.prm})`);
+    });
 
-    return res.status(200).json({ ...payload, warnings });
+    return res.status(200).json({
+      opportunityId:   opp.Id,
+      opportunityName: opp.Name || '',
+      energie:         energieMapped,
+      energie_raw:     opp.Energie__c || '',
+      note_credit:     safeNum(opp.NoteCredit__c),
+      compteurs,       // tableau — 1 entrée si mono-compteur, N si multi
+      warnings,
+    });
 
   } catch (err) {
     console.error('[salesforce-opportunity]', err.message || err);
