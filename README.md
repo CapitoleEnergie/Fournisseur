@@ -13,6 +13,7 @@ Cette application permet de :
 - Consulter le panel fournisseurs (Gold Premium, Gold, Silver, Bronze)
 - Suivre les news et challenges fournisseurs via ClickUp
 - Enregistrer les transmissions de dossiers avec référence et commentaire vers le Hub Capitole
+- Pré-remplir le formulaire de sélection depuis une opportunité Salesforce (avec sélection du compteur si l'opportunité en contient plusieurs)
 
 ---
 
@@ -29,6 +30,7 @@ Frontend (public/index.html)
          ├── /api/fournisseur-rules      ← règles d'octroi globales (SharePoint)
          ├── /api/fournisseur-selection  ← moteur de sélection + panel (SharePoint)
          ├── /api/fournisseur-pricing    ← données prix par segment (SharePoint)
+         ├── /api/salesforce-opportunity ← pré-remplissage depuis une opportunité (Salesforce / jsforce)
          └── /api/clickup               ← news & challenges (ClickUp)
 ```
 
@@ -112,10 +114,44 @@ Les données prix s'affichent en colonne dans les résultats de sélection et en
 
 ---
 
+## 🔄 Pré-remplissage Salesforce
+
+Fichier : `api/salesforce-opportunity.js` (dépendance `jsforce`)
+
+Depuis l'onglet **Sélection Fournisseur**, l'utilisateur saisit un **ID d'opportunité Salesforce** et clique sur « Pré-remplir ». L'endpoint `GET /api/salesforce-opportunity?opportunityId=006XXX` :
+
+1. Lit l'opportunité (`Energie__c`, `NoteCredit__c`)
+2. Récupère **tous les compteurs** associés via `Offre__c WHERE Opportunity__c = id` (dédoublonnés par PRM)
+3. Normalise les valeurs SF vers le format du formulaire (énergie → `elec`/`gaz`, segment → `C1`–`C5`/`T1`–`T4`, état PDL → `premiere_mes`/`mes`/`en_service`/`ferme`)
+4. Retourne `{ opportunityName, energie, note_credit, compteurs: [...], warnings }`
+
+### Comportement selon le nombre de compteurs
+
+- **1 compteur** → remplissage direct du formulaire + message de confirmation
+- **N compteurs** → affichage d'un sélecteur (carte par compteur : PRM, segment, volume, adresse) ; l'utilisateur choisit celui à utiliser
+
+Tous les champs restent **modifiables manuellement** après le pré-remplissage. Les champs non couverts par Salesforce (DDF, DFF, syndic, marge, commission) restent à saisir à la main.
+
+### Mapping des champs
+
+| Champ SF | Objet SF | Champ formulaire |
+|---|---|---|
+| `Energie__c` | Opportunité | énergie |
+| `NoteCredit__c` | Opportunité | note |
+| `Segment__c` | Compteur | segment |
+| `ProfilCompteurGaz__c` | Compteur (gaz) | profil |
+| `Fournisseur_Actuel_Nom__c` | Compteur | fournisseur actuel |
+| `EtatPDL__c` | Compteur | état PDL |
+| `VolumeTotalAnnuel__c` | Compteur (élec) | volume |
+| `VolumeReel__c` | Compteur (gaz) | volume |
+
+---
+
 ## 🗂️ Onglets de l'application
 
 ### Sélection Fournisseur
 Formulaire avec : énergie, segment, note, volume, DDF, DFF, profil, état PDL, syndic, 1ère MES, fournisseur actuel, marge, UPFRONT.
+Pré-remplissage possible depuis une opportunité Salesforce (voir section dédiée).
 Résultat : tableau classé avec score /10, prix, justification et case à cocher pour transmission.
 
 ### Résumé Fournisseurs
@@ -165,6 +201,12 @@ SP_FOLDER_PATH=PARTAGE/Team/3. Fournisseurs/Data Fournisseurs
 CLICKUP_TOKEN=
 CLICKUP_LIST_NEWS=
 CLICKUP_LIST_CHALLENGES=
+
+# Salesforce (pré-remplissage opportunité)
+SF_LOGIN_URL=https://login.salesforce.com
+SF_USERNAME=
+SF_PASSWORD=
+SF_SECURITY_TOKEN=
 ```
 
 ---
@@ -178,9 +220,10 @@ CLICKUP_LIST_CHALLENGES=
 | `api/fournisseur_rules.js` | Règles d'octroi globales depuis SharePoint |
 | `api/fournisseur-selection.js` | Moteur de scoring + panel depuis SharePoint |
 | `api/fournisseur-pricing.js` | Données prix par segment depuis SharePoint |
+| `api/salesforce-opportunity.js` | Pré-remplissage du formulaire depuis une opportunité Salesforce (jsforce) |
 | `api/_clickup.js` | Récupération des tâches ClickUp (News + Challenges) |
 | `vercel.json` | Configuration Vercel (routes, cleanUrls) |
-| `package.json` | Dépendances Node.js (xlsx) |
+| `package.json` | Dépendances Node.js (xlsx, jsforce) |
 
 ---
 
