@@ -784,9 +784,30 @@ textarea::placeholder { color: #b0b0b0; }
         </button>
 </div>
 </div>
-<div class="news-toolbar">
-<div class="news-toolbar-left">
+<div class="news-toolbar" style="align-items:flex-start;">
+<div class="news-toolbar-left" style="flex-wrap:nowrap;align-items:flex-start;gap:16px;">
 <div class="news-filter-block">
+<div class="news-filter-label-row">
+<label for="news-supplier-search">Fournisseurs</label>
+<span class="news-clear-link" onclick="clearNewsSupplierFilters()">Effacer</span>
+</div>
+<input class="news-supplier-search" id="news-supplier-search" oninput="handleNewsSupplierSearch()" placeholder="Rechercher un ou plusieurs fournisseurs..." type="text"/>
+<div class="news-selected-filters" id="news-selected-filters"></div>
+<div class="news-supplier-dropdown" id="news-supplier-dropdown"></div>
+</div>
+<div class="news-top-fournisseurs-block">
+<img src="/top_fournisseurs.png" alt="Top fournisseurs du mois" style="max-width:340px;width:100%;border-radius:16px;box-shadow:0 4px 20px rgba(80,32,234,0.10);display:block;" />
+</div>
+</div>
+<div class="news-toolbar-right">
+<div class="news-status-switch">
+<button class="news-status-btn active" id="news-filter-open" onclick="setNewsStatusFilter('open')" type="button">En cours</button>
+<button class="news-status-btn" id="news-filter-closed" onclick="setNewsStatusFilter('closed')" type="button">Fermées</button>
+<button class="news-status-btn" id="news-filter-all" onclick="setNewsStatusFilter('all')" type="button">Toutes</button>
+</div>
+<div class="news-month-switch" id="news-month-switch"></div>
+</div>
+</div>
 <div class="news-filter-label-row">
 <label for="news-supplier-search">Fournisseurs</label>
 <span class="news-clear-link" onclick="clearNewsSupplierFilters()">Effacer</span>
