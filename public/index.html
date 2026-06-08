@@ -2928,7 +2928,7 @@ function getAvailableNewsSuppliers() {
 }
 
 function getNewsClosedStatuses() {
-  return ["closed", "done", "completed", "ferme", "fermé", "termine", "terminé", "archive", "archivé"];
+  return ["closed", "done", "complete", "Complete", "completed", "ferme", "fermé", "termine", "terminé", "archive", "archivé", "Achevé", "achevé"];
 }
 
 function isClosedNewsTask(task) {
@@ -3271,7 +3271,7 @@ async function loadNews() {
 let CHALLENGES_STATUS_FILTER = "open";
 
 function getChallengesClosedStatuses() {
-  return ["closed", "done", "completed", "ferme", "fermé", "termine", "terminé", "archive", "archivé"];
+  return ["closed", "done", "complete", "achevé", "Achevé", "completed", "ferme", "fermé", "termine", "terminé", "archive", "archivé"];
 }
 
 function isClosedChallengeTask(task) {
