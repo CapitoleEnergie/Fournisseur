@@ -76,8 +76,8 @@ export async function getNewsTasks() {
   );
 
   tasks.sort((a, b) => {
-    const aOpen = !["closed", "done", "completed"].includes((a.status?.status || "").toLowerCase());
-    const bOpen = !["closed", "done", "completed"].includes((b.status?.status || "").toLowerCase());
+    const aOpen = !["closed", "done", "completed", "complete", "Complete"].includes((a.status?.status || "").toLowerCase());
+    const bOpen = !["closed", "done", "completed", "complete", "Complete"].includes((b.status?.status || "").toLowerCase());
     if (aOpen !== bOpen) return aOpen ? -1 : 1;
     return Number(b.date_created || 0) - Number(a.date_created || 0);
   });
